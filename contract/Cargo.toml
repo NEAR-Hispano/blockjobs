@@ -1,0 +1,27 @@
+
+[package]
+name = "marketplace"
+version = "0.1.0"
+authors = ["dariofs.near",".near"]
+edition = "2018"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+near-sdk = "3.1.0"
+near-contract-standards = "3.2.0"
+bs58 = "0.4.0"
+wee_alloc = { version = "0.4.5", default-features = false, features = [] }
+near-env = "0.1.10"
+
+[profile.release]
+codegen-units = 1
+opt-level = "z"
+lto = true
+debug = false
+panic = "abort"
+overflow-checks = true
+
+[workspace]
+members = []
