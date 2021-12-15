@@ -1,446 +1,308 @@
-/*
- * BlockJobs - Marketplace de servicios profesionales 
- * @Autores: Dario Fabian Sanchez, Sebastian Gonzalez Rada
-*/
+use std::collections::HashSet;
 
-use near_contract_standards::non_fungible_token::metadata::{
-    NFTContractMetadata, NonFungibleTokenMetadataProvider, TokenMetadata, NFT_METADATA_SPEC,
-};
-use near_contract_standards::non_fungible_token::{Token, TokenId};
-use near_contract_standards::non_fungible_token::NonFungibleToken;
-// Importación de Borsh para mejoras en eficiencia (http://borsh.io/)
 use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
-use near_sdk::collections::{ LazyOption, LookupMap };
-use near_sdk::json_types::ValidAccountId;
-use near_sdk::{ env, near_bindgen, AccountId, BorshStorageKey, PanicOnDefault, Promise, 
-    PromiseOrValue };
-//use near_sdk::serde::{Deserialize, Serialize};
-use std::default::Default;
-use std::string::String;
-use std::option::Option;
+use near_sdk::collections::{LookupMap, UnorderedMap, UnorderedSet};
+use near_sdk::json_types::{ValidAccountId};
+use near_sdk::serde::{Deserialize, Serialize};
+use near_sdk::{env, near_bindgen, AccountId, Balance, PanicOnDefault, Promise, StorageUsage};
 
-// mod users;
-// pub use crate::users::*;
-//mod mediator;
+use crate::internal::*;
+pub use crate::nft_core::*;
 
-near_sdk::setup_alloc!();
+mod internal;
+mod nft_core;
+
+#[global_allocator]
+static ALLOC: near_sdk::wee_alloc::WeeAlloc<'_> = near_sdk::wee_alloc::WeeAlloc::INIT;
+
+// const ON_CALLBACK_GAS: u64 = 20_000_000_000_000;
+// const GAS_FOR_RESOLVE_TRANSFER: Gas = 10_000_000_000_000;
+// const GAS_FOR_NFT_TRANSFER_CALL: Gas = 25_000_000_000_000 + GAS_FOR_RESOLVE_TRANSFER;
+// const NO_DEPOSIT: Balance = 0;
+// const MAX_MARKET_DEPOSIT: u128 = 100_000_000_000_000_000_000_000;
+// const ACCESS_KEY_ALLOWANCE: u128 = 100_000_000_000_000_000_000_000;
+// const SPONSOR_FEE: u128 = 100_000_000_000_000_000_000_000;
+const USER_MINT_LIMIT: u8 = 20;
+
+pub type TokenId = String;
+
+#[derive(BorshDeserialize, BorshSerialize, Serialize, Deserialize)]
+#[serde(crate = "near_sdk::serde")]
+pub struct Token {
+    pub owner_id: AccountId,
+    pub metadata: TokenMetadata,
+    pub approved_account_ids: HashSet<AccountId>,
+    pub approval_id: u64,
+}
+
+#[derive(BorshDeserialize, BorshSerialize, Serialize, Deserialize, Clone, Copy, PartialOrd, PartialEq, Eq, Hash)]
+#[serde(crate = "near_sdk::serde")]
+pub enum UserRoles {
+    Professional = 0,
+    Employeer = 1,
+    Admin = 2,
+    Mod = 3,
+}
+
+#[derive(BorshSerialize, BorshDeserialize, Serialize, Deserialize, PartialOrd, PartialEq, Eq, Hash)]
+#[serde(crate="near_sdk::serde")]
+pub enum ArtistAreas {
+    Illustration,
+    Realism,
+    Manga,
+    Anime
+}
+
+#[derive(BorshSerialize, BorshDeserialize, Serialize, Deserialize, PartialOrd, PartialEq, Eq, Hash)]
+#[serde(crate="near_sdk::serde")]
+pub enum ProgrammerAreas {
+    Backend,
+    Frontend,
+    Blockchain,
+    Testing
+}
+
+#[derive(BorshSerialize, BorshDeserialize, Serialize, Deserialize, PartialOrd, PartialEq, Eq, Hash)]
+#[serde(crate="near_sdk::serde")]
+pub enum ProgramingLenguages {
+    Angular,
+    Asm,
+    C,
+    Cplusplus,
+    Csharp,
+    Css,
+    Cuda,
+    Docker,
+    Go,
+    Html,
+    Java,
+    JavaScript,
+    MySql,
+    Nodejs,
+    OpenGl,
+    Php,
+    PostgreSql,
+    Python,
+    R,
+    React,
+    ReactNative,
+    Ruby,
+    Rust,
+    Sass,
+    Sql,
+    SqlLite,
+    TypeScript,
+    Vuejs
+}
+
+#[derive(BorshSerialize, BorshDeserialize, Serialize, Deserialize)]
+#[serde(crate="near_sdk::serde")]
+pub struct ProgrammerCategoryData {
+    pub lenguages: HashSet<ProgramingLenguages>,
+    pub area: HashSet<ProgrammerAreas>
+}
+
+#[derive(BorshSerialize, BorshDeserialize, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(crate="near_sdk::serde")]
+pub struct ArtistCategoryData {
+    pub area: HashSet<ArtistAreas>
+}
+
+#[derive(BorshSerialize, BorshDeserialize, Serialize, Deserialize)]
+#[serde(crate="near_sdk::serde")]
+pub enum Categories {
+    Programmer(ProgrammerCategoryData),
+    Artist(ArtistCategoryData)
+}
+
+#[derive(BorshDeserialize, BorshSerialize, Serialize, Deserialize)]
+#[serde(crate = "near_sdk::serde")]
+pub struct TokenMetadata {
+    pub fullname: String,
+    pub profile_photo_url: String,
+    pub linkedin: Option<String>,
+    pub github: Option<String>,
+    pub education: Option<String>
+}
+
+#[derive(BorshDeserialize, BorshSerialize, Serialize, Deserialize)]
+#[serde(crate = "near_sdk::serde")]
+pub struct User {
+    pub account_id: AccountId,
+    pub mints: u8,
+    pub roles: HashSet<UserRoles>,
+    pub rep: i16,
+    pub categories: Vec<Categories>
+}
 
 #[near_bindgen]
 #[derive(BorshDeserialize, BorshSerialize, PanicOnDefault)]
-// TokenID según estándar NEP 171
-// Los servicios ofrecidos se tratan mediante un token no fungible
 pub struct Contract {
-    service: NonFungibleToken,
-    metadata: LazyOption<NFTContractMetadata>,
-    // employees: LookupMap<AccountId, Employee>,
-    // employers: LookupMap<AccountId, Employer>,
-    id_counter: u32,
-}
+    pub tokens_id_counter: u128,
 
-const DATA_IMAGE_SVG_NEAR_ICON: &str = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 288 288'%3E%3Cg id='l' data-name='l'%3E%3Cpath d='M187.58,79.81l-30.1,44.69a3.2,3.2,0,0,0,4.75,4.2L191.86,103a1.2,1.2,0,0,1,2,.91v80.46a1.2,1.2,0,0,1-2.12.77L102.18,77.93A15.35,15.35,0,0,0,90.47,72.5H87.34A15.34,15.34,0,0,0,72,87.84V201.16A15.34,15.34,0,0,0,87.34,216.5h0a15.35,15.35,0,0,0,13.08-7.31l30.1-44.69a3.2,3.2,0,0,0-4.75-4.2L96.14,186a1.2,1.2,0,0,1-2-.91V104.61a1.2,1.2,0,0,1,2.12-.77l89.55,107.23a15.35,15.35,0,0,0,11.71,5.43h3.13A15.34,15.34,0,0,0,216,201.16V87.84A15.34,15.34,0,0,0,200.66,72.5h0A15.35,15.35,0,0,0,187.58,79.81Z'/%3E%3C/g%3E%3C/svg%3E";
+    // standard fields (draft)
+    pub tokens_per_owner: LookupMap<AccountId, UnorderedSet<TokenId>>,
+    pub tokens_by_id: UnorderedMap<TokenId, Token>,
+    pub owner_id: AccountId,
+    // The storage size in bytes for one account.
+    pub extra_storage_in_bytes_per_token: StorageUsage,
 
-#[derive(BorshSerialize, BorshStorageKey)]
-enum StorageKey {
-    NonFungibleToken,
-    Metadata,
-    TokenMetadata,
-    Enumeration,
-    Approval,
+    // custom fields for guests and example app (with no backend need to store list of tokens)
+    pub users: LookupMap<AccountId, User>,
 }
 
 #[near_bindgen]
-// Implementación de las funciones
 impl Contract {
     #[init]
-    // Asigna metadata que estará por default
-    pub fn new_default_metadata(owner_id: ValidAccountId) -> Self {
-        Self::new(
-            owner_id,
-            NFTContractMetadata {
-                spec: NFT_METADATA_SPEC.to_string(),
-                name: "BlockJobs".to_string(),
-                symbol: "BJMP".to_string(),
-                icon: Some(DATA_IMAGE_SVG_NEAR_ICON.to_string()),
-                base_uri: None,
-                reference: None,
-                reference_hash: None,
-            },
-        )
+    pub fn new(owner_id: ValidAccountId) -> Self {
+        assert!(!env::state_exists(), "Already initialized");
+        let mut this = Self {
+            tokens_id_counter: 0,
+            tokens_per_owner: LookupMap::new(b"a".to_vec()),
+            tokens_by_id: UnorderedMap::new(b"t".to_vec()),
+            users: LookupMap::new(b"u".to_vec()),
+            owner_id: owner_id.into(),
+            extra_storage_in_bytes_per_token: 0,
+        };
+        this.measure_min_token_storage_cost();
+        return this;
     }
-
-    #[init]
-    // Funcion interna que inicializa el contrato
-    pub fn new(owner_id: ValidAccountId, metadata: NFTContractMetadata) -> Self {
-        assert!(!env::state_exists(), "Ya inicializado");
-        metadata.assert_valid();
-        Self {
-            service: NonFungibleToken::new(
-                StorageKey::NonFungibleToken,
-                owner_id,
-                Some(StorageKey::TokenMetadata),
-                Some(StorageKey::Enumeration),
-                Some(StorageKey::Approval),
-            ),
-            metadata: LazyOption::new(StorageKey::Metadata, Some(&metadata)),
-            // employees: LookupMap::new(b"employees".to_vec()),
-            // employers: LookupMap::new(b"employers".to_vec()),
-            id_counter: 0,
-        }
-    }
-
+    
     #[payable]
-    // Creación de nuevos tokens, posteriormente se limitará a usuarios que pasen un KYC
-    pub fn mint_nft(
-        &mut self,
-        //token_id: TokenId,
-        receiver_id: ValidAccountId,
-        token_metadata: TokenMetadata,
-    ) -> Token {
-        let token_id = self.id_counter.to_string();
-        self.id_counter += 1;
+    pub fn nft_mint_service(&mut self, metadata: TokenMetadata) -> Token {
+        // self.assert_owner(&env::predecessor_account_id());
 
-        // TODO(Sebas): Verificar el parametro extra de la metadata,
-        // para saber que lleno toda la informacion personal requerida
-
-        return self.service.mint(token_id, receiver_id, Some(token_metadata))
-    }
-
-    #[payable]
-    // Adquisición de un servicio
-    pub fn buy_nft(&mut self, token_id: TokenId) -> TokenMetadata {
-        // Verificación de que el servicio exista
-        assert_eq!(
-            token_id.trim().parse::<u64>().unwrap() < self.service.owner_by_id.len(),
-            true,
-            "El ID de servicio indicado no existe"
+        let user = self.update_user_mint_amount(1); // cantidad de servicios
+        let owner_id = user.account_id;
+        let initial_storage_usage = env::storage_usage();
+        // self.assert_owner();
+        let token = Token {
+            owner_id: owner_id,
+            metadata: metadata,
+            approved_account_ids: Default::default(),
+            approval_id: 0,
+        };
+        assert!(
+            self.tokens_by_id.insert(&self.tokens_id_counter.to_string(), &token).is_none(),
+            "Token already exists"
         );
-        //Obtener los metadatos del token
-        let metadata = self
-            .service
-            .token_metadata_by_id
-            .as_ref()
-            .and_then(|by_id| by_id.get(&token_id))
-            .unwrap();
+        self.internal_add_token_to_owner(&token.owner_id, &self.tokens_id_counter.to_string());
 
-        // //Si no cuenta con los fondos se hace rollback
-        let amount = env::attached_deposit();
-        // assert_eq!(
-        //     metadata.price.as_ref().unwrap().parse::<u128>().unwrap(),
-        //     amount,
-        //     "Fondos insuficientes"
-        // );
-        // assert_eq!(
-        //  metadata.on_sale.as_ref().unwrap(),
-        //  &true,
-        //  "No esta a la venta"
-        // );
+        let new_token_size_in_bytes = env::storage_usage() - initial_storage_usage;
+        let required_storage_in_bytes =
+            self.extra_storage_in_bytes_per_token + new_token_size_in_bytes;
 
-        //Revisa que este a la venta y obtiene el dueño del token
-        let owner_id = self.service.owner_by_id.get(&token_id).unwrap();
-        let buyer_id = &env::signer_account_id();
-        // Verifica que quien compra no sea ya el dueño
-        assert_eq!(buyer_id == &owner_id, false, "Ya es dueño del token ");
-        //Cambiar la metadata
-        self.service
-        .token_metadata_by_id
-        .as_mut()
-        .and_then(|by_id| by_id.insert(&token_id, &metadata));
+        deposit_refund(required_storage_in_bytes);
+        self.tokens_id_counter += 1;
 
-        /*
-        let promise = Promise::new(owner_id.clone()) // Transferir al contracto que bloqueara los fondos
-        .transfer(amount)
-        .function_call("tx_status_callback".into(), vec![], 0, 0);
-        */
+        return token;
+    }
+
+    #[private]
+    fn measure_min_token_storage_cost(&mut self) {
+        let initial_storage_usage = env::storage_usage();
+        let tmp_account_id = "a".repeat(64);
+        let u = UnorderedSet::new(unique_prefix(&tmp_account_id));
+        self.tokens_per_owner.insert(&tmp_account_id, &u);
+
+        let tokens_per_owner_entry_in_bytes = env::storage_usage() - initial_storage_usage;
+        let owner_id_extra_cost_in_bytes = (tmp_account_id.len() - self.owner_id.len()) as u64;
+
+        self.extra_storage_in_bytes_per_token =
+            tokens_per_owner_entry_in_bytes + owner_id_extra_cost_in_bytes;
+
+        self.tokens_per_owner.remove(&tmp_account_id);
+    }
+    
+    #[private]
+    fn update_user_mint_amount(&mut self, new_mints: u8) -> User {
+        let sender_id = env::predecessor_account_id();
+        let mut user = self.users.get(&sender_id).expect("Before mint a nft, create an user");
+        assert!(
+            user.mints < USER_MINT_LIMIT,
+            "Exceeded user mint limit {}", USER_MINT_LIMIT
+        );
+        user.mints += new_mints;
+        self.users.insert(&sender_id, &user);
+        return user;
+    }
+
+    #[private]
+    fn assert_owner(&self, account_id: &AccountId) {
+        assert_eq!(*account_id, self.owner_id, "Must be owner_id how call its function");
+    }
+
+    // Agregar una categoria a la vez
+    pub fn add_user(&mut self, account_id: AccountId, role: UserRoles, category: Categories) -> User {
+        self.assert_owner(&env::predecessor_account_id());
         
-        //Transferir los nears
-        Promise::new(owner_id.clone()).transfer(amount); // Transferir al contracto que bloqueara los fondos
+        if role as u8 > 1 {
+            env::panic(b"The mod or admin role cannot be grant");
+        }
 
-        //Transferir el nft
-        self.service.internal_transfer_unguarded(&token_id, &owner_id, buyer_id);
+        let tokens_set = UnorderedSet::new(unique_prefix(&account_id));
+        self.tokens_per_owner.insert(&account_id, &tokens_set);
 
-        //Retornar la metadata
-        return metadata
+        let mut roles = HashSet::new();
+        roles.insert(role);
+        let mut new_user = User{
+            account_id: account_id.clone(),
+            mints: 0,
+            roles: roles,
+            rep: 0,
+            categories: Vec::new()
+        };
+        new_user.categories.push(category);
+
+        new_user.roles.insert(UserRoles::Professional);
+
+        if self.users.insert(&account_id, &new_user).is_some() {
+            env::panic(b"User account already added");
+        }
+
+        return new_user;
     }
 
-    // Quitar un servicio ofrecido
-    pub fn delete_nft(&mut self, token_id: TokenId) -> TokenMetadata {
-        //Comprobar que el token exista
-        assert_eq!(
-            token_id.trim().parse::<u64>().unwrap() < self.service.owner_by_id.len(),
-            true,
-            "El token no existe "
-        );
-        //Comprobar que en caso de querer devolver el token, sea el dueño actual
-        let owner_id = self.service.owner_by_id.get(&token_id).unwrap();
-        assert_eq!(
-            env::signer_account_id() == owner_id,
-            true,
-            "No es el dueño del token "
-        );
-        //Obtener los metadatos de ese token
-        //Se utilizará posteriormente al trabajar con una API
-        let metadata = self
-            .service
-            .token_metadata_by_id
-            .as_ref()
-            .and_then(|by_id| by_id.get(&token_id))
-            .unwrap();
-        //Cambiar la metadata
-        self.service
-            .token_metadata_by_id
-            .as_mut()
-            .and_then(|by_id| by_id.insert(&token_id, &metadata));
-        //Retornar la metadata
-        metadata
+    // Sebas: Un admin u mederador puede eliminar un usuario por la votacion de los usuario.
+    // pub fn remove_user(&mut self) {
+    //     assert_eq!(env::predecessor_account_id(), self.owner_id, "must be owner_id");
+    //     let guest = self.users.get(&public_key.clone().into()).expect("Not a user");
+    //     // TODO transfer NFTs
+    //     self.tokens_per_owner.remove(&guest.account_id);
+    //     self.users.remove(&public_key.into());
+    // }
+
+    pub fn get_user(&self, account_id: ValidAccountId) -> User {
+        self.users.get(&account_id.into()).expect("No users found. Register the user first")
     }
 
-    // Consultar servicios disponibles de determinado profesional
-    pub fn tokens_of(
-        &self,
-        account_id: ValidAccountId,
-        from_index: U128,
-        limit: u64,
-    ) -> Vec<Token> {
-        return self
-            .service
-            .nft_tokens_for_owner(account_id, Some(from_index), Some(limit));
+    pub fn get_user_tokens(&self, account_id: ValidAccountId) -> Vec<Token> {
+        let mut tokens: Vec<Token> = Vec::new();
+        let tokens_id = self.tokens_per_owner.get(&account_id.into()).expect("No users found or dont have any token").to_vec();
+        for i in 0 .. tokens_id.len() {
+            let token = self.tokens_by_id.get(&tokens_id[i]).expect("Token id dont match");
+            tokens.push( token );
+        }
+        return tokens;
     }
 
-    //, category: Categories
-    // pub fn new_professional(&mut self, active: bool, categories: String) -> Employee{
-        // let sender = env::predecessor_account_id();
+    // remove approval and guest_sale if there was a removal or if market promise failed to add sale
+    // pub fn on_market_updated(&mut self, token_id: TokenId, market_contract: AccountId) {
 
-        // TODO(Sebas): bs58::encode(env::sha256(&env::random_seed())).into_string(); Esto sirve para generar uui
-        // TODO(Sebas): Verificar que no repitan las categorias aqui, en el front o ambos?
-        // let new_employee = Employee {
-        //     account_id: sender.clone(),
-        //     active: active,
-        //     categories: categories,
-        //     rep: 0
-        // };
-        // self.employees.insert( 
-        //     &sender,
-        //     &new_employee
-        // );
-    
-        // return new_employee;
-    // } 
-    
-    //Agrega nuevos empleadores o clientes
-    // pub fn new_employer(&mut self, searching: bool) -> Employer{
-    //     let sender = env::predecessor_account_id();
-
-    //     let new_employer = Employer {
-    //         account_id: sender.clone(),
-    //         rep: 0,
-    //         searching: true
-    //     };
-
-    //     self.employers.insert( 
-    //         &sender,
-    //         &new_employer
-    //     );
-
-    //     return new_employer;
+    //     let mut token = self.tokens_by_id.get(&token_id).expect("Token not found");
+    //     token.approved_account_ids.remove(&market_contract);
+    //     self.tokens_by_id.insert(&token_id, &token);
     // }
 }
 
-
-#[near_bindgen]
-impl NonFungibleTokenMetadataProvider for Contract {
-    fn nft_metadata(&self) -> NFTContractMetadata {
-        self.metadata.get().unwrap()
-    }
-}
-
-near_contract_standards::impl_non_fungible_token_core!(Contract, service);
-near_contract_standards::impl_non_fungible_token_approval!(Contract, service);
-near_contract_standards::impl_non_fungible_token_enumeration!(Contract, service);
-
-
-// Inicio de los tests unitarios
-#[cfg(all(test, not(target_arch = "wasm32")))]
-mod tests {
-    use near_sdk::test_utils::{accounts, VMContextBuilder};
-    use near_sdk::testing_env;
-
-    use super::*;
-
-    const MINT_STORAGE_COST: u128 = 5870000000000000000000;
-
-    fn get_context(predecessor_account_id: ValidAccountId) -> VMContextBuilder {
-        let mut builder = VMContextBuilder::new();
-        builder
-            .current_account_id(accounts(0))
-            .signer_account_id(predecessor_account_id.clone())
-            .predecessor_account_id(predecessor_account_id);
-        builder
-    }
-
-    //Datos para la función inicializadora
-    fn sample_token_metadata() -> TokenMetadata {
-        TokenMetadata {
-            title: Some(" ".into()),
-            description: Some(" ".into()),
-            media: None,
-            media_hash: None,
-            copies: Some(1u64),
-            issued_at: None,
-            expires_at: None,
-            starts_at: None,
-            updated_at: None,
-            extra: None,
-            reference: None,
-            reference_hash: None,      }
-    }
-
-    //Test de la función inicializadora
-    #[test]
-    fn test_new() {
-        let mut context = get_context(accounts(1));
-        testing_env!(context.build());
-        let contract = Contract::new_default_metadata(accounts(1).into());
-        testing_env!(context.is_view(true).build());
-        assert_eq!(contract.nft_token("1".to_string()), None);
-    }
-
-    //Verificación del contrato
-    #[test]
-    #[should_panic(expected = "El contrato no está inicializado")]
-    fn test_default() {
-        let context = get_context(accounts(1));
-        testing_env!(context.build());
-        let _contract = Contract::default();
-    }
-
-    //Verificación de la creación de un servicio
-    #[test]
-    fn test_mint() {
-        let mut context = get_context(accounts(0));
-        testing_env!(context.build());
-        let mut contract = Contract::new_default_metadata(accounts(0).into());
-
-        testing_env!(context
-            .storage_usage(env::storage_usage())
-            .attached_deposit(MINT_STORAGE_COST)
-            .predecessor_account_id(accounts(0))
-            .build());
-
-        let token_id = "0".to_string();
-        let token = contract.mint_nft(accounts(0), sample_token_metadata());
-        assert_eq!(token.token_id, token_id);
-        assert_eq!(token.owner_id, accounts(0).to_string());
-        assert_eq!(token.metadata.unwrap(), sample_token_metadata());
-        assert_eq!(token.approved_account_ids.unwrap(), HashMap::new());
-    }
-
-    //Prueba de una transferencia entre profesional y cliente
-    #[test]
-    fn test_transfer() {
-        let mut context = get_context(accounts(0));
-        testing_env!(context.build());
-        let mut contract = Contract::new_default_metadata(accounts(0).into());
-
-        testing_env!(context
-            .storage_usage(env::storage_usage())
-            .attached_deposit(MINT_STORAGE_COST)
-            .predecessor_account_id(accounts(0))
-            .build());
-        let token_id = "0".to_string();
-        contract.mint_nft(accounts(0), sample_token_metadata());
-
-        testing_env!(context
-            .storage_usage(env::storage_usage())
-            .attached_deposit(1)
-            .predecessor_account_id(accounts(0))
-            .build());
-        contract.nft_transfer(accounts(1), token_id.clone(), None, None);
-
-        testing_env!(context
-            .storage_usage(env::storage_usage())
-            .account_balance(env::account_balance())
-            .is_view(true)
-            .attached_deposit(0)
-            .build());
-        if let Some(token) = contract.nft_token(token_id.clone()) {
-            assert_eq!(token.token_id, token_id);
-            assert_eq!(token.owner_id, accounts(1).to_string());
-            assert_eq!(token.metadata.unwrap(), sample_token_metadata());
-            assert_eq!(token.approved_account_ids.unwrap(), HashMap::new());
-        } else {
-            panic!("El token no se ha creado");
-        }
-    }
-
-    //Verificación de servicio a la venta
-    #[test]
-    fn test_approve() {
-        let mut context = get_context(accounts(0));
-        testing_env!(context.build());
-        let mut contract = Contract::new_default_metadata(accounts(0).into());
-
-        testing_env!(context
-            .storage_usage(env::storage_usage())
-            .attached_deposit(MINT_STORAGE_COST)
-            .predecessor_account_id(accounts(0))
-            .build());
-        let token_id = "0".to_string();
-        contract.mint_nft(accounts(0), sample_token_metadata());
-
-        // Puesta en venta de un servicio
-        testing_env!(context
-            .storage_usage(env::storage_usage())
-            .attached_deposit(150000000000000000000)
-            .predecessor_account_id(accounts(0))
-            .build());
-        contract.nft_approve(token_id.clone(), accounts(1), None);
-
-        testing_env!(context
-            .storage_usage(env::storage_usage())
-            .account_balance(env::account_balance())
-            .is_view(true)
-            .attached_deposit(0)
-            .build());
-        assert!(contract.nft_is_approved(token_id.clone(), accounts(1), Some(1)));
-    }
-
-    //Prueba de quitar un servicio por parte del profesional
-    #[test]
-    fn test_revoke() {
-        let mut context = get_context(accounts(0));
-        testing_env!(context.build());
-        let mut contract = Contract::new_default_metadata(accounts(0).into());
-
-        testing_env!(context
-            .storage_usage(env::storage_usage())
-            .attached_deposit(MINT_STORAGE_COST)
-            .predecessor_account_id(accounts(0))
-            .build());
-        let token_id = "0".to_string();
-        contract.mint_nft(accounts(0), sample_token_metadata());
-
-        // Servicio en venta
-        testing_env!(context
-            .storage_usage(env::storage_usage())
-            .attached_deposit(150000000000000000000)
-            .predecessor_account_id(accounts(0))
-            .build());
-        contract.nft_approve(token_id.clone(), accounts(1), None);
-
-        // Servicio fuera de venta
-        testing_env!(context
-            .storage_usage(env::storage_usage())
-            .attached_deposit(1)
-            .predecessor_account_id(accounts(0))
-            .build());
-        contract.nft_revoke(token_id.clone(), accounts(1));
-        testing_env!(context
-            .storage_usage(env::storage_usage())
-            .account_balance(env::account_balance())
-            .is_view(true)
-            .attached_deposit(0)
-            .build());
-        assert!(!contract.nft_is_approved(token_id.clone(), accounts(1), None));
-    }
-
-}
+// fn is_promise_success() -> bool {
+//     assert_eq!(
+//         env::promise_results_count(),
+//         1,
+//         "Contract expected a result on the callback"
+//     );
+//     match env::promise_result(0) {
+//         PromiseResult::Successful(_) => true,
+//         _ => false,
+//     }
+// }
