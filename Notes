@@ -1,0 +1,23 @@
+source ./build_deploy.sh
+
+near call $ID new '{"owner_id": "'$ID'"}' --accountId $ID
+
+near call $ID add_user '{"account_id": "stolkerve.testnet", "role": "Professional", "category": {"Programmer": {"lenguages": ["Angular", "Cplusplus"], "area": ["Blockchain", "Backend"]}}}' --accountId $ID
+
+near call $ID user_update_categories '{"account_id": "stolkerve.testnet", "category": {"Programmer": {"lenguages": ["Angular", "C"], "area": ["Blockchain", "Backend"]}}}' --accountId $ID
+
+near call $ID user_add_role '{"account_id": "stolkerve.testnet", "role": "Employeer"}' --accountId $ID
+#debe fallar
+near call $ID user_add_role '{"account_id": "stolkerve.testnet", "role": "Admin"}' --accountId stolkerve.testnet
+
+near call $ID user_remove_role '{"account_id": "stolkerve.testnet", "role": "Employeer"}' --accountId $ID
+
+near call $ID nft_mint_service '{"metadata": {"fullname": "Sebastian Gonzalez", "profile_photo_url": "foto.png", "price": 100}, "amount": 10}' --accountId stolkerve.testnet --amount 1
+
+near call $ID get_user_tokens '{"account_id": "stolkerve.testnet"}' --accountId $ID
+near call $ID get_user_tokens '{"account_id": "'$ID'"}' --accountId $ID
+
+near call $ID get_user '{"account_id": "'$ID'"}' --accountId $ID
+near call $ID get_user '{"account_id": "stolkerve.testnet"}' --accountId $ID
+
+near call $ID get_users_by_category '{"category": {"Programmer": {"lenguages": ["Php", "Rust"], "area": ["Frontend", "Testing"]}}}' --accountId $ID
