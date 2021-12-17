@@ -13,7 +13,7 @@ near call $ID user_set_role '{"account_id": "'$ID2'", "role": "Admin", "remove":
 
 near call $ID user_set_role '{"account_id": "'$ID2'", "role": "Employeer", "remove": true}' --accountId $ID
 
-near call $ID nft_mint_service '{"metadata": {"fullname": "Sebastian Gonzalez", "profile_photo_url": "foto.png", "price": 100, "active": true}, "_active_services": 10}' --accountId '$ID2'
+near call $ID nft_mint_service '{"metadata": {"fullname": "Sebastian Gonzalez", "profile_photo_url": "foto.png", "price": 100, "active": true}, "_active_services": 10}' --accountId $ID2
 
 near call $ID get_user '{"account_id": "'$ID'"}' --accountId $ID
 near call $ID get_user '{"account_id": "'$ID2'"}' --accountId $ID
