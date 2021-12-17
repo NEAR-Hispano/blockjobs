@@ -1,23 +1,30 @@
-source ./build_deploy.sh
+source ./deploy.sh
+source ./clear.sh
 
 near call $ID new '{"owner_id": "'$ID'"}' --accountId $ID
 
-near call $ID add_user '{"account_id": "stolkerve.testnet", "role": "Professional", "category": {"Programmer": {"lenguages": ["Angular", "Cplusplus"], "area": ["Blockchain", "Backend"]}}}' --accountId $ID
+near call $ID add_user '{"account_id": "'$ID2'", "role": "Professional", "categories": [{"Programmer": {"lenguages": ["Angular", "Cplusplus"], "area": ["Blockchain", "Backend"]}}, {"Programmer": {"lenguages": ["Ruby", "TypeScript"], "area": ["Testing", "Backend"]}}]}' --accountId $ID
 
-near call $ID user_update_categories '{"account_id": "stolkerve.testnet", "category": {"Programmer": {"lenguages": ["Angular", "C"], "area": ["Blockchain", "Backend"]}}}' --accountId $ID
+near call $ID user_update_categories '{"account_id": "'$ID2'", "categories": [{"Programmer": {"lenguages": ["Angular", "C"], "area": ["Blockchain", "Backend"]}}, {"Artist": {"area": ["Illustration", "Manga"]}}]}' --accountId $ID
 
-near call $ID user_add_role '{"account_id": "stolkerve.testnet", "role": "Employeer"}' --accountId $ID
+near call $ID user_set_role '{"account_id": "'$ID2'", "role": "Employeer", "remove": false}' --accountId $ID
 #debe fallar
-near call $ID user_add_role '{"account_id": "stolkerve.testnet", "role": "Admin"}' --accountId stolkerve.testnet
+near call $ID user_set_role '{"account_id": "'$ID2'", "role": "Admin", "remove": false}' --accountId '$ID2'
 
-near call $ID user_remove_role '{"account_id": "stolkerve.testnet", "role": "Employeer"}' --accountId $ID
+near call $ID user_set_role '{"account_id": "'$ID2'", "role": "Employeer", "remove": true}' --accountId $ID
 
-near call $ID nft_mint_service '{"metadata": {"fullname": "Sebastian Gonzalez", "profile_photo_url": "foto.png", "price": 100}, "amount": 10}' --accountId stolkerve.testnet --amount 1
-
-near call $ID get_user_tokens '{"account_id": "stolkerve.testnet"}' --accountId $ID
-near call $ID get_user_tokens '{"account_id": "'$ID'"}' --accountId $ID
+near call $ID nft_mint_service '{"metadata": {"fullname": "Sebastian Gonzalez", "profile_photo_url": "foto.png", "price": 100, "active": true}, "active_services": 10}' --accountId '$ID2'
 
 near call $ID get_user '{"account_id": "'$ID'"}' --accountId $ID
-near call $ID get_user '{"account_id": "stolkerve.testnet"}' --accountId $ID
+near call $ID get_user '{"account_id": "'$ID2'"}' --accountId $ID
 
-near call $ID get_users_by_category '{"category": {"Programmer": {"lenguages": ["Php", "Rust"], "area": ["Frontend", "Testing"]}}}' --accountId $ID
+near call $ID get_users_by_role '{"role": "Professional"}' --accountId $ID
+
+near call $ID get_tokens_by_id '{"ids": [2, 4]}' --accountId $ID
+
+near call $ID get_user_tokens '{"account_id": "'$ID2'"}' --accountId $ID
+near call $ID get_user_tokens '{"account_id": "'$ID'"}' --accountId $ID
+
+near call $ID get_user_tokens_id '{"account_id": "'$ID2'"}' --accountId $ID
+
+near call $ID get_users_by_category '{"categories": [{"Programmer": {"lenguages": ["Php", "Rust"], "area": ["Frontend", "Testing"]}}]}' --accountId $ID

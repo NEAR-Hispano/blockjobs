@@ -1,9 +1,9 @@
 use crate::*;
-
 /// Price per 1 byte of storage from mainnet config after `1.18.0` release and protocol version `42`.
 /// It's 10 times lower than the genesis price.
 
 // Esto esta en yocto near
+const YOCTO_NEAR: u128 = 1000000000000000000000000;
 pub(crate) const STORAGE_PRICE_PER_BYTE: Balance = 10_000_000_000_000_000_000;
 
 pub(crate) fn unique_prefix(account_id: &AccountId) -> Vec<u8> {
@@ -35,8 +35,7 @@ pub(crate) fn deposit_refund(storage_used: u64) {
 
     assert!(
         required_cost <= attached_deposit,
-        "Requires to attach {} NEAR tokens to cover storage",
-        required_cost
+        "Requires to attach {:.1$} NEAR tokens to cover storage",required_cost as f64 / YOCTO_NEAR as f64, 3 // la presicion de decimales
     );
 
     let refund = attached_deposit - required_cost;

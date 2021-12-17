@@ -15,3 +15,7 @@ do
     export ID=$i
 done
 IFS=$old_IFS
+
+read -p "Escribe to cuenta de testnet: " cuenta
+export ID2=$cuenta
+echo "Exportando $cuenta a la variable ID2"
