@@ -263,11 +263,8 @@ checksum = "bd7d4bd64732af4bf3a67f367c27df8520ad7e230c5817b8ff485864d80242b9"
 name = "marketplace"
 version = "0.1.0"
 dependencies = [
- "bs58",
- "near-contract-standards",
  "near-env",
  "near-sdk",
- "wee_alloc",
 ]
 
 [[package]]
@@ -281,15 +278,6 @@ name = "memory_units"
 version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8452105ba047068f40ff7093dd1d9da90898e63dd61736462e9cdda6a90ad3c3"
-
-[[package]]
-name = "near-contract-standards"
-version = "3.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e7421d0a5c7aeb57b37a0cf3a71a7aefbbdc7727f9811d9dd86fa55e4f0de4d3"
-dependencies = [
- "near-sdk",
-]
 
 [[package]]
 name = "near-env"
