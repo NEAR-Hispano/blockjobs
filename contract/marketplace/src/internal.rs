@@ -3,8 +3,12 @@ use crate::*;
 /// It's 10 times lower than the genesis price.
 
 // Esto esta en yocto near
-const YOCTO_NEAR: u128 = 1000000000000000000000000;
+pub(crate) const YOCTO_NEAR: u128 = 1000000000000000000000000;
 pub(crate) const STORAGE_PRICE_PER_BYTE: Balance = 10_000_000_000_000_000_000;
+
+pub(crate) fn string_to_valid_account_id(account_id: &String) -> ValidAccountId{
+    return ValidAccountId::try_from((*account_id).to_string()).unwrap();
+}
 
 pub(crate) fn unique_prefix(account_id: &AccountId) -> Vec<u8> {
     let mut prefix = Vec::with_capacity(33);
@@ -44,6 +48,21 @@ pub(crate) fn deposit_refund(storage_used: u64) {
     }
 }
 
+pub(crate) fn deposit_refund_to(storage_used: u64, to: AccountId) {
+    let required_cost = STORAGE_PRICE_PER_BYTE * Balance::from(storage_used);
+    let attached_deposit = env::attached_deposit();
+
+    assert!(
+        required_cost <= attached_deposit,
+        "Requires to attach {:.1$} NEAR tokens to cover storage",required_cost as f64 / YOCTO_NEAR as f64, 3 // la presicion de decimales
+    );
+
+    let refund = attached_deposit - required_cost;
+    if refund > 0 {
+        Promise::new(to).transfer(refund);
+    }
+}
+
 pub(crate) fn bytes_for_approved_account_id(account_id: &AccountId) -> u64 {
     // The extra 4 bytes are coming from Borsh serialization to store the length of the string.
     account_id.len() as u64 + 4
@@ -60,8 +79,8 @@ pub(crate) fn refund_approved_account_ids(
     Promise::new(account_id).transfer(Balance::from(storage_released) * STORAGE_PRICE_PER_BYTE)
 }
 
-impl Contract {
-    // pub(crate) fn assert_owner(&self) {
+impl Marketplace {
+    // pub(crate) fn admin_assert(&self) {
     //     assert_eq!(
     //         &env::predecessor_account_id(),
     //         &self.owner_id,
@@ -99,60 +118,60 @@ impl Contract {
         }
     }
 
-    pub(crate) fn internal_transfer(
-        &mut self,
-        sender_id: &AccountId,
-        receiver_id: &AccountId,
-        token_id: &TokenId,
-        enforce_approval_id: Option<u64>,
-        memo: Option<String>,
-    ) -> (AccountId, HashSet<AccountId>) {
-        let Token {
-            owner_id,
-            metadata,
-            approved_account_ids,
-            approval_id,
-        } = self.tokens_by_id.get(token_id).expect("Token not found");
-        if sender_id != &owner_id && !approved_account_ids.contains(sender_id) {
-            env::panic(b"Unauthorized");
-        }
+    // pub(crate) fn internal_transfer(
+    //     &mut self,
+    //     sender_id: &AccountId,
+    //     receiver_id: &AccountId,
+    //     token_id: &TokenId,
+    //     enforce_approval_id: Option<u64>,
+    //     memo: Option<String>,
+    // ) -> (AccountId, HashSet<AccountId>) {
+    //     let Token {
+    //         owner_id,
+    //         metadata,
+    //         employer_account_ids,
+    //         employer_id,
+    //     } = self.tokens_by_id.get(token_id).expect("Token not found");
+    //     if sender_id != &owner_id && !employer_account_ids.contains(sender_id) {
+    //         env::panic(b"Unauthorized");
+    //     }
 
-        if let Some(enforce_approval_id) = enforce_approval_id {
-            assert_eq!(
-                approval_id,
-                enforce_approval_id,
-                "The token approval_id is different from provided"
-            );
-        }
+    //     if let Some(enforce_approval_id) = enforce_approval_id {
+    //         assert_eq!(
+    //             employer_id,
+    //             enforce_approval_id,
+    //             "The token approval_id is different from provided"
+    //         );
+    //     }
 
-        assert_ne!(
-            &owner_id, receiver_id,
-            "The token owner and the receiver should be different"
-        );
+    //     assert_ne!(
+    //         &owner_id, receiver_id,
+    //         "The token owner and the receiver should be different"
+    //     );
 
-        env::log(
-            format!(
-                "Transfer {} from @{} to @{}",
-                token_id, &owner_id, receiver_id
-            )
-            .as_bytes(),
-        );
+    //     env::log(
+    //         format!(
+    //             "Transfer {} from @{} to @{}",
+    //             token_id, &owner_id, receiver_id
+    //         )
+    //         .as_bytes(),
+    //     );
 
-        self.internal_remove_token_from_owner(&owner_id, token_id);
-        self.internal_add_token_to_owner(receiver_id, token_id);
+    //     self.internal_remove_token_from_owner(&owner_id, token_id);
+    //     self.internal_add_token_to_owner(receiver_id, token_id);
 
-        let token = Token {
-            owner_id: receiver_id.clone(),
-            metadata,
-            approved_account_ids: Default::default(),
-            approval_id: approval_id + 1,
-        };
-        self.tokens_by_id.insert(token_id, &token);
+    //     let token = Token {
+    //         owner_id: receiver_id.clone(),
+    //         metadata,
+    //         employer_account_ids: Default::default(),
+    //         employer_id: employer_id + 1,
+    //     };
+    //     self.tokens_by_id.insert(token_id, &token);
 
-        if let Some(memo) = memo {
-            env::log(format!("Memo: {}", memo).as_bytes());
-        }
+    //     if let Some(memo) = memo {
+    //         env::log(format!("Memo: {}", memo).as_bytes());
+    //     }
 
-        (owner_id, approved_account_ids)
-    }
+    //     (owner_id, employer_account_ids)
+    // }
 }

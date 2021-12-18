@@ -2,8 +2,17 @@
 
 # compilar el contrato y desplogarlo a la testnet
 echo "Compilando el contrato y desplegandolo a la testnet"
-npm run build:contract
-npm run dev:deploy:contract
+
+cd contract
+./build.sh
+
+cd ..
+
+echo "Deployando el contrato de marketplace"
+near dev-deploy out/marketplace.wasm
+
+#echo "Deployando el contrato de mediator"
+#near dev-deploy out/mediator.wasm
 
 echo "Exportanto la cuenta de test a la variable ID"
 
