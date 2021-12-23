@@ -11,6 +11,7 @@ pub enum UserRoles {
     Employeer = 1,
     Admin = 2,
     Mod = 3,
+    Jugde = 4,
 }
 
 #[derive(BorshDeserialize, BorshSerialize, Serialize, Deserialize, Clone)]

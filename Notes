@@ -1,34 +1,40 @@
 source ./deploy.sh
 source ./clear.sh
 npx tailwindcss -i ./src/assets/tailwind.css -o ./src/assets/main.css --watch
-near call $ID new '{"owner_id": "'$ID'"}' --accountId $ID --amount 0.03
 
-near call $ID add_user '{"account_id": "'$ID2'", "role": "Professional", "categories": "hola"}' --accountId $ID --amount 0.03
+near call $ID new '{"owner_id": "'$ID'", "mediator": "mediator.near"}' --accountId $ID --amount 0.03
+
+near call $ID add_user '{"roles": ["Professional"], "categories": "hola"}' --accountId $ID2 --amount 0.03
 
 near call $ID update_user_categories '{"account_id": "'$ID2'", "categories": "hola2"}' --accountId $ID
 
 near call $ID set_user_role '{"account_id": "'$ID2'", "role": "Employeer", "remove": false}' --accountId $ID
+near call $ID set_user_role '{"account_id": "'$ID2'", "role": "Employeer", "remove": true}' --accountId $ID
 #debe fallar
 near call $ID set_user_role '{"account_id": "'$ID2'", "role": "Admin", "remove": false}' --accountId $ID2
 
-near call $ID set_user_role '{"account_id": "'$ID2'", "role": "Employeer", "remove": true}' --accountId $ID
+near call $ID mint_service '{"metadata": {"fullname": "Sebastian Gonzalez", "profile_photo_url": "foto.png", "price": 1, "active": true}, "_quantity": 6}' --accountId $ID2 --amount 0.028
 
-near call $ID mint_service '{"metadata": {"fullname": "Sebastian Gonzalez", "profile_photo_url": "foto.png", "price": 5, "active": true}, "_active_services": 10}' --accountId $ID2
+near call $ID set_service_status '{"service_id": 1, "active": false}' --accountId $ID2
 
-near call $ID service_desactivate '{"token_id": ""}' --accountId $ID2
-near call $ID buy_service '{"token_id": "2"}' --accountId $ID
+near call $ID buy_service '{"service_id": 0}' --accountId $ID --amount 1
 
-near call $ID get_user '{"account_id": "'$ID'"}' --accountId $ID
-near call $ID get_user '{"account_id": "'$ID2'"}' --accountId $ID
+near call $ID update_service_metadata '{"service_id": 2, "metadata": {"fullname": "Vitalik Buterin", "profile_photo_url": "foto.png", "price": 1, "active": true}}' --accountId $ID2
 
-near call $ID get_users_by_role '{"role": "Professional"}' --accountId $ID
+# Get functions
+near view $ID get_user '{"account_id": "'$ID'"}' --accountId $ID
+near view $ID get_user '{"account_id": "'$ID2'"}' --accountId $ID
 
-near call $ID get_service_by_id '{"token_id": "1"}' --accountId $ID
-near call $ID get_service_by_ids '{"ids": ["1", "3"]}' --accountId $ID
+near view $ID get_users_by_role '{"role": "Professional"}' --accountId $ID
 
-near call $ID user_get_tokens '{"account_id": "'$ID2'"}' --accountId $ID
-near call $ID user_get_tokens '{"account_id": "'$ID'"}' --accountId $ID
+near view $ID get_service_by_id '{"service_id": "1"}' --accountId $ID
+near view $ID get_service_by_ids '{"ids": ["1", "3"]}' --accountId $ID
 
-near call $ID get_user_services_id '{"account_id": "'$ID2'"}' --accountId $ID
+near view $ID get_user_services '{"account_id": "'$ID2'", "only_active": false}' --accountId $ID
+near view $ID get_user_services '{"account_id": "'$ID'", "only_active": true}' --accountId $ID
 
-near call $ID get_user_services '{"account_id": "'$ID2'", "only_active": false}' --accountId $ID
+near view $ID get_user_services_id '{"account_id": "'$ID2'"}' --accountId $ID
+
+near view $ID get_user_services '{"account_id": "'$ID2'", "only_active": false}' --accountId $ID
+
+near view $ID get_total_supply '{}' --accountId $ID
