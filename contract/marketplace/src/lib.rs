@@ -30,6 +30,7 @@ const USERS_LIMIT: u16 = u16::MAX;
 #[derive(BorshDeserialize, BorshSerialize, Serialize, Deserialize)]
 #[serde(crate = "near_sdk::serde")]
 pub struct Service {
+    pub id: u64,
     pub owner_id: AccountId,
     pub metadata: ServiceMetadata,
     pub actual_employer_account_id: Option<AccountId>,
@@ -121,7 +122,7 @@ impl Marketplace {
         let is_admin = user.roles.get(&UserRoles::Admin).is_some();
         
 
-        if !is_professional || !is_admin {
+        if !is_professional && !is_admin {
             env::panic("Only professional can mint a service".as_bytes());
         }
 
@@ -129,6 +130,7 @@ impl Marketplace {
         env::log(format!("initial store usage: {}", initial_storage_usage).as_bytes());
 
         let mut service = Service {
+            id: self.total_supply,
             owner_id: owner_id.clone(),
             metadata: metadata,
             employers_account_ids: Default::default(),
@@ -193,7 +195,7 @@ impl Marketplace {
         let buyer_id = string_to_valid_account_id(&env::predecessor_account_id());
         let buyer = self.get_user(buyer_id.clone());
 
-        if buyer.roles.get(&UserRoles::Admin).is_none() || buyer.roles.get(&UserRoles::Employeer).is_none() {
+        if buyer.roles.get(&UserRoles::Admin).is_none() && buyer.roles.get(&UserRoles::Employeer).is_none() {
             env::panic("Only employers can buy services".as_bytes());
         }
         
@@ -296,6 +298,7 @@ impl Marketplace {
         let mut service = self.get_service_by_id(service_id.clone());
 
         let sender_id = string_to_valid_account_id(&env::predecessor_account_id());
+        env::log(sender_id.to_string().as_bytes());
         let sender = self.get_user(sender_id.clone());
         if sender.roles.get(&UserRoles::Admin).is_some() {
             env::panic("Only admins can give back the services".as_bytes());
@@ -517,8 +520,26 @@ impl Marketplace {
         self.total_supply
     }
 
+    pub fn validate_dispute(&self, applicant: AccountId, accused: AccountId, service_id: u64, jugdes: u8, exclude: Vec<ValidAccountId>) -> Vec<AccountId> {
+        let service = self.get_service_by_id(service_id);
+        let employer = expect_value_found(service.actual_employer_account_id, b"employer not found");
+
+        if service.owner_id != applicant && employer != applicant {
+            env::panic(b"applicant dont found");
+        }
+
+        if service.owner_id != accused && employer != accused {
+            env::panic(b"accused dont found");
+        }
+    
+        return self.get_random_users_account_by_role_jugde(jugdes, exclude);
+    }
+
     #[allow(unused_variables)]
-    pub fn get_random_users_account_by_role_jugde(&self, amount: u8, exclude: Vec<ValidAccountId>) -> Vec<AccountId> {
+    #[private]
+    fn get_random_users_account_by_role_jugde(&self, amount: u8, exclude: Vec<ValidAccountId>) -> Vec<AccountId> {
+        let random = env::random_seed();
+        env::log(format!("{:?}", random).as_bytes());
         if amount > 10 {
             env::panic(b"No se puede pedir mas de 10");
         }
@@ -532,7 +553,6 @@ impl Marketplace {
             .map(|x| x.account_id.clone())
             .collect();
     }
-
     #[private]
     fn measure_min_service_storage_cost(&mut self) {
         let initial_storage_usage = env::storage_usage();
@@ -602,18 +622,6 @@ impl Marketplace {
     //     deserialized
     // }
 }
-
-// fn is_promise_success() -> bool {
-//     assert_eq!(
-//         env::promise_results_count(),
-//         1,
-//         "Contract expected a result on the callback"
-//     );
-//     match env::promise_result(0) {
-//         PromiseResult::Successful(_) => true,
-//         _ => false,
-//     }
-// }
 
 /// Posibles errores que se usan posteriormente como Panic error
 #[derive(Serialize, Deserialize, PanicMessage)]

@@ -1,0 +1,11 @@
+source build.sh
+
+near dev-deploy ../../out/mediator.wasm
+
+export id=la cuenta generada
+
+near call $id new '{"marketplace_account_id": "dev-1640626109457-94092382807321"}' --accountId $id
+
+near call $id new_dispute '{"services_id": 0, "accused": "stolkerv2.testnet", "proves": "asdasd"}' --accountId stolkerve.testnet --amount 0.1 --gas 300000000000000
+
+near call $id update_dispute_status '{"dispute_id": 0}' --accountId $id

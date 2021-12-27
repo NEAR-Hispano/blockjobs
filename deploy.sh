@@ -8,6 +8,9 @@ cd contract
 
 cd ..
 
+#echo "Deployando el contrato del token"
+#near dev-deploy out/ft.wasm
+
 echo "Deployando el contrato de marketplace"
 near dev-deploy out/marketplace.wasm
 
@@ -25,6 +28,6 @@ do
 done
 IFS=$old_IFS
 
-read -p "Escribe to cuenta de testnet: " cuenta
+read -p "Escribe una cuenta de testnet: " cuenta
 export ID2=$cuenta
 echo "Exportando $cuenta a la variable ID2"

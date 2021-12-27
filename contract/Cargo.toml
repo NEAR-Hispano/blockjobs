@@ -1,7 +1,8 @@
 [workspace]
 members = [
 	"marketplace",
-	"mediator"
+	"mediator",
+	"ft"
 ]
 
 [profile.release]

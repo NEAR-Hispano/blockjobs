@@ -21,7 +21,7 @@ const MAX_EPOCHS_FOR_OPEN_DISPUTES: u64 = 6; // 1 epoch = 12h. 3 days
 #[allow(dead_code)]
 const NO_DEPOSIT: Balance = 0;
 #[allow(dead_code)]
-const BASE_GAS: Gas = 5_000_000_000_000;
+const BASE_GAS: Gas = 30_000_000_000_000;
 const ONE_DAY: u64 = 86400;
 
 pub(crate) fn string_to_valid_account_id(account_id: &String) -> ValidAccountId{
@@ -113,35 +113,22 @@ impl Mediator {
     }
 
     #[payable]
-    pub fn new_dispute(&mut self, services_id: u64, accused: ValidAccountId, proves: String) -> Dispute{
+    pub fn new_dispute(&mut self, services_id: u64, accused: ValidAccountId, proves: String) -> u128 {
         if env::attached_deposit() < 1 {
             env::panic(b"Para crear una nueva disputa, deposita 0.1 near");
         }
 
         let sender = env::predecessor_account_id();
-        let dispute = Dispute {
-            id: self.disputes_counter.clone(),
-            services_id: services_id.clone(),
-            num_of_judges: 0,
-            judges: HashSet::new(),
-            votes: HashSet::new(),
-            dispute_status: DisputeStatus::Open,
-            initial_time_stamp: env::block_timestamp(),
-            finish_time_stamp: None,
-            applicant: sender.clone(),
-            accused: accused.to_string(),
-            winner: None,
-            applicant_proves: proves,
-            accused_proves: None
-        };
 
-        // self.disputes.insert(&self.disputes_counter, &dispute);
-        // env::log(b"primero");
-        self.add_judge(&dispute);
+        let _res = ext_marketplace::validate_dispute(
+            sender.clone(), accused.to_string(), services_id, 2, vec!(),
+            &self.marketplace_account_id, NO_DEPOSIT, BASE_GAS)
+        .then(ext_self::on_validate_dispute(
+            sender, accused.to_string(), services_id, proves,
+            &env::current_account_id(), NO_DEPOSIT, BASE_GAS)
+        );
 
-        self.disputes_counter += 1;
-
-        return dispute;
+        return self.disputes_counter;
     }
 
     #[payable]
@@ -178,10 +165,10 @@ impl Mediator {
     pub fn add_accused_proves(&mut self, dispute_id: DisputeId, accused_proves: String) -> Dispute {
         let mut dispute = self.update_dispute_status(dispute_id);
         if dispute.dispute_status != DisputeStatus::Open {
-            env::log(b"El tiempo para subir las pruebas ya paso");
+            env::panic(b"El tiempo para subir las pruebas ya paso");
         }
         if dispute.accused_proves.is_some() {
-            env::log(b"Usted ya subio pruebas!");
+            env::panic(b"Usted ya subio pruebas!");
         }
 
         dispute.accused_proves.insert(accused_proves);
@@ -196,14 +183,14 @@ impl Mediator {
         let mut dispute = self.update_dispute_status(dispute_id);
 
         if dispute.dispute_status != DisputeStatus::Open {
-            env::log(b"Ya paso el tiempo para agregar juez");
+            env::panic(b"Ya paso el tiempo para agregar juez");
         }
 
         if dispute.judges.len() > MAX_JUDGES as usize {
-            env::log(b"No hay espacio para mas juezes");
+            env::panic(b"No hay espacio para mas juezes");
         }
         if !dispute.judges.insert(sender) {
-            env::log(b"Ya eres un juez");
+            env::panic(b"Ya eres un juez");
         }
 
         return dispute;
@@ -214,14 +201,14 @@ impl Mediator {
         let mut dispute = self.update_dispute_status(dispute_id);
 
         if dispute.dispute_status != DisputeStatus::Resolving {
-            env::log(b"No se puede votar cuando el estarus es distinto de resolviendo");
+            env::panic(b"No se puede votar cuando el estarus es distinto de resolviendo");
         }
 
         if !dispute.votes.insert(Vote {
             account: sender.clone(),
             vote: vote
         }) {
-            env::log(b"Usted ya voto");
+            env::panic(b"Usted ya voto");
         }
         self.disputes.insert(&dispute_id, &dispute);
         return dispute;
@@ -262,12 +249,19 @@ impl Mediator {
             else {
                 dispute.dispute_status = DisputeStatus::Finished;
                 if pro_votes_counter > agains_votes_counter {
-                    // dispute.winner = Some(dispute.applicant);
                     dispute.winner = Some(dispute.applicant.clone());
                 }
                 else {
                     dispute.winner = Some(dispute.accused.clone());
                 }
+
+                let _res = ext_marketplace::give_back_service(
+                    dispute.services_id,
+                    &self.marketplace_account_id, NO_DEPOSIT, BASE_GAS)
+                .then(ext_self::on_give_back_service(
+                    dispute.services_id,
+                    &env::current_account_id(), NO_DEPOSIT, BASE_GAS)
+                );
             }
         }
 
@@ -276,16 +270,8 @@ impl Mediator {
         return dispute;
     }
 
-    fn add_judge(&mut self, dispute: &Dispute) {
-        let res = ext_marketplace::get_random_users_account_by_role_jugde(
-            2, vec!(),
-            &self.marketplace_account_id, NO_DEPOSIT, BASE_GAS)
-        .then(ext_self::on_get_random_users_account_by_role_jugde(dispute.clone(), &env::current_account_id(), NO_DEPOSIT, BASE_GAS));
-        
-    }
-
-    #[private]
-    pub fn on_get_random_users_account_by_role_jugde(&mut self, dispute: &mut Dispute) {
+//near call $id new_dispute '{"services_id": 0, "accused": "stolkerv.testnet", "proves": "asdasd"}' --accountId stolkerve.testnet --amount 0.1 --gas 300000000000000
+    pub fn on_validate_dispute(&mut self, applicant: AccountId, accused: AccountId, service_id: u64, proves: String) {
         assert_eq!(
             env::promise_results_count(),
             1,
@@ -295,26 +281,61 @@ impl Mediator {
             PromiseResult::Successful(data) => {
                 let jugdes = near_sdk::serde_json::from_slice::<Vec<AccountId>>(&data);
                 if jugdes.is_ok() {
-                    dispute.judges = jugdes.unwrap().into_iter().collect();
+                    // let j = jugdes.unwrap().into_iter().collect();
+                    let dispute = Dispute {
+                        id: self.disputes_counter.clone(),
+                        services_id: service_id,
+                        num_of_judges: 0,
+                        judges: jugdes.unwrap().into_iter().collect(),
+                        votes: HashSet::new(),
+                        dispute_status: DisputeStatus::Open,
+                        initial_time_stamp: env::block_timestamp(),
+                        finish_time_stamp: None,
+                        applicant: applicant,
+                        accused: accused.to_string(),
+                        winner: None,
+                        applicant_proves: proves,
+                        accused_proves: None
+                    };
                     env::log(format!("{:?}", dispute).as_bytes());
-                    self.disputes.insert(&dispute.id, dispute)
+                    
+                    self.disputes.insert(&dispute.id, &dispute);
+
+                    self.disputes_counter += 1;
                 } else {
                     env::panic(b"ERR_WRONG_VAL_RECEIVED")
                 }
             },
-            PromiseResult::Failed => unreachable!(),
-            PromiseResult::NotReady => unreachable!(),
+            PromiseResult::Failed => env::panic(b"Callback faild"),
+            PromiseResult::NotReady => env::panic(b"Callback faild"),
+        };
+    }
+
+    pub fn on_give_back_service(service_id: u64) {
+        assert_eq!(
+            env::promise_results_count(),
+            1,
+            "Contract expected a result on the callback"
+        );
+        match env::promise_result(0) {
+            PromiseResult::Successful(data) => {
+                env::log(b"Token devuelto :)");
+            },
+            PromiseResult::Failed => env::panic(b"Callback faild"),
+            PromiseResult::NotReady => env::panic(b"Callback faild"),
         };
     }
 }
 
 #[ext_contract(ext_marketplace)]
 pub trait Marketplace {
-    fn get_random_users_account_by_role_jugde(amount: u8, exclude: Vec<ValidAccountId>);
+    fn validate_dispute(applicant: AccountId, accused: AccountId, service_id: u64, jugdes: u8, exclude: Vec<ValidAccountId>);
+    fn give_back_service(service_id: u64);
 }
 #[ext_contract(ext_self)]
 pub trait ExtSelf {
-    fn on_get_random_users_account_by_role_jugde(dispute: Dispute);
+    fn on_validate_dispute(applicant: AccountId, accused: AccountId, service_id: u64, proves: String);
+    fn on_give_back_service(service_id: u64);
 }
 
 #[cfg(test)]
@@ -404,7 +425,7 @@ mod tests {
             println!("Epoca: {}, estatus: {:#?}, {:?}", context.block_timestamp, dispute.dispute_status, dispute.votes);
 
         }
-        let winner = dispute.winner.expect("Bebe haber un ganador");
+        let winner = dispute.winner.expect("Debe haber un ganador");
 
         println!("");
         println!("The winner is {:?}", winner);

@@ -1,0 +1,13 @@
+source clear.sh
+source deploy.sh
+
+near call $IDFT new_default_meta '{"owner_id": "'$IDFT'", "total_supply": "1000"}' --accountId $IDFT
+near call $IDFT add_minter '{"account_id": "'$IDFT2'"}' --accountId $IDFT
+near call $IDFT mint '{"receiver": "'$IDFT2'", "quantity": "500"}' --accountId $IDFT2
+near call $IDFT  '{"": "", "": ""}' --accountId $IDFT
+near call $IDFT  '{"": "", "": ""}' --accountId $IDFT
+near call $IDFT  '{"": "", "": ""}' --accountId $IDFT
+
+# GETS
+near view $IDFT ft_get_total_supply '{}' --accountId $IDFT
+near view $IDFT  '{"": "", "": ""}' --accountId $IDFT
