@@ -64,7 +64,7 @@ pub(crate) fn deposit_refund_to(storage_used: u64, to: AccountId) {
 // }
 
 impl Marketplace {
-    // pub(crate) fn admin_assert(&self) {
+    // pub(crate) fn assert_admin(&self) {
     //     assert_eq!(
     //         &env::predecessor_account_id(),
     //         &self.owner_id,
@@ -102,7 +102,7 @@ impl Marketplace {
     //         metadata,
     //         employer_account_ids,
     //         employer_id,
-    //     } = self.services_by_id.get(service_id).expect("Service not found");
+    //     } = self.service_by_id.get(service_id).expect("Service not found");
     //     if sender_id != &owner_id && !employer_account_ids.contains(sender_id) {
     //         env::panic(b"Unauthorized");
     //     }
@@ -137,7 +137,7 @@ impl Marketplace {
     //         employer_account_ids: Default::default(),
     //         employer_id: employer_id + 1,
     //     };
-    //     self.services_by_id.insert(service_id, &service);
+    //     self.service_by_id.insert(service_id, &service);
 
     //     if let Some(memo) = memo {
     //         env::log(format!("Memo: {}", memo).as_bytes());

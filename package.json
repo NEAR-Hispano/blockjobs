@@ -3,21 +3,13 @@
   "version": "0.1.0",
   "license": "UNLICENSED",
   "scripts": {
-    "build": "npm run build:contract && npm run build:web",
-    "build:contract": "node contract/compile.js",
     "build:web": "parcel build src/index.html --public-url ./",
-    "dev:deploy:contract": "near dev-deploy",
-    "deploy:contract": "near deploy",
     "deploy:pages": "gh-pages -d dist/",
-    "deploy": "npm run build && npm run deploy:contract && npm run deploy:pages",
-    "prestart": "npm run build:contract && npm run dev:deploy:contract",
     "start": "echo The app is starting! It will automatically open in your browser when ready && env-cmd -f ./neardev/dev-account.env parcel src/index.html --open",
     "dev": "nodemon --watch contract/src -e rs --exec \"npm run start\"",
     "watch:css": "postcss src/assets/tailwind.css -o src/assets/main.css",
     "build:css": "postcss src/assets/tailwind.css -o src/assets/main.css",
-    "test": "npm run build:contract:debug && cd contract && cargo test -- --nocapture && cd .. && jest test --runInBand",
-    "stress:start": "echo The app is starting! It will automatically open in your browser when ready && env-cmd -f ./neardev/dev-account.env parcel stress/index.html --open",
-    "stress": "nodemon --watch contract/src -e rs --exec \"npm run stress:start\""
+    "test": "jest test --runInBand"
   },
   "devDependencies": {
     "@babel/core": "~7.14.0",

@@ -18,7 +18,7 @@ pub enum UserRoles {
 #[serde(crate = "near_sdk::serde")]
 pub struct User {
     pub account_id: AccountId,
-    pub mints: bool,
+    pub mints: u16,
     pub roles: HashSet<UserRoles>,
     pub rep: i16,
     pub categories: String,

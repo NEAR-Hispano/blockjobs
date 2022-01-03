@@ -4,11 +4,10 @@ use near_sdk::{
 use near_sdk::collections::{UnorderedMap};
 use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
 use near_sdk::serde::{Serialize, Deserialize};
-use near_sdk::serde_json;
 use near_sdk::json_types::{ValidAccountId};
 use std::fmt::{Debug};
 
-use std::convert::TryFrom;
+// use std::convert::TryFrom;
 use std::collections::{HashSet};
 
 #[allow(dead_code)]
@@ -22,18 +21,19 @@ const MAX_EPOCHS_FOR_OPEN_DISPUTES: u64 = 6; // 1 epoch = 12h. 3 days
 const NO_DEPOSIT: Balance = 0;
 #[allow(dead_code)]
 const BASE_GAS: Gas = 30_000_000_000_000;
-const ONE_DAY: u64 = 86400;
+//const NANO_SECONDS: u64 = 1_000_000_000;
+const ONE_DAY: u64 = 86400000000000;
 
-pub(crate) fn string_to_valid_account_id(account_id: &String) -> ValidAccountId{
-    return ValidAccountId::try_from((*account_id).to_string()).unwrap();
-}
+// pub(crate) fn string_to_valid_account_id(account_id: &String) -> ValidAccountId{
+//     return ValidAccountId::try_from((*account_id).to_string()).unwrap();
+// }
 
-pub(crate) fn unique_prefix(account_id: &AccountId) -> Vec<u8> {
-    let mut prefix = Vec::with_capacity(33);
-    prefix.push(b'o');
-    prefix.extend(env::sha256(account_id.as_bytes()));
-    return prefix
-}
+// pub(crate) fn unique_prefix(account_id: &AccountId) -> Vec<u8> {
+//     let mut prefix = Vec::with_capacity(33);
+//     prefix.push(b'o');
+//     prefix.extend(env::sha256(account_id.as_bytes()));
+//     return prefix
+// }
 
 setup_alloc!();
 
@@ -115,13 +115,13 @@ impl Mediator {
     #[payable]
     pub fn new_dispute(&mut self, services_id: u64, accused: ValidAccountId, proves: String) -> u128 {
         if env::attached_deposit() < 1 {
-            env::panic(b"Para crear una nueva disputa, deposita 0.1 near");
+            env::panic(b"To create a new dispute, deposit 0.1 near");
         }
 
         let sender = env::predecessor_account_id();
 
         let _res = ext_marketplace::validate_dispute(
-            sender.clone(), accused.to_string(), services_id, 2, vec!(),
+            sender.clone(), accused.to_string(), services_id, MAX_JUDGES, vec!(),
             &self.marketplace_account_id, NO_DEPOSIT, BASE_GAS)
         .then(ext_self::on_validate_dispute(
             sender, accused.to_string(), services_id, proves,
@@ -131,67 +131,28 @@ impl Mediator {
         return self.disputes_counter;
     }
 
-    #[payable]
-    pub fn new_dispute_test(&mut self, services_id: u64, accused: ValidAccountId, proves: String) -> Dispute{
-        if env::attached_deposit() < 1 {
-            env::panic(b"Para crear una nueva disputa, deposita 0.1 near");
-        }
-
-        let sender = env::predecessor_account_id();
-        let dispute = Dispute {
-            id: self.disputes_counter.clone(),
-            services_id: services_id.clone(),
-            num_of_judges: 0,
-            judges: HashSet::new(),
-            votes: HashSet::new(),
-            dispute_status: DisputeStatus::Open,
-            initial_time_stamp: env::block_timestamp(),
-            finish_time_stamp: None,
-            applicant: sender.clone(),
-            accused: accused.to_string(),
-            winner: None,
-            applicant_proves: proves,
-            accused_proves: None
-        };
-
-        self.disputes.insert(&self.disputes_counter, &dispute);
-
-        self.disputes_counter += 1;
-
-        return dispute;
-    }
-
     #[allow(unused_must_use)]
     pub fn add_accused_proves(&mut self, dispute_id: DisputeId, accused_proves: String) -> Dispute {
         let mut dispute = self.update_dispute_status(dispute_id);
         if dispute.dispute_status != DisputeStatus::Open {
-            env::panic(b"El tiempo para subir las pruebas ya paso");
+            env::panic(b"Time to upload proofs is over");
         }
+
+        // Verificar que sea la persona acusada
+        let sender = env::predecessor_account_id();
+        if sender != dispute.accused {
+            env::panic(b"Address without permissions to upload proofs")
+        };
+
+        // Verificar que no haya subido ya las pruebas
         if dispute.accused_proves.is_some() {
-            env::panic(b"Usted ya subio pruebas!");
+            env::panic(b"You already upload the proofs!");
         }
 
         dispute.accused_proves.insert(accused_proves);
+        dispute.dispute_status = DisputeStatus::Resolving;
 
         self.disputes.insert(&dispute_id, &dispute);
-
-        return dispute;
-    }
-    
-    pub fn add_judge_test(&mut self, dispute_id: DisputeId) -> Dispute {
-        let sender = env::predecessor_account_id();
-        let mut dispute = self.update_dispute_status(dispute_id);
-
-        if dispute.dispute_status != DisputeStatus::Open {
-            env::panic(b"Ya paso el tiempo para agregar juez");
-        }
-
-        if dispute.judges.len() > MAX_JUDGES as usize {
-            env::panic(b"No hay espacio para mas juezes");
-        }
-        if !dispute.judges.insert(sender) {
-            env::panic(b"Ya eres un juez");
-        }
 
         return dispute;
     }
@@ -201,16 +162,29 @@ impl Mediator {
         let mut dispute = self.update_dispute_status(dispute_id);
 
         if dispute.dispute_status != DisputeStatus::Resolving {
-            env::panic(b"No se puede votar cuando el estarus es distinto de resolviendo");
+            env::panic(b"You cannot vote when the status is different from resolving");
         }
 
+        // Verificar que sea miembro del jurado
+        if !dispute.judges.contains(&sender) {
+            env::panic(b"You are not a Jury Member");
+        };
+
+        // Verificar que no haya ya votado
         if !dispute.votes.insert(Vote {
             account: sender.clone(),
             vote: vote
         }) {
-            env::panic(b"Usted ya voto");
+            env::panic(b"You already vote");
         }
+
+        // Una vez completados los votos se pasa la siguiente etapa
+        if dispute.votes.len() == dispute.num_of_judges as usize {
+            dispute.dispute_status = DisputeStatus::Executable
+        }
+
         self.disputes.insert(&dispute_id, &dispute);
+
         return dispute;
     }
 
@@ -220,9 +194,9 @@ impl Mediator {
         let actual_time = env::block_timestamp();
 
         // Open is 4 epochs, resolve 8 epochs and execute 1 epoch, finish 0 epoch
-
         // el perido de open sera de 5 dias y resolving
 
+        // Actualizar por tiempo
         if actual_time >= (dispute.initial_time_stamp + (ONE_DAY * 5)) && (dispute.dispute_status == DisputeStatus::Open) {
             dispute.dispute_status = DisputeStatus::Resolving;
         }
@@ -255,10 +229,12 @@ impl Mediator {
                     dispute.winner = Some(dispute.accused.clone());
                 }
 
-                let _res = ext_marketplace::give_back_service(
+                dispute.finish_time_stamp = Some(env::block_timestamp());
+
+                let _res = ext_marketplace::return_service(
                     dispute.services_id,
                     &self.marketplace_account_id, NO_DEPOSIT, BASE_GAS)
-                .then(ext_self::on_give_back_service(
+                .then(ext_self::on_return_service(
                     dispute.services_id,
                     &env::current_account_id(), NO_DEPOSIT, BASE_GAS)
                 );
@@ -270,8 +246,16 @@ impl Mediator {
         return dispute;
     }
 
-//near call $id new_dispute '{"services_id": 0, "accused": "stolkerv.testnet", "proves": "asdasd"}' --accountId stolkerve.testnet --amount 0.1 --gas 300000000000000
+    pub fn get_dispute(&mut self, dispute_id: DisputeId) ->Dispute {
+        self.update_dispute_status(dispute_id)
+    }
+
+    /// Verificar datos de la disputa desde el contrato del marketplace
+    /// 
     pub fn on_validate_dispute(&mut self, applicant: AccountId, accused: AccountId, service_id: u64, proves: String) {
+        if env::predecessor_account_id() != env::current_account_id() {
+            env::panic(b"only the contract can call its function")
+        }
         assert_eq!(
             env::promise_results_count(),
             1,
@@ -285,7 +269,7 @@ impl Mediator {
                     let dispute = Dispute {
                         id: self.disputes_counter.clone(),
                         services_id: service_id,
-                        num_of_judges: 0,
+                        num_of_judges: MAX_JUDGES,
                         judges: jugdes.unwrap().into_iter().collect(),
                         votes: HashSet::new(),
                         dispute_status: DisputeStatus::Open,
@@ -311,14 +295,20 @@ impl Mediator {
         };
     }
 
-    pub fn on_give_back_service(service_id: u64) {
+    /// Retornar el servicio al profesional
+    /// 
+    pub fn on_return_service(_service_id: u64) {
+        if env::predecessor_account_id() != env::current_account_id() {
+            env::panic(b"only the contract can call its function")
+        }
+
         assert_eq!(
             env::promise_results_count(),
             1,
             "Contract expected a result on the callback"
         );
         match env::promise_result(0) {
-            PromiseResult::Successful(data) => {
+            PromiseResult::Successful(_data) => {
                 env::log(b"Token devuelto :)");
             },
             PromiseResult::Failed => env::panic(b"Callback faild"),
@@ -327,107 +317,113 @@ impl Mediator {
     }
 }
 
+/// Llamados a los demás contratos
 #[ext_contract(ext_marketplace)]
 pub trait Marketplace {
     fn validate_dispute(applicant: AccountId, accused: AccountId, service_id: u64, jugdes: u8, exclude: Vec<ValidAccountId>);
-    fn give_back_service(service_id: u64);
+    fn return_service(service_id: u64);
 }
 #[ext_contract(ext_self)]
 pub trait ExtSelf {
     fn on_validate_dispute(applicant: AccountId, accused: AccountId, service_id: u64, proves: String);
-    fn on_give_back_service(service_id: u64);
+    fn on_return_service(service_id: u64);
+}
+#[ext_contract(ext_ft)]
+pub trait ExtFT {
+    fn increase_allowance(account: AccountId);
+    fn decrease_allowance(account: AccountId);
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use near_sdk::test_utils::{VMContextBuilder, accounts};
-    use near_sdk::MockedBlockchain;
-    use near_sdk::{testing_env, VMContext};
+// #[cfg(test)]
+// mod tests {
+//     use super::*;
+//     use near_sdk::test_utils::{VMContextBuilder, accounts};
+//     use near_sdk::MockedBlockchain;
+//     use near_sdk::{testing_env, VMContext};
 
-    fn get_context(is_view: bool) -> VMContext {
-        VMContextBuilder::new()
-            .signer_account_id(accounts(1))
-            .predecessor_account_id(accounts(2))
-            .attached_deposit(100000000000000000)
-            .is_view(is_view)
-            .build()
-    }
+//     fn get_context(is_view: bool) -> VMContext {
+//         VMContextBuilder::new()
+//             .signer_account_id(accounts(1))
+//             .predecessor_account_id(accounts(2))
+//             .attached_deposit(100000000000000000)
+//             .is_view(is_view)
+//             .build()
+//     }
 
-    fn get_account(id: usize) -> String {
-        return accounts(id).to_string()
-    }
+//     fn get_account(id: usize) -> String {
+//         return accounts(id).to_string()
+//     }
 
-    #[test]
-    fn test1() {
-        let contract_account = "mediator.near";
-        let applicant = get_account(0);
-        let accused = get_account(1);
-        let judges = [get_account(2), get_account(3)];
+//     #[test]
+//     fn test1() {
+//         let contract_account = "mediator.near";
+//         let applicant = get_account(0);
+//         let accused = get_account(1);
+//         let judges = [get_account(2), get_account(3)];
 
-        let mut context = get_context(false);
-        context.attached_deposit = 58700000000000000000000;
-        context.epoch_height = 0;
-        context.predecessor_account_id = applicant.clone();
-        context.block_timestamp = 1640283546;
-        context.current_account_id = contract_account.to_string();
-        testing_env!(context);
+//         let mut context = get_context(false);
+//         context.attached_deposit = 58700000000000000000000;
+//         context.epoch_height = 0;
+//         context.predecessor_account_id = applicant.clone();
+//         context.block_timestamp = 1640283546;
+//         context.current_account_id = contract_account.to_string();
+//         testing_env!(context);
 
-        let mut contract = Mediator::new("marketplace.near".to_string());
-        let mut dispute = contract.new_dispute_test(2, string_to_valid_account_id(&"employer".to_string()), "Prueba en markdown".to_string());
+//         let mut contract = Mediator::new("marketplace.near".to_string());
+//         let mut dispute = contract.new_dispute_test(2, string_to_valid_account_id(&"employer".to_string()), "Prueba en markdown".to_string());
 
-        let mut context = get_context(false);
-        context.attached_deposit = 58700000000000000000000;
-        context.block_timestamp = 1640283546 + ONE_DAY;
-        context.epoch_height = 0;
-        context.predecessor_account_id = judges[0].clone();
-        context.current_account_id = contract_account.to_string();
-        testing_env!(context);
-        contract.add_judge_test(dispute.id.clone());
+//         let mut context = get_context(false);
+//         context.attached_deposit = 58700000000000000000000;
+//         context.block_timestamp = 1640283546 + ONE_DAY;
+//         context.epoch_height = 0;
+//         context.predecessor_account_id = judges[0].clone();
+//         context.current_account_id = contract_account.to_string();
+//         testing_env!(context);
+//         contract.add_judge_test(dispute.id.clone());
 
-        let mut context = get_context(false);
-        context.attached_deposit = 58700000000000000000000;
-        context.epoch_height = 0;
-        context.block_timestamp = 1640283546 + (ONE_DAY * 2);
-        context.predecessor_account_id = judges[1].clone();
-        context.current_account_id = contract_account.to_string();
-        testing_env!(context);
-        contract.add_judge_test(dispute.id.clone());
+//         let mut context = get_context(false);
+//         context.attached_deposit = 58700000000000000000000;
+//         context.epoch_height = 0;
+//         context.block_timestamp = 1640283546 + (ONE_DAY * 2);
+//         context.predecessor_account_id = judges[1].clone();
+//         context.current_account_id = contract_account.to_string();
+//         testing_env!(context);
+//         contract.add_judge_test(dispute.id.clone());
 
-        let mut context = get_context(false);
-        context.attached_deposit = 58700000000000000000000;
-        context.epoch_height = 0;
-        context.block_timestamp = 1640283546 + (ONE_DAY * 2);
-        context.predecessor_account_id = accused.clone();
-        context.current_account_id = contract_account.to_string();
-        testing_env!(context);
-        contract.add_accused_proves(dispute.id.clone(), "Markdown accused proves".to_string());
+//         let mut context = get_context(false);
+//         context.attached_deposit = 58700000000000000000000;
+//         context.epoch_height = 0;
+//         context.block_timestamp = 1640283546 + (ONE_DAY * 2);
+//         context.predecessor_account_id = accused.clone();
+//         context.current_account_id = contract_account.to_string();
+//         testing_env!(context);
+//         contract.add_accused_proves(dispute.id.clone(), "Markdown accused proves".to_string());
 
-        let max_epochs = 26;
-        let mut judges_votes = 0;
-        for i in 2..max_epochs {
-            let mut context = get_context(false);
-            if dispute.dispute_status == DisputeStatus::Resolving && judges_votes < 2{
-                context.predecessor_account_id = judges[judges_votes].clone();
-                contract.vote(dispute.id.clone(), true); //judges_votes != 0
-                judges_votes += 1;
-            }
-            else {
-                context.predecessor_account_id = applicant.clone();
-            }
-            context.attached_deposit = 58700000000000000000000;
-            context.epoch_height = i;
-            context.current_account_id = contract_account.to_string();
-            context.block_timestamp = 1640283546 + (ONE_DAY * i);
-            testing_env!(context.clone());
-            dispute = contract.update_dispute_status(dispute.id.clone());
+//         let max_epochs = 26;
+//         let mut judges_votes = 0;
+//         for i in 2..max_epochs {
+//             let mut context = get_context(false);
+//             if dispute.dispute_status == DisputeStatus::Resolving && judges_votes < 2{
+//                 context.predecessor_account_id = judges[judges_votes].clone();
+//                 contract.vote(dispute.id.clone(), true); //judges_votes != 0
+//                 judges_votes += 1;
+//             }
+//             else {
+//                 context.predecessor_account_id = applicant.clone();
+//             }
+//             context.attached_deposit = 58700000000000000000000;
+//             context.epoch_height = i;
+//             context.current_account_id = contract_account.to_string();
+//             context.block_timestamp = 1640283546 + (ONE_DAY * i);
+//             testing_env!(context.clone());
+//             dispute = contract.update_dispute_status(dispute.id.clone());
 
-            println!("Epoca: {}, estatus: {:#?}, {:?}", context.block_timestamp, dispute.dispute_status, dispute.votes);
+//             println!("Epoca: {}, estatus: {:#?}, {:?}", context.block_timestamp, dispute.dispute_status, dispute.votes);
 
-        }
-        let winner = dispute.winner.expect("Debe haber un ganador");
+//         }
+//         let winner = dispute.winner.expect("Debe haber un ganador");
 
-        println!("");
-        println!("The winner is {:?}", winner);
-    }
-}
+//         println!("");
+//         println!("The winner is {:?}", winner);
+//     }
+// }
