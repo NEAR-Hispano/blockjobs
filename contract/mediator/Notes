@@ -1,0 +1,14 @@
+source deploy.sh
+near call $ME_ID new '{"marketplace_account_id": "'$MA_ID'"}' --accountId $ME_ID
+
+near call $ME_ID new_dispute '{"services_id": 0, "accused": "'$MA_ID'", "proves": "asdasd"}' --accountId $ID --amount 0.1 --gas 300000000000000
+near call $ME_ID new_dispute '{"services_id": 0, "accused": "'$MA_ID'", "proves": "asdasd"}' --accountId $ID --amount 0.1
+
+near call $ME_ID add_accused_proves '{"dispute_id": 0, "accused_proves": "pruebas en contra"}' --accountId $MA_ID
+
+near call $ME_ID vote '{"dispute_id": 0, "vote": true}' --accountId stolkerve.testnet
+near call $ME_ID vote '{"dispute_id": 0, "vote": true}' --accountId stolkerve2.testnet
+
+near call $ME_ID update_dispute_status '{"dispute_id": 0}' --accountId $ME_ID --gas 300000000000000
+
+near call $ME_ID get_dispute '{"dispute_id": 0}' --accountId $ME_ID

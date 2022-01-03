@@ -1,0 +1,11 @@
+[package]
+name = "mediator"
+version = "0.1.0"
+authors = ["dariofs.near","stolkerve.near"]
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+near-sdk = "3.1.0"
