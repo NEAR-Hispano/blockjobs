@@ -1,14 +1,12 @@
 // use near_env::PanicMessage;
 use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
-use near_sdk::collections::{LookupMap, UnorderedMap, UnorderedSet, Vector};
+use near_sdk::collections::{LookupMap, UnorderedMap, UnorderedSet};
 use near_sdk::json_types::{ValidAccountId, U128};
 use near_sdk::serde::{Deserialize, Serialize};
 use near_sdk::{env, near_bindgen, AccountId, Balance, PanicOnDefault, Promise, PromiseResult, StorageUsage, ext_contract, Gas};
 
 use std::collections::{HashSet};
 use std::convert::TryFrom;
-
-use rand::seq::SliceRandom;
 
 use crate::internal::*;
 use crate::user::*;
@@ -28,6 +26,17 @@ const BASE_GAS: Gas = 30_000_000_000_000;
 const USER_MINT_LIMIT: u16 = 100;
 const USERS_LIMIT: u16 = u16::MAX;
 const ONE_DAY: u64 = 86400000000000;
+
+// pub fn pseudo_random(seed: u8, num_of_digits: usize){
+//     let n = (seed * seed).()
+//      while(n.length < num_of_digits * 2 ){
+//       n = "0" + n
+//     }
+//     start = Math.floor(num_of_digits / 2)
+//     end = start + num_of_digits
+//     seed = parseInt(n.substring(start, end))
+//     return seed
+//   }
 
 #[derive(BorshDeserialize, BorshSerialize, Serialize, Deserialize)]
 #[serde(crate = "near_sdk::serde")]
@@ -712,22 +721,30 @@ impl Marketplace {
     }
 
     #[allow(unused_variables)]
-    #[private]
-    fn get_random_users_account_by_role_jugde(&self, amount: u8, exclude: Vec<ValidAccountId>) -> Vec<AccountId> {
+    // #[private] near call $MA_ID get_random_users_account_by_role_jugde '{}' --account
+    pub fn get_random_users_account_by_role_jugde(&self, amount: u8, exclude: Vec<ValidAccountId>) -> Vec<AccountId> {
         if amount > 10 {
             env::panic(b"No se puede pedir mas de 10");
         }
-        let users = self.get_users_by_role(UserRoles::Jugde, 0, amount.into());
+        
+        let users = self.get_users_by_role(UserRoles::Jugde, 0, (amount as u64) + 1);
         if amount as usize > users.len() {
             env::panic(b"La cantidad pedida es mayor a la existente");
         }
+        
+        let mut sample: Vec<AccountId> = Vec::new();
+        let seed = env::random_seed();
+        for i in 0..users.len() {
+            let m = (users.len() - 1 + 1);
+            let rn = 1 + ((*seed.get(i).unwrap() as usize) % m) as usize;
+            sample.push(users[rn - 1].account_id.clone());
+            env::log(format!("{:?}", rn).as_bytes());
+        }
 
-        let sample = users.choose(&mut rand::thread_rng());
-        return sample
-            .iter()
-            .filter(|x| exclude.contains(&string_to_valid_account_id(&x.account_id)))
-            .map(|x| x.account_id.clone())
-            .collect();
+        // return users.iter().map(|x| x.account_id.clone()).collect();
+
+
+        return sample;
     }
 
     #[private]

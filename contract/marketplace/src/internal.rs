@@ -63,7 +63,7 @@ pub(crate) fn deposit_refund_to(storage_used: u64, to: AccountId) {
 //     Promise::new(account_id).transfer(Balance::from(storage_released) * STORAGE_PRICE_PER_BYTE)
 // }
 
-impl Marketplace {
+
     // pub(crate) fn assert_admin(&self) {
     //     assert_eq!(
     //         &env::predecessor_account_id(),
@@ -145,4 +145,4 @@ impl Marketplace {
 
     //     (owner_id, employer_account_ids)
     // }
-}
+

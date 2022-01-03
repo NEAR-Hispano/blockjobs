@@ -28,9 +28,9 @@ impl Token {
     /// Inicializa el contrato estableciendo el total supply
     /// Asigna la metadata por default
     #[init]
-    pub fn new_default_meta(owner_id: ValidAccountId, initial_supply: U128) -> Self {
+    pub fn new_default_meta(owner: ValidAccountId, initial_supply: U128) -> Self {
         Self::new(
-            owner_id,
+            owner,
             initial_supply,
             FungibleTokenMetadata {
                 spec: FT_METADATA_SPEC.to_string(),
@@ -83,9 +83,9 @@ impl Token {
     /// Change the minter
     /// Only can be one minter at time
     /// 
-    pub fn update_minter(&mut self, account_id: AccountId) {
+    pub fn update_minter(&mut self, account: AccountId) {
         self.assert_owner();
-        self.minter = account_id;
+        self.minter = account;
     }
 
     #[payable]
@@ -97,22 +97,10 @@ impl Token {
         amount
     }
 
-    // #[payable]
-    // pub fn block_tokens(&mut self, to: ValidAccountId, amount: Balance) -> Balance {
-    //     // if env::predecessor_account_id() == self.owner.to_string()
-
-    //     // self.minter.
-    //     let sender = to.to_string();
-    //     let contract = self.owner.clone();
-    //     self.ft_transfer(contract, amount.into(), None);
-
-    //     // Modificar allowance sumando lo bloqueado
-    //     self.allowance.insert(&sender, &(amount + self.allowance.get(&sender).unwrap_or(0)));
-
-    //     // Retornar allowance
-    //     self.allowance.get(&sender).unwrap_or(0)
-    // }
-
+    /// Send tokens to this contract to can be a jury member
+    /// This tokens change depending the result of votations
+    /// Free withdraw with fn withdraw_tokens (doesn't really blocked)
+    /// 
     #[payable]
     pub fn block_tokens(&mut self, amount: Balance) -> Balance {
         let sender = env::signer_account_id();
@@ -126,6 +114,9 @@ impl Token {
         self.allowance.get(&sender).unwrap_or(0)
     }
 
+    /// Withdraw blocked tokens
+    /// Only executable by who blocked it's
+    /// 
     #[payable]
     pub fn withdraw_tokens(&mut self, amount: Balance) -> Balance {
         let sender = env::signer_account_id();
@@ -142,11 +133,14 @@ impl Token {
         self.allowance.get(&sender).unwrap_or(0)
     }
 
+    /// Function executable only by the mediator contract
+    /// Increase in 3% the balance of the jury member
+    /// 
     pub fn increase_allowance(&mut self, account: AccountId) -> Balance {
         self.assert_minter(env::signer_account_id());
 
-        self.pending_to_mint += self.allowance.get(&account).unwrap_or(0) / 100 * 103 - self.allowance.get(&account).unwrap_or(0);
-        let new_allowance = self.allowance.get(&account).unwrap_or(0) /100 *103;
+        self.pending_to_mint += self.allowance.get(&account).unwrap_or(0) * 103 / 100 - self.allowance.get(&account).unwrap_or(0);
+        let new_allowance = self.allowance.get(&account).unwrap_or(0) * 103 / 100 ;
 
         // Modificar allowance aumentando en 3%
         self.allowance.insert(&account, &new_allowance);
@@ -155,10 +149,13 @@ impl Token {
         self.allowance.get(&account).unwrap_or(0)
     }
 
+    /// Function executable only by the mediator contract
+    /// Decrease in 3% the balance of the jury member
+    /// 
     pub fn decrease_allowance(&mut self, account: AccountId) -> Balance {
         self.assert_minter(env::signer_account_id());
 
-        let new_allowance = self.allowance.get(&account).unwrap_or(0) /103 *100;
+        let new_allowance = self.allowance.get(&account).unwrap_or(0) * 100 / 103;
 
         // Modificar allowance disminuyendo en 3%
         self.allowance.insert(&account, &new_allowance);
@@ -166,29 +163,30 @@ impl Token {
         // Retornar la allowance actualizada
         self.allowance.get(&account).unwrap_or(0)
     }
-    // pub fn set_mediator(&self, mediator_account_id: AccountId) {
-    //     self.assert_owner();
-    //     &self.mediator = &mediator_account_id;
-    // }
+
 
     /******************
      * GET FUNCTIONS  *
      ******************/
 
-    pub fn ft_get_total_supply(&self) -> Balance {
+    pub fn get_total_supply(&self) -> Balance {
         self.token.total_supply
     }
 
-    pub fn ft_get_balance_of(&self, account_id: &AccountId) -> Balance {
-        self.token.accounts.get(&account_id).unwrap_or(0)
+    pub fn get_balance_of(&self, account: &AccountId) -> Balance {
+        self.token.accounts.get(&account).unwrap_or(0)
     }
 
-    pub fn ft_get_minter(&self) -> AccountId {
+    pub fn get_minter(&self) -> AccountId {
         self.minter.clone()
     }
 
-    pub fn ft_get_pending_to_mint(&self) -> Balance {
+    pub fn get_pending_to_mint(&self) -> Balance {
         self.pending_to_mint.clone()
+    }
+
+    pub fn get_allowance_of(&self, account: &AccountId) -> Balance {
+        self.allowance.get(&account).unwrap_or(0)
     }
 
     /*** 
@@ -196,7 +194,7 @@ impl Token {
     ***/
 
     fn mint_into(&mut self, account_id: &AccountId, amount: Balance) {
-        let balance = self.ft_get_balance_of(account_id);
+        let balance = self.get_balance_of(account_id);
         self.internal_update_account(&account_id, balance + amount);
         self.token.total_supply += amount;
     }
@@ -267,7 +265,7 @@ impl FungibleTokenMetadataProvider for Token {
 //         testing_env!(context.build());
 //         let contract = Token::new_default_meta(accounts(1).into(), TOTAL_SUPPLY.into());
 //         testing_env!(context.is_view(true).build());
-//         assert_eq!(contract.ft_total_services().0, TOTAL_SUPPLY);
+//         assert_eq!(contract.ft_total_supply().0, TOTAL_SUPPLY);
 //         assert_eq!(contract.ft_balance_of(accounts(1)).0, TOTAL_SUPPLY);
 //     }
 
