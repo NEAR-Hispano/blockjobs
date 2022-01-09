@@ -5,7 +5,7 @@
   "scripts": {
     "build:web": "parcel build src/index.html --public-url ./",
     "deploy:pages": "gh-pages -d dist/",
-    "start": "echo The app is starting! It will automatically open in your browser when ready && env-cmd -f ./neardev/dev-account.env parcel src/index.html --open",
+    "start": "echo The app is starting! It will automatically open in your browser when ready && env-cmd -f ./contract/marketplace/neardev/dev-account.env parcel src/index.html --open",
     "dev": "nodemon --watch contract/src -e rs --exec \"npm run start\"",
     "watch:css": "postcss src/assets/tailwind.css -o src/assets/main.css",
     "build:css": "postcss src/assets/tailwind.css -o src/assets/main.css",
@@ -23,9 +23,10 @@
     "near-cli": "~2.1.1",
     "nodemon": "~2.0.3",
     "parcel-bundler": "~1.12.4",
+    "postcss": "^8.4.5",
     "react-test-renderer": "~17.0.1",
     "shelljs": "~0.8.4",
-    "tailwindcss": "^3.0.7"
+    "tailwindcss": "^3.0.11"
   },
   "dependencies": {
     "near-api-js": "~0.43.1",
