@@ -50,6 +50,20 @@ $ cd sim
 $ npm install
 $ npm run test -- --verbose --timeout=10m
 ```
+
+Front
+=====
+Para correr el servidor de desarrollo de react
+``` bash
+$ npm run dev
+```
+Para compilar taiwild
+``` bash
+$ npx tailwindcss -i ./src/assets/tailwind.css -o ./src/assets/main.css --watch
+```
+
+Es posible que taiwind de errores, por que para solucionarlo elimina node_module y vuelve a instalar los paquetes
+
 Autores
 =======
 [Sebastian Gonzalez]\
