@@ -62,7 +62,7 @@ Para compilar taiwild
 $ npx tailwindcss -i ./src/assets/tailwind.css -o ./src/assets/main.css --watch
 ```
 
-Es posible que taiwind de errores, por que para solucionarlo elimina node_module y vuelve a instalar los paquetes
+Es posible que taiwind de errores, por que para solucionarlo elimina node_module y vuelve a instalar los paquetes. Tambien es posible que para nodemon pueda tener fugas de memoria por cerrarlo incorrectamente y te coma toda la ram.
 
 Autores
 =======
