@@ -64,13 +64,34 @@ pub(crate) fn deposit_refund_to(storage_used: u64, to: AccountId) {
 // }
 
 
-    // pub(crate) fn assert_admin(&self) {
-    //     assert_eq!(
-    //         &env::predecessor_account_id(),
-    //         &self.owner_id,
-    //         "Owner's method"
-    //     );
-    // }
+    // #[private]
+    // fn string_to_json(&self, service_id: ServiceId) -> Category {
+    //     let example = Category {
+    //         category: "Programmer".to_string(),
+    //         subcategory: "Backend".to_string(),
+    //         areas: "Python, SQL".to_string()
+    //     };
+    //     let serialized = serde_json::to_string(&example).unwrap();
+
+    //     let string = format!("String: {}", &serialized);
+    //     env::log(string.as_bytes());
+
+    // // pub fn string_to_json(&self, service_id: ServiceId) -> Category {
+    // pub fn string_to_json(&self) -> Category {
+    //     let example = Category {
+    //         category: "Programmer".to_string(),
+    //         subcategory: "Backend".to_string(),
+    //         areas: "Python, SQL".to_string()
+    //     };
+    //     let serialized = serde_json::to_string(&example).unwrap();
+
+    //     let string = format!("String: {}", &serialized);
+    //     env::log(string.as_bytes());
+
+    //     let deserialized: Category = serde_json::from_str(&serialized).unwrap();
+    //     deserialized
+
+impl Marketplace {
 
     // pub(crate) fn internal_remove_service_from_owner(
     //     &mut self,
@@ -146,3 +167,31 @@ pub(crate) fn deposit_refund_to(storage_used: u64, to: AccountId) {
     //     (owner_id, employer_account_ids)
     // }
 
+    // #[private]
+    // fn string_to_json(&self, service_id: ServiceId) -> Category {
+    //     let example = Category {
+    //         category: "Programmer".to_string(),
+    //         subcategory: "Backend".to_string(),
+    //         areas: "Python, SQL".to_string()
+    //     };
+    //     let serialized = serde_json::to_string(&example).unwrap();
+
+    //     let string = format!("String: {}", &serialized);
+    //     env::log(string.as_bytes());
+
+    // // pub fn string_to_json(&self, service_id: ServiceId) -> Category {
+    // pub fn string_to_json(&self) -> Category {
+    //     let example = Category {
+    //         category: "Programmer".to_string(),
+    //         subcategory: "Backend".to_string(),
+    //         areas: "Python, SQL".to_string()
+    //     };
+    //     let serialized = serde_json::to_string(&example).unwrap();
+
+    //     let string = format!("String: {}", &serialized);
+    //     env::log(string.as_bytes());
+
+    //     let deserialized: Category = serde_json::from_str(&serialized).unwrap();
+    //     deserialized
+    // }
+}

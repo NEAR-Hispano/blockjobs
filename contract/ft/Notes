@@ -1,23 +1,20 @@
 source clear.sh
 source deploy.sh
 near call $FT_ID new_default_meta '{"owner": "'$FT_ID'", "initial_supply": "1000000"}' --accountId $FT_ID
-
-near call $FT_ID mint '{"receiver": "'$FT_ID'"}' --accountId $FT_ID
+#near call $FT_ID mint '{"receiver": "'$FT_ID'"}' --accountId $FT_ID
 
 near call $FT_ID update_minter '{"account": "'$ME_ID'"}' --accountId $FT_ID
 near view $FT_ID get_minter '{}' --accountId $FT_ID
 
 near call $FT_ID mint '{"receiver": "'$FT_ID'"}' --accountId $ME_ID
 
-near view $FT_ID get_pending_to_mint '{}' --accountId $FT_ID
-
-near call $FT_ID transfer_tokens '{"to": "'$ID'", "amount": 10000}' --accountId $FT_ID --depositYocto 1
+near call $FT_ID transfer_tokens '{"to": "'$ID'", "amount": 10000}' --accountId $FT_ID
 near call $FT_ID block_tokens '{"amount": 10000}' --accountId $ID --depositYocto 1
-near call $FT_ID withdraw_tokens '{"amount": 10000}' --accountId $ID --depositYocto 1
 
 near call $FT_ID increase_allowance '{"account": "'$ID'"}' --accountId $ME_ID
 near call $FT_ID decrease_allowance '{"account": "'$ID'"}' --accountId $ME_ID
 
+near call $FT_ID withdraw_tokens '{"amount": 10300}' --accountId $ID --depositYocto 1
 
 # GETS
 near view $FT_ID get_total_supply '{}' --accountId $FT_ID
@@ -26,3 +23,6 @@ near view $FT_ID get_minter '{}' --accountId $FT_ID
 near view $FT_ID get_balance_of '{"account": "'$FT_ID'"}' --accountId $FT_ID
 near view $FT_ID get_balance_of '{"account": "'$ID'"}' --accountId $FT_ID
 near view $FT_ID get_allowance_of '{"account": "'$ID'"}' --accountId $FT_ID
+
+near view $FT_ID get_pending_to_mint '{}' --accountId $FT_ID
+near view $FT_ID verify_blocked_amount '{"account": "'$ID'"}' --accountId $FT_ID

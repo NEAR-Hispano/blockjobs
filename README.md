@@ -36,6 +36,10 @@ $ chmod +x ./deploy
 $ ./deploy.sh
 ```
 
+Ejecutar las funciones
+=================
+En cada contrato hay un fichero llamado Notes que contiene cada funcion en comandos para near-cli comando
+
 Test
 ====
 ``` bash
@@ -44,7 +48,7 @@ $ ./build.sh
 $ cd ..
 $ cd sim
 $ npm install
-$ npm run test
+$ npm run test -- --verbose --timeout=10m
 ```
 Autores
 =======

@@ -18,25 +18,26 @@ pub struct Token {
     pub owner: ValidAccountId,
     pub minter: AccountId,
     allowance: LookupMap<AccountId, Balance>,
-    pub pending_to_mint: u128,
+    pub pending_to_mint: Balance,
+    pub min_blocked_amount: Balance,
 }
 
-const DATA_IMAGE_SVG_NEAR_ICON: &str = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 288 288'%3E%3Cg id='l' data-name='l'%3E%3Cpath d='M187.58,79.81l-30.1,44.69a3.2,3.2,0,0,0,4.75,4.2L191.86,103a1.2,1.2,0,0,1,2,.91v80.46a1.2,1.2,0,0,1-2.12.77L102.18,77.93A15.35,15.35,0,0,0,90.47,72.5H87.34A15.34,15.34,0,0,0,72,87.84V201.16A15.34,15.34,0,0,0,87.34,216.5h0a15.35,15.35,0,0,0,13.08-7.31l30.1-44.69a3.2,3.2,0,0,0-4.75-4.2L96.14,186a1.2,1.2,0,0,1-2-.91V104.61a1.2,1.2,0,0,1,2.12-.77l89.55,107.23a15.35,15.35,0,0,0,11.71,5.43h3.13A15.34,15.34,0,0,0,216,201.16V87.84A15.34,15.34,0,0,0,200.66,72.5h0A15.35,15.35,0,0,0,187.58,79.81Z'/%3E%3C/g%3E%3C/svg%3E";
+const IMAGE_ICON: &str = "";
 
 #[near_bindgen]
 impl Token {
     /// Inicializa el contrato estableciendo el total supply
     /// Asigna la metadata por default
     #[init]
-    pub fn new_default_meta(owner: ValidAccountId, initial_supply: U128) -> Self {
+    pub fn new_default_meta(owner_id: ValidAccountId, initial_supply: U128) -> Self {
         Self::new(
-            owner,
+            owner_id,
             initial_supply,
             FungibleTokenMetadata {
                 spec: FT_METADATA_SPEC.to_string(),
                 name: "BlockJobs fungible token".to_string(),
                 symbol: "BJT".to_string(),
-                icon: Some(DATA_IMAGE_SVG_NEAR_ICON.to_string()),
+                icon: Some(IMAGE_ICON.to_string()),
                 reference: None,
                 reference_hash: None,
                 decimals: 24,
@@ -54,21 +55,22 @@ impl Token {
         assert!(!env::state_exists(), "Already initialized");
         metadata.assert_valid();
         let mut this = Self {
-            token: FungibleToken::new(b"a".to_vec()),
+            token: FungibleToken::new(b"b".to_vec()),
             metadata: LazyOption::new(b"m".to_vec(), Some(&metadata)),
             minter: env::predecessor_account_id(),
             owner: owner_id.clone(),
             allowance: LookupMap::new(b"a".to_vec()),
             pending_to_mint: 0,
+            min_blocked_amount: 10_000,
         };
         this.token.internal_register_account(owner_id.as_ref());
         this.token.internal_deposit(owner_id.as_ref(), total_services.into());
         this
     }
 
-    /****************** 
-     * CORE FUNCTIONS *
-     ******************/
+    /*******************/
+    /*  CORE FUNCTIONS */
+    /*******************/
 
     /// Token mint, limited to the pending amount
     /// Is not possible mint more of this amount
@@ -80,15 +82,23 @@ impl Token {
         self.pending_to_mint = 0;
     }
 
-    /// Change the minter
-    /// Only can be one minter at time
+    /// Cambiar la cuenta con permisos para mintear
+    /// Solo puede haber un minter
     /// 
     pub fn update_minter(&mut self, account: AccountId) {
         self.assert_owner();
         self.minter = account;
     }
 
-    #[payable]
+    /// Cambiar la cantidad minima de tokens a bloquear para poder 
+    /// ser miembro del jurado.
+    /// 
+    pub fn update_min_blocked_amount(&mut self, amount: u128) -> bool {
+        self.assert_owner();
+        self.min_blocked_amount = amount;
+        true
+    }
+
     pub fn transfer_tokens(&mut self, to: AccountId, amount: Balance) -> Balance {
         let sender = env::signer_account_id();
 
@@ -126,8 +136,9 @@ impl Token {
             self.token.internal_transfer(&contract, &sender, amount, None);
         };
 
+        let new_allowace = self.allowance.get(&sender).unwrap_or(0) - amount;
         // Modificar allowance restando lo que se retira
-        self.allowance.insert(&sender, &(self.allowance.get(&sender).unwrap_or(0) - amount));
+        self.allowance.insert(&sender, &new_allowace);
         
         // Retornar la allowance actualizada
         self.allowance.get(&sender).unwrap_or(0)
@@ -165,9 +176,21 @@ impl Token {
     }
 
 
-    /******************
-     * GET FUNCTIONS  *
-     ******************/
+    /// Verificar que el ususario tenga el suficiente balance bloqueado para poder ser jurado.
+    /// Solo ejecutable desde Mediator
+    /// 
+    pub fn validate_tokens(&self, account_id: AccountId) -> bool {
+        let balance = self.get_allowance_of(&account_id);
+        if balance < self.min_blocked_amount {
+            env::panic(b"Insufficient balance");
+        } else {
+            return true;
+        }
+    }
+
+    /**********************/
+    /*** GET FUNCTIONS  ***/
+    /**********************/
 
     pub fn get_total_supply(&self) -> Balance {
         self.token.total_supply
@@ -187,6 +210,13 @@ impl Token {
 
     pub fn get_allowance_of(&self, account: &AccountId) -> Balance {
         self.allowance.get(&account).unwrap_or(0)
+    }
+
+    pub fn verify_blocked_amount(&self, account: &AccountId) -> bool {
+        if self.get_allowance_of(account) >= self.min_blocked_amount {
+            return true;
+        }
+        else { return false; }
     }
 
     /*** 

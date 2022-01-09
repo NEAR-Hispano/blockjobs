@@ -1,0 +1,143 @@
+//     #[allow(unused_variables)]
+//     // #[private] near call $MA_ID get_random_users_account_by_role_jugde '{}' --account
+//     pub fn get_random_users_account_by_role_jugde(&self, amount: u8, exclude: Vec<ValidAccountId>) -> Vec<AccountId> {
+//         if amount > 10 {
+//             env::panic(b"No se puede pedir mas de 10");
+//         }
+        
+//         let users = self.get_users_by_role(UserRoles::Jugde, 0, (amount as u64) + 1);
+//         if amount as usize > users.len() {
+//             env::panic(b"La cantidad pedida es mayor a la existente");
+//         }
+        
+//         let mut sample: Vec<AccountId> = Vec::new();
+//         let seed = env::random_seed();
+//         for i in 0..users.len() {
+//             let m = users.len();
+//             let rn = 1 + ((*seed.get(i).unwrap() as usize) % m) as usize;
+//             sample.push(users[rn - 1].account_id.clone());
+//             env::log(format!("{:?}", rn).as_bytes());
+//         }
+
+//         // return users.iter().map(|x| x.account_id.clone()).collect();
+
+
+//         return sample;
+//     }
+
+//     /// Verificacion de datos para una disputa
+//     /// 
+//     pub fn validate_dispute(&mut self, applicant: AccountId, accused: AccountId, service_id: u64, jugdes: u8, exclude: Vec<ValidAccountId>) {
+//         if  (env::signer_account_id() != self.contract_me) ||
+//             (env::predecessor_account_id() != self.contract_me)
+//         {
+//             env::panic(b"Only the mediator contract can call this func");
+//         }
+
+//         let mut service = self.get_service_by_id(service_id);
+//         let employer = service.actual_owner.clone();
+
+//         if service.actual_owner != applicant && employer != applicant {
+//             env::panic(b"Applicant dont found");
+//         }
+
+//         if service.creator_id != accused && employer != accused {
+//             env::panic(b"Accused dont found");
+//         }
+
+//         service.on_dispute = true;
+//         self.service_by_id.insert(&service.id, &service);
+
+//     }
+
+
+//         /// Verificar datos de la disputa desde el contrato del marketplace
+//     /// 
+//     pub fn on_validate_dispute(&mut self) {
+//         if env::predecessor_account_id() != env::current_account_id() {
+//             env::panic(b"only the contract can call its function")
+//         }
+//         assert_eq!(
+//             env::promise_results_count(),
+//             1,
+//             "Contract expected a result on the callback"
+//         );
+//         match env::promise_result(0) {
+//             PromiseResult::Successful(_data) => {
+//                 env::log(b"Dispute created");
+//             },
+//             PromiseResult::Failed => env::panic(b"Callback faild"),
+//             PromiseResult::NotReady => env::panic(b"Callback faild"),
+//         };
+//     }
+
+
+//     #[payable]
+//     pub fn reclaim_dispute_s(&mut self, service_id: u64, proves: String, accused: AccountId) -> Promise {
+//         Promise::new(self.contract_me.clone()).function_call(
+//             b"new_dispute".to_vec(), 
+//             json!({ "contract_ma": self.contract_owner, "method_name": "on_new_dispute", 
+//             "service_id": service_id, "accused": accused, "proves": proves })
+//             .to_string().as_bytes().to_vec(), 
+//             env::attached_deposit(), 
+//             BASE_GAS)
+//     }
+
+//     /// Verificar datos de la disputa desde el contrato del marketplace
+//     /// 
+//     pub fn on_new_dispute(&mut self, service_id: u64) {
+//         if env::predecessor_account_id() != env::current_account_id() {
+//             env::panic(b"only the contract can call its function")
+//         }
+//         assert_eq!(
+//             env::promise_results_count(),
+//             1,
+//             "Contract expected a result on the callback"
+//         );
+//         match env::promise_result(0) {
+//             PromiseResult::Successful(_data) => {
+//                 // Modificar los datos del servicio
+//                 let mut service = self.get_service_by_id(service_id.clone());
+//                 service.on_dispute = true;
+//                 self.service_by_id.insert(&service_id, &service);
+
+//                 env::log(b"Dispute created");
+//             },
+//             PromiseResult::Failed => env::panic(b"Callback faild"),
+//             PromiseResult::NotReady => env::panic(b"Callback faild"),
+//         };
+//     }
+
+// , PromiseResult
+// , serde_json::{json}
+
+//     #[payable]
+//     pub fn new_dispute(&mut self, contract_ma: AccountId, method_name: String, service_id: u64, accused: ValidAccountId, proves: String) -> Promise {
+//         let sender = env::predecessor_account_id();
+
+//         let dispute = Dispute {
+//             id: self.disputes_counter.clone(),
+//             service_id: service_id,
+//             votes: HashSet::new(),
+//             dispute_status: DisputeStatus::Open,
+//             initial_time_stamp: env::block_timestamp(),
+//             finish_time_stamp: None,
+//             applicant: sender,
+//             accused: accused.to_string(),
+//             winner: None,
+//             applicant_proves: proves,
+//             accused_proves: None
+//         };
+//         env::log(format!("{:?}", dispute).as_bytes());
+        
+//         self.disputes.insert(&dispute.id, &dispute);
+
+//         self.disputes_counter += 1;
+        
+//         Promise::new(contract_ma).function_call(
+//             method_name.into_bytes(),
+//             json!({ "service_id": service_id }).to_string().as_bytes().to_vec(),
+//             NO_DEPOSIT,
+//             BASE_GAS,
+//         )
+//     }

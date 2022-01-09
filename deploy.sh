@@ -32,26 +32,26 @@ export FT_ID=$CONTRACT_NAME
 
 cd ../../
 
-# echo "Exportanto la cuenta de test a la variable ID"
-
-# # export la cuenta de test creada al hacer deploy
-# old_IFS=$IFS
-# IFS=$'\n'
-# for i in `cat ./neardev/dev-account`
-# do
-#     export ID=$i
-# done
-# IFS=$old_IFS
-
-read -p "Escribe una cuenta de testnet: " cuenta
-export ID=$cuenta
-echo "Exportando $cuenta a la variable ID"
+echo "Exportando dariofs.testnet a la variable ID"
+ID=dariofs.testnet
+echo "Exportando proofs333.testnet a la variable ID2"
+ID2=proofs333.testnet
+# echo "Exportando stolkerve.testnet a la variable ID"
+# ID=stolkerve.testnet
+# echo "Exportando stolkerve2.testnet a la variable ID2"
+# ID2=stolkerve2.testnet
 
 echo "inicializando el contrato de FT"
-near call $FT_ID new_default_meta '{"owner_id": "'$FT_ID'", "initial_supply": "1000"}' --accountId $FT_ID
+near call $FT_ID new_default_meta '{"owner_id": "'$FT_ID'", "initial_supply": "100000"}' --accountId $FT_ID
 
 echo "inicializando el contrato de Marketplace"
 near call $MA_ID new '{"owner_id": "'$MA_ID'", "mediator": "'$ME_ID'", "ft": "'$FT_ID'"}' --accountId $MA_ID --amount 0.03
 
 echo "inicializando el contrato Mediator"
-near call $ME_ID new '{"marketplace_account_id": "'$MA_ID'"}' --accountId $ME_ID
+near call $ME_ID new '{"marketplace_id": "'$MA_ID'", "token_id": "'$FT_ID'"}' --accountId $ME_ID
+
+echo "Creando usuarios y servicios"
+near call $MA_ID add_user '{"roles": ["Professional"], "categories": "hola"}' --accountId $ID --amount 0.03
+near call $MA_ID add_user '{"roles": ["Employeer"], "categories": "hola"}' --accountId $ID2 --amount 0.03
+near call $MA_ID mint_service '{"metadata": {"title": "Desarrollo web", "description": "Trabajo part-time con React", "icon": "foto.png", "price": 1}, "quantity": 3, "duration": 30}' --accountId $ID --amount 0.029
+near call $MA_ID buy_service '{"service_id": 0}' --accountId $ID2 --amount 1 --gas 300000000000000
