@@ -50,24 +50,29 @@ $ cd sim
 $ npm install
 $ npm run test -- --verbose --timeout=10m
 ```
-
-Front
-=====
-Para correr el servidor de desarrollo de react
-``` bash
-$ npm run dev
-```
-Para compilar taiwild
-``` bash
-$ npx tailwindcss -i ./src/assets/tailwind.css -o ./src/assets/main.css --watch
-```
-
-Es posible que taiwind de errores, por que para solucionarlo elimina node_module y vuelve a instalar los paquetes. Tambien es posible que para nodemon pueda tener fugas de memoria por cerrarlo incorrectamente y te coma toda la ram.
-
 Autores
 =======
 [Sebastian Gonzalez]\
 [Dario Sanchez]
+
+Frontend
+========
+Para correr el servidor de desarrollo de react
+
+``` bash
+$ cd frontend
+$ npm run start
+```
+Para compilar tailwind
+``` bash
+$ npm run build:css
+```
+Para wachear tailwind
+``` bash
+$ npm run watch:css
+```
+
+Es posible que taiwind de errores, por que para solucionarlo elimina node_module y vuelve a instalar los paquetes. Tambien es posible que pueda haber fugas de memoria por cerrarlo incorrectamente el servidor de desarrollo y te coma toda la ram.
 
 Troubleshooting
 ===============

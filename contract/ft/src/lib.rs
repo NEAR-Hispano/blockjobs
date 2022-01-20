@@ -3,12 +3,21 @@ use near_contract_standards::fungible_token::metadata::{
 };
 use near_contract_standards::fungible_token::FungibleToken;
 use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
+use near_sdk::serde::{Deserialize, Serialize};
 use near_sdk::collections::{LazyOption, LookupMap};
+use std::collections::HashSet;
 use near_sdk::json_types::{ValidAccountId, U128};
 use near_sdk::{env, log, near_bindgen, AccountId, Balance, PanicOnDefault, PromiseOrValue};
 //use std::convert::TryFrom;
 
 near_sdk::setup_alloc!();
+
+#[derive(BorshDeserialize, BorshSerialize, Serialize, Deserialize, Debug, Hash, Eq, PartialOrd, PartialEq, Clone)]
+#[serde(crate = "near_sdk::serde")]
+pub struct Vote {
+    account: AccountId,
+    vote: bool,
+}
 
 #[near_bindgen]
 #[derive(BorshDeserialize, BorshSerialize, PanicOnDefault)]
@@ -16,9 +25,13 @@ pub struct Token {
     token: FungibleToken,
     metadata: LazyOption<FungibleTokenMetadata>,
     pub owner: ValidAccountId,
+    // Determina quien puede mintear los tokens pendientes y modificar la allowance.
     pub minter: AccountId,
+    // Tokens a poder retirar por parte de cada jurado.
     allowance: LookupMap<AccountId, Balance>,
+    // Total de tokens pendiente a mintear.
     pub pending_to_mint: Balance,
+    // Cantidad de tokens bloqueados minima para poder ser miembro del jurado.
     pub min_blocked_amount: Balance,
 }
 
@@ -72,8 +85,8 @@ impl Token {
     /*  CORE FUNCTIONS */
     /*******************/
 
-    /// Token mint, limited to the pending amount
-    /// Is not possible mint more of this amount
+    /// Mintear nuevos tokens, limitado por pending_amount.
+    /// No se puede mintear por sobre esa cantidad.
     /// 
     pub fn mint(&mut self, receiver: ValidAccountId) {
         self.assert_minter(env::predecessor_account_id());
@@ -82,15 +95,15 @@ impl Token {
         self.pending_to_mint = 0;
     }
 
-    /// Cambiar la cuenta con permisos para mintear
-    /// Solo puede haber un minter
+    /// Cambiar la cuenta con permisos para mintear.
+    /// Solo puede haber un Minter.
     /// 
     pub fn update_minter(&mut self, account: AccountId) {
         self.assert_owner();
         self.minter = account;
     }
 
-    /// Cambiar la cantidad minima de tokens a bloquear para poder 
+    /// Cambiar la cantidad minima de tokens a bloquear para poder
     /// ser miembro del jurado.
     /// 
     pub fn update_min_blocked_amount(&mut self, amount: u128) -> bool {
@@ -100,16 +113,16 @@ impl Token {
     }
 
     pub fn transfer_tokens(&mut self, to: AccountId, amount: Balance) -> Balance {
-        let sender = env::signer_account_id();
+        let sender = env::predecessor_account_id();
 
         self.token.internal_register_account(&to);
         self.token.internal_transfer(&sender, &to, amount, None);
+
         amount
     }
 
-    /// Send tokens to this contract to can be a jury member
-    /// This tokens change depending the result of votations
-    /// Free withdraw with fn withdraw_tokens (doesn't really blocked)
+    /// Enviar tokens a este contrato para poder er miembro de los jurados.
+    /// Estos tokens aumentan o disminuyen a partir de las votaciones.
     /// 
     #[payable]
     pub fn block_tokens(&mut self, amount: Balance) -> Balance {
@@ -124,8 +137,8 @@ impl Token {
         self.allowance.get(&sender).unwrap_or(0)
     }
 
-    /// Withdraw blocked tokens
-    /// Only executable by who blocked it's
+    /// Redimir tokens segun la allowance actual.
+    /// Solo ejecutable por quien los bloqueo inicialmente.
     /// 
     #[payable]
     pub fn withdraw_tokens(&mut self, amount: Balance) -> Balance {
@@ -144,40 +157,89 @@ impl Token {
         self.allowance.get(&sender).unwrap_or(0)
     }
 
-    /// Function executable only by the mediator contract
-    /// Increase in 3% the balance of the jury member
+
+    /// Incrementa o decrementa en 3% el balance de un miembro de los jurados
+    /// segun sus votos.
+    /// Solo ejecutable por y desde Mediator, cuando gana el empleador.
     /// 
-    pub fn increase_allowance(&mut self, account: AccountId) -> Balance {
-        self.assert_minter(env::signer_account_id());
+    pub fn applicant_winner(&mut self, votes: HashSet<Vote>) {
+        self.assert_minter(env::predecessor_account_id());
 
-        self.pending_to_mint += self.allowance.get(&account).unwrap_or(0) * 103 / 100 - self.allowance.get(&account).unwrap_or(0);
-        let new_allowance = self.allowance.get(&account).unwrap_or(0) * 103 / 100 ;
+        for i in votes.iter() {
+            if i.vote {
+                self.pending_to_mint += self.allowance.get(&i.account)
+                .unwrap_or(0) * 103 / 100 - self.allowance.get(&i.account).unwrap_or(0);
 
-        // Modificar allowance aumentando en 3%
-        self.allowance.insert(&account, &new_allowance);
-
-        // Retornar la allowance actualizada
-        self.allowance.get(&account).unwrap_or(0)
+                // Modificar allowance aumentando en 3%
+                let new_allowance = self.allowance.get(&i.account).unwrap_or(0) * 103 / 100 ;
+                self.allowance.insert(&i.account, &new_allowance);
+            }
+            else {
+            // Modificar allowance disminuyendo en 3%
+            let new_allowance = self.allowance.get(&i.account).unwrap_or(0) * 100 / 103;
+            self.allowance.insert(&i.account, &new_allowance);
+            }
+        }
     }
 
-    /// Function executable only by the mediator contract
-    /// Decrease in 3% the balance of the jury member
+    /// Incrementa o decrementa en 3% el balance de un miembro de los jurados
+    /// segun sus votos.
+    /// Solo ejecutable por y desde Mediator, cuando gana el profesional.
     /// 
-    pub fn decrease_allowance(&mut self, account: AccountId) -> Balance {
-        self.assert_minter(env::signer_account_id());
+    pub fn accused_winner(&mut self, votes: HashSet<Vote>) {
+        self.assert_minter(env::predecessor_account_id());
 
-        let new_allowance = self.allowance.get(&account).unwrap_or(0) * 100 / 103;
+        for i in votes.iter() {
+            if !i.vote {
+                self.pending_to_mint += self.allowance.get(&i.account)
+                .unwrap_or(0) * 103 / 100 - self.allowance.get(&i.account).unwrap_or(0);
 
-        // Modificar allowance disminuyendo en 3%
-        self.allowance.insert(&account, &new_allowance);
-
-        // Retornar la allowance actualizada
-        self.allowance.get(&account).unwrap_or(0)
+                // Modificar allowance aumentando en 3%
+                let new_allowance = self.allowance.get(&i.account).unwrap_or(0) * 103 / 100 ;
+                self.allowance.insert(&i.account, &new_allowance);
+            }
+            else {
+            // Modificar allowance disminuyendo en 3%
+            let new_allowance = self.allowance.get(&i.account).unwrap_or(0) * 100 / 103;
+            self.allowance.insert(&i.account, &new_allowance);
+            }
+        }
     }
+
+    // /// Incrementa en 3% el balance de un miembro de los jurados.
+    // /// Solo ejecutable por y desde Mediator.
+    // /// 
+    // fn increase_allowance(&mut self, account: AccountId) -> Balance {
+    //     self.assert_minter(env::signer_account_id());
+
+    //     self.pending_to_mint += self.allowance.get(&account).unwrap_or(0) * 103 / 100 - self.allowance.get(&account).unwrap_or(0);
+    //     let new_allowance = self.allowance.get(&account).unwrap_or(0) * 103 / 100 ;
+
+    //     // Modificar allowance aumentando en 3%
+    //     self.allowance.insert(&account, &new_allowance);
+
+    //     // Retornar la allowance actualizada
+    //     self.allowance.get(&account).unwrap_or(0)
+    // }
+
+    // /// Decrementa en 3% el balance de un miembro de los jurados.
+    // /// Solo ejecutable por y desde Mediator.
+    // /// 
+    // fn decrease_allowance(&mut self, account: AccountId) {
+    //     self.assert_minter(env::signer_account_id());
+
+    //     let new_allowance = self.allowance.get(&account).unwrap_or(0) * 100 / 103;
+
+    //     // Modificar allowance disminuyendo en 3%
+    //     self.allowance.insert(&account, &new_allowance);
+
+    //     // Retornar la allowance actualizada
+    //     //self.allowance.get(&account).unwrap_or(0)
+    // }
 
 
     /// Verificar que el ususario tenga el suficiente balance bloqueado para poder ser jurado.
-    /// Solo ejecutable desde Mediator
+    /// Solo ejecutable por y desde desde Mediator.
     /// 
     pub fn validate_tokens(&self, account_id: AccountId) -> bool {
         let balance = self.get_allowance_of(&account_id);
@@ -212,6 +274,9 @@ impl Token {
         self.allowance.get(&account).unwrap_or(0)
     }
 
+    /// Verificar que la cantidad bloqueada de un usuario cumpla con el 
+    /// minimo para ser miembro del jurado.
+    /// 
     pub fn verify_blocked_amount(&self, account: &AccountId) -> bool {
         if self.get_allowance_of(account) >= self.min_blocked_amount {
             return true;
@@ -219,9 +284,9 @@ impl Token {
         else { return false; }
     }
 
-    /*** 
-     * PRIVATE FUNCTIONS 
-    ***/
+    /***********************
+     *  PRIVATE FUNCTIONS  *
+     ***********************/
 
     fn mint_into(&mut self, account_id: &AccountId, amount: Balance) {
         let balance = self.get_balance_of(account_id);
@@ -230,10 +295,10 @@ impl Token {
     }
 
     fn internal_update_account(&mut self, account_id: &AccountId, balance: u128) {
-        self.token.accounts.insert(account_id, &balance); //insert_or_update
+        self.token.accounts.insert(account_id, &balance); 
     }
 
-    // Verificar que sea el owner
+    // Verificar que sea el Owner.
     fn assert_owner(&self) {
         assert!(
             env::predecessor_account_id() == self.owner.to_string(),
@@ -241,12 +306,12 @@ impl Token {
         );
     }
 
-    // Verificar que tenga permisos para mintear tokens
+    // Verificar que tenga permisos para mintear tokens.
     fn assert_minter(&self, account_id: String) {
         assert_eq!(self.minter == account_id, true, "Not is the minter");
     }
 
-    // Verificar deposito
+    // Verificar deposito.
     pub fn assert_one_yocto(&self) {
         assert_eq!(env::attached_deposit(), 1, "Requires attached deposit of exactly 1 yoctoNEAR")
     }

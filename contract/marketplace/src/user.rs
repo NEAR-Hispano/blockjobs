@@ -1,4 +1,4 @@
-use std::collections::HashSet;
+use std::collections::{HashSet};
 use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
 use near_sdk::serde::{Deserialize, Serialize};
 use near_sdk::{AccountId};
@@ -12,6 +12,18 @@ pub enum UserRoles {
     Judge = 3,
 }
 
+// No deberia dar problemas
+#[derive(BorshDeserialize, BorshSerialize, Serialize, Deserialize, Clone, Debug)]
+#[serde(crate = "near_sdk::serde")]
+pub struct PersonalData {
+    pub legal_name: String,
+    pub education: String,
+    pub links: Vec<String>,
+    pub picture: String,
+    pub bio: String,
+    pub country: String
+}
+ 
 #[derive(BorshDeserialize, BorshSerialize, Serialize, Deserialize, Clone, Debug)]
 #[serde(crate = "near_sdk::serde")]
 pub struct User {
@@ -19,9 +31,21 @@ pub struct User {
     pub mints: u16,
     pub roles: HashSet<UserRoles>,
     pub reputation: i16,
-    pub categories: String,
-    pub links: Option<String>,
-    pub education: Option<String>,
+    pub personal_data: Option<String>,
+    /*
+        personal_data:  {
+            legal_name: "",
+            education: "",
+            links: "",
+            picture: "",
+            bio: "",
+            country: "",
+            languages: [{
+                language: "Ingles",
+                level: "Intermedio"
+            }]
+        }
+    */
     pub banned: bool,
 }
 
