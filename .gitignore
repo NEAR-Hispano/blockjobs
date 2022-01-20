@@ -24,7 +24,7 @@ workspace.code-workspace
 .env.development.local
 .env.test.local
 .env.production.local
-/.cache
+**/.cache
 
 npm-debug.log*
 yarn-debug.log*

@@ -55,6 +55,25 @@ Autores
 [Sebastian Gonzalez]\
 [Dario Sanchez]
 
+Frontend
+========
+Para correr el servidor de desarrollo de react
+
+``` bash
+$ cd frontend
+$ npm run start
+```
+Para compilar tailwind
+``` bash
+$ npm run build:css
+```
+Para wachear tailwind
+``` bash
+$ npm run watch:css
+```
+
+Es posible que taiwind de errores, por que para solucionarlo elimina node_module y vuelve a instalar los paquetes. Tambien es posible que pueda haber fugas de memoria por cerrarlo incorrectamente el servidor de desarrollo y te coma toda la ram.
+
 Troubleshooting
 ===============
 
