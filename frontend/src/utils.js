@@ -1,4 +1,7 @@
 import { connect, Contract, keyStores, WalletConnection } from "near-api-js"
+import { toast } from "react-toastify";
+import { async } from "regenerator-runtime";
+
 import getConfig from "./config"
 
 const nearConfig = getConfig(process.env.NODE_ENV || "development")
@@ -29,6 +32,7 @@ export async function initContract() {
       "get_user_services",
       "get_user_service_id",
       "get_total_services",
+      "get_services",
     ],
     // Change methods can modify the state. But you don"t receive the returned value when called.
     changeMethods: [
@@ -60,4 +64,77 @@ export function login() {
   // This works by creating a new access key for the user"s account and storing
   // the private key in localStorage.
   window.walletConnection.requestSignIn(nearConfig.contractName)
+}
+
+function getErrMsg(e) {
+  let finalErrorMsg = String(e.message.match("\".*\""))
+  return finalErrorMsg.substring(1, finalErrorMsg.length - 1) 
+}
+
+export async function getUserServices() {
+  try {
+    return await window.contract.get_user_services({account_id: window.accountId, only_on_sale: false})
+  } catch(e) {
+    let finalErrorMsg = getErrMsg(e)
+    toast.error(finalErrorMsg)
+    console.log(e)
+    return null
+  }
+}
+
+export async function getServiceById(id) {
+  try {
+    return await window.contract.get_service_by_id({service_id: id})
+  } catch(e) {
+    let finalErrorMsg = getErrMsg(e)
+    toast.error(finalErrorMsg)
+    console.log(e)
+    return null
+  }
+}
+
+export async function getServices(index, limit) {
+  try {
+    return await window.contract.get_services({from_index: index, limit: limit})
+      
+  } catch(e) {
+    let finalErrorMsg = getErrMsg(e)
+    toast.error(finalErrorMsg)
+    console.log(e)
+    return null
+  }
+}
+
+export async function mintService(serviceMetadata, amountOfServices, durationService, amt) {
+  try {
+    return await window.contract.mint_service({ metadata: serviceMetadata, quantity: amountOfServices, duration: durationService }, "300000000000000", amt);
+  } catch(e) {
+    let finalErrorMsg = getErrMsg(e)
+    toast.error(finalErrorMsg)
+    console.log(e)
+    return null
+  }
+}
+
+export async function getUser(accountId) {
+  try {
+    return await window.contract.get_user({ account_id: accountId})
+  } catch(e) {
+    let finalErrorMsg = getErrMsg(e)
+    toast.error(finalErrorMsg)
+    console.log(e)
+    return null
+  }
+}
+
+export async function buyService(serviceId, deposit) {
+  try {
+    await window.contract.buy_service({service_id: serviceId}, "300000000000000", deposit)
+    return true
+  } catch(e) {
+    let finalErrorMsg = getErrMsg(e)
+    toast.error(finalErrorMsg)
+    console.log(e)
+    return false
+  }
 }

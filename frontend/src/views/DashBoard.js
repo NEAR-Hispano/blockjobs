@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { Routes, Route, useLocation, useNavigate } from "react-router-dom";
 
-import UserProfile from '../views/UserProfile';
-import Services from '../views/Services';
+import Profile from './Profile';
+import MyServices from '../views/MyServices';
 import Disputes from '../views/Disputes';
 
 import {ImProfile} from "react-icons/im"
@@ -52,8 +52,8 @@ export default function DashBoard() {
 			}
 		</div>
 		<Routes>
-            <Route 	path="/profile" 	element={<UserProfile />}/>
-            <Route 	path="/services" 	element={<Services />}/>
+            <Route 	path="/profile" 	element={<Profile />}/>
+            <Route 	path="/services" 	element={<MyServices />}/>
             <Route 	path="/disputes" 	element={<Disputes />}/>
         </Routes>
 	</div>

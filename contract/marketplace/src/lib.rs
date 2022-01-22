@@ -148,12 +148,14 @@ impl Marketplace {
         for _i in 0 .. quantity {
             service.on_sale = true;
 
+
             if self.service_by_id.insert(&self.total_services, &service).is_some() {
                 env::panic("Service already exists".as_bytes());
             }
 
             services_set.insert(&self.total_services);
             self.total_services += 1;
+            service.id = self.total_services;
         }
 
         self.services_by_account.insert(&sender, &services_set);
@@ -748,6 +750,12 @@ impl Marketplace {
         self.total_services
     }
 
+    pub fn get_services(&self, from_index: u64, limit: u64) -> Vec<Service>{
+        let values = self.service_by_id.values_as_vector();
+        return (from_index..std::cmp::min(from_index + limit, self.service_by_id.len()))
+            .map(|index| values.get(index).unwrap())
+            .collect();
+    }
 
     /*******************************/
     /****** CALLBACK FUNCTIONS *****/

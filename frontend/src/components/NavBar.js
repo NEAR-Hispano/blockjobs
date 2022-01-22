@@ -4,7 +4,7 @@ import { BsPersonFill } from "react-icons/bs"
 import { Menu, Transition, Dialog } from '@headlessui/react'
 import { useNavigate, Link } from "react-router-dom";
 import { utils } from "near-api-js";
-import { login, logout } from '../utils'
+import { getUser, login, logout } from '../utils'
 import { toast } from 'react-toastify';
 import Select from 'react-select'
 
@@ -16,11 +16,16 @@ export default function NavBar(props) {
     return (
         <div className="bg-[#27C0EF] h-20 flex items-center z-30 w-full relative">
             <div className="container mx-auto px-6 flex items-center justify-between">
-                <Link to="/" className="text-white font-bold text-4xl">
-                    <span className="font-normal">Block</span>
-                    Jobs
-                </Link>
                 <div className="flex items-center">
+                    <Link to="/" className="text-white font-bold text-4xl">
+                        <span className="font-normal">Block</span>
+                        Jobs
+                    </Link>
+                </div>
+                <div className="flex items-center">
+                    <Link to="/services" className="uppercase py-2 px-4 rounded-lg bg-transparent border-2 text-white text-md mr-4">
+                        Buscar Servicios
+                    </Link>
                     <NavBarContent countries={props.countriesData} />
                 </div>
             </div>
@@ -74,14 +79,11 @@ function NavBarContent(props) {
     useEffect(async () => {
         // let timeout
         if (window.walletConnection.isSignedIn()) {
-            try {
-                await window.contract.get_user({ account_id: window.accountId })
+            if (await getUser(window.accountId)) {
                 setIsUserCreated(true)
             }
-            catch (e) {
+            else {
                 setIsUserCreated(false);
-                toast.error(String(e.message.match("\".*\"")))
-                console.log(e)
             }
         }
     }, [])
