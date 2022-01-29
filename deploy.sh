@@ -57,7 +57,7 @@ near call $FT_ID update_minter '{"account": "'$ME_ID'"}' --accountId $FT_ID
 echo "Creando usuarios y servicios"
 near call $MA_ID add_user '{"roles": ["Professional"], "categories": "hola"}' --accountId $ID --amount 0.03
 near call $MA_ID add_user '{"roles": ["Employeer"], "categories": "hola"}' --accountId $ID2 --amount 0.03
-near call $MA_ID mint_service '{"metadata": {"title": "Desarrollo web", "description": "Trabajo part-time con React", "icon": "foto.png", "price": 2}, "quantity": 3, "duration": 30}' --accountId $ID --amount 0.029
+near call $MA_ID mint_service '{"metadata": {"title": "Desarrollo web", "description": "Trabajo part-time con React", "icon": "foto.png", "price": 2, "categories": "none"}, "quantity": 3, "duration": 30}' --accountId $ID --amount 0.029
 
 # near call $FT_ID transfer_tokens '{"to": "'$ME_ID'", "amount": 1}' --accountId $FT_ID
 # near call $FT_ID transfer_tokens '{"to": "'$ID2'", "amount": 10000}' --accountId $FT_ID

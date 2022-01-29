@@ -1,21 +1,25 @@
 import React, { useEffect, useState } from "react";
-
-import ServicesCard from "../components/ServicesCard";
-
+import { useParams } from "react-router-dom";
 import { utils } from "near-api-js";
 import { toast } from "react-toastify";
-import { buyService, getServiceById, getUser } from "../utils";
-import { useParams } from "react-router-dom";
+
+import { buyService, getServiceById, getUser, login, reclaimService, reclaimServiceTest } from "../utils";
+import CreateServiceDialog from "../components/CreateServiceDialog";
+import ServicesCard from "../components/ServicesCard";
 import UserProfile from "../components/UserProfile";
-import { async } from "regenerator-runtime";
+
+import { useGlobalState } from "../state";
 
 export default function Service() {
+    const [isUserCreated] = useGlobalState('isUserCreated');
     let [service, setService] = useState();
     let [user, setUser] = useState();
     let [loading, setLoading] = useState(true)
-
+    let [loadingReclaimService, setLoadingReclaimService] = useState(false)
+    let [isOpen, setIsOpen] = useState(false)
+    let [clock, setClockLeft] = useState(new Date())
     const params = useParams();
-
+    
     useEffect(async ()=>{
         let loadingService = true
         let loadingUser = true
@@ -36,8 +40,16 @@ export default function Service() {
         if (!loadingService && !loadingUser) {
             setLoading(false)
         }
-
     }, [])
+
+    useEffect(() => {
+        let timerId = setTimeout(() => {
+            setClockLeft(new Date())
+        }, 1000)
+        return function cleanup() {
+            clearInterval(timerId);
+        }
+    }, [clock])
     
     const handleBuyService = async () => {
         const userBalance = utils.format.formatNearAmount((await window.walletConnection.account().getAccountBalance()).available)
@@ -52,8 +64,51 @@ export default function Service() {
         toast.error("No tienes suficientes fondos para adquirir este servicio")
     }
 
+    const closeModal = () => {
+        setIsOpen(false)
+    }
+    
+    const openModal = () => {
+        setIsOpen(true)
+    }
+    
+    const dateToString = (date) => {
+        let d = new Date(Math.round(date / 1000000)).toLocaleDateString()
+        return d
+    }
+    
+    const dateToString2 = (date) => {
+        return new Date(date).toLocaleDateString()
+    }
+
+    
+    const timeLeftService = (sold_moment) => {
+        let s = new Date(Math.round((sold_moment * service.duration) / 1000000)) - clock
+        let diff = new Date(s)
+        return `${diff.getHours()}:${diff.getMinutes()}:${diff.getSeconds()}`
+    }
+
+    const handleReclainService = async () => {
+        let now = new Date().getTime()
+        setLoadingReclaimService(true)
+        if (now >= getReclaimDate()) {
+            await reclaimService(service.id)
+            location.reload();
+        }
+        else {
+            await reclaimServiceTest(service.id)
+            location.reload();
+        }
+    }
+
+    const getReclaimDate = () => {
+        let reclaimMoment = new Date(Math.round(service.buy_moment / 1000000))
+        return reclaimMoment.setDate(reclaimMoment.getDate() + service.duration)
+    }
+
     return (
         <div className="">
+            { service && <CreateServiceDialog isOpen={isOpen} closeModal={closeModal} openModal={openModal} service={service}/>}
             <div className="m-8">
                 {
                     loading ? (
@@ -65,19 +120,39 @@ export default function Service() {
                     ) : (
                         <div>
                             {
-                                !window.accountId ? (
-                                    <></>
-                                ) : (((service.actual_owner != window.accountId) || (service.creator_id != window.accountId)) && (!service.sold)) ? (
+                                !window.walletConnection.isSignedIn() ? (
+                                    <button onClick={login} className="uppercase py-2 px-4 rounded-lg bg-[#04AADD] border-transparent text-white text-md mr-4">Login</button>
+                                ) : (((service.actual_owner != window.accountId) || (service.creator_id != window.accountId)) && (!service.sold)) && isUserCreated ? (
                                     <button onClick={handleBuyService} className="uppercase py-2 px-4 rounded-lg bg-green-500 border-transparent text-white text-md mr-4">Comprar servicio</button>
-                                ) : ((service.actual_owner == window.accountId) || (service.creator_id == window.accountId)) ? (
-                                    <span className="uppercase py-2 px-4 rounded-lg bg-green-500 border-transparent text-white text-md mr-4">Usted es el dueño de este servicio!</span>
-                                ): (
+                                ) : ((service.actual_owner == window.accountId) && (service.creator_id == window.accountId) && (!service.sold) && isUserCreated) ? (
+                                    <div className="flex flex-row justify-between">
+                                        <div className="flex">
+                                            <button onClick={openModal} className="uppercase py-2 px-4 rounded-lg bg-[#04AADD] border-transparent text-white text-md mr-4">Editar servicio</button>
+                                            <button className="uppercase py-2 px-4 rounded-lg bg-red-400 border-transparent text-white text-md mr-4">Eliminar servicio</button>
+                                        </div>
+                                    </div>
+                                ) : ((service.actual_owner == window.accountId) && (service.creator_id != window.accountId) && (service.sold) && isUserCreated) ? (
                                     <span className="uppercase py-2 px-4 rounded-lg bg-green-500 border-transparent text-white text-md mr-4">Usted ya adquirio este servicio!</span>
+                                ) : ((service.actual_owner != window.accountId) && (service.creator_id == window.accountId) && (service.sold) && isUserCreated) ? (
+                                    <div>
+                                        <button onClick={handleReclainService} disabled={loadingReclaimService} className="uppercase py-2 px-4 rounded-lg bg-green-600 border-transparent text-white text-md mr-4">
+                                            Reclamar Pago!
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <></>
                                 )
                             }
                             <div className="border-2 rounded-lg px-6 py-4 mt-4">
                                 <div className="text-2xl font-bold text-gray-800 mb-4">Servicio</div>
                                 <ServicesCard service={service}/>
+                                {
+                                    service.sold &&
+                                    <>
+                                        <div className="text font-bold text-gray-800 mb-4">Momento de compra {dateToString(service.buy_moment)}</div>
+                                        <div className="text font-bold text-gray-800 mb-4">Terminara en {timeLeftService(service.buy_moment)} ( {dateToString2(getReclaimDate())} )</div>
+                                    </>
+                                }
                             </div>
                             <div className="border-2 rounded-lg px-6 py-4 mt-4">
                                 <div className="text-2xl font-bold text-gray-800 mb-4">Perfil del usuario</div>

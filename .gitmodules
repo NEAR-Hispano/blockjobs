@@ -1,0 +1,3 @@
+[submodule "SubGraph-BlockJobs-Testnet"]
+	path = SubGraph-BlockJobs-Testnet
+	url = https://github.com/SanchezDario/SubGraph-BlockJobs-Testnet

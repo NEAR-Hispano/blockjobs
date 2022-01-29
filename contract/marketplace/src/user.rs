@@ -12,6 +12,23 @@ pub enum UserRoles {
     Judge = 3,
 }
 
+
+// #[derive(BorshDeserialize, BorshSerialize, Serialize, Deserialize, Clone, Debug)]
+// #[serde(crate = "near_sdk::serde")]
+// pub enum IdiomLevel {
+//     Beginner,
+//     Intermedian,
+//     Expert,
+//     Native
+// }
+
+#[derive(BorshDeserialize, BorshSerialize, Serialize, Deserialize, Clone, Debug)]
+#[serde(crate = "near_sdk::serde")]
+pub struct Idiom {
+    idiom: String,
+    level: String
+}
+
 // No deberia dar problemas
 #[derive(BorshDeserialize, BorshSerialize, Serialize, Deserialize, Clone, Debug)]
 #[serde(crate = "near_sdk::serde")]
@@ -21,7 +38,9 @@ pub struct PersonalData {
     pub links: Vec<String>,
     pub picture: String,
     pub bio: String,
-    pub country: String
+    pub country: String,
+    pub email: String,
+    pub idioms: Vec<Idiom>
 }
  
 #[derive(BorshDeserialize, BorshSerialize, Serialize, Deserialize, Clone, Debug)]

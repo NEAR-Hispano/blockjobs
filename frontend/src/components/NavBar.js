@@ -1,18 +1,21 @@
 import 'regenerator-runtime/runtime'
 import React, { Fragment, useState, useEffect } from 'react'
 import { BsPersonFill } from "react-icons/bs"
-import { Menu, Transition, Dialog } from '@headlessui/react'
 import { useNavigate, Link } from "react-router-dom";
-import { utils } from "near-api-js";
-import { getUser, login, logout } from '../utils'
-import { toast } from 'react-toastify';
-import Select from 'react-select'
+
+import { Menu, Transition } from '@headlessui/react'
 
 import { ImProfile } from "react-icons/im"
 import { RiSuitcaseFill } from "react-icons/ri"
 import { MdHowToVote, MdLogout } from "react-icons/md"
 
-export default function NavBar(props) {
+import { useGlobalState } from "../state"
+
+import { getUser, login, logout } from '../utils'
+
+import DialogUserCreator from "../components/DialogUserCreator"
+
+export default function NavBar() {
     return (
         <div className="bg-[#27C0EF] h-20 flex items-center z-30 w-full relative">
             <div className="container mx-auto px-6 flex items-center justify-between">
@@ -26,24 +29,17 @@ export default function NavBar(props) {
                     <Link to="/services" className="uppercase py-2 px-4 rounded-lg bg-transparent border-2 text-white text-md mr-4">
                         Buscar Servicios
                     </Link>
-                    <NavBarContent countries={props.countriesData} />
+                    <NavBarContent />
                 </div>
             </div>
         </div>
     )
 }
 
-function NavBarContent(props) {
+function NavBarContent() {
     let [isOpen, setIsOpen] = useState(false)
-    let [isUserCreated, setIsUserCreated] = useState(true)
-    let [beEmployeer, setbeEmployeer] = useState(false)
 
-    let [educacionInput, setEducacionInput] = useState("")
-    let [legalNameInput, setLegalNameInput] = useState("")
-    let [linksInputs, setLinksInputs] = useState(["", "", "", ""])
-    let [pictureInput, setPictureInput] = useState("")
-    let [bioInput, setBioInput] = useState("")
-    const [countryInput, setCountryInput] = useState('')
+    const [isUserCreated] = useGlobalState('isUserCreated');
 
     const navegation = useNavigate();
 
@@ -72,22 +68,9 @@ function NavBarContent(props) {
         {
             title: "Logout",
             icon: <MdLogout />,
-            action: logout 
+            action: logout
         },
     ]
-
-    useEffect(async () => {
-        // let timeout
-        if (window.walletConnection.isSignedIn()) {
-            if (await getUser(window.accountId)) {
-                setIsUserCreated(true)
-            }
-            else {
-                setIsUserCreated(false);
-            }
-        }
-    }, [])
-
 
     function closeModal() {
         setIsOpen(false)
@@ -101,7 +84,7 @@ function NavBarContent(props) {
         return (
             <nav className="font-sen text-white uppercase text-base lg:flex items-center hidden">
                 <div className="py-2 pl-3 pr-4 flex items-center">
-                    <button className="uppercase font-medium text-lg border-2 rounded-lg px-4 py-2" onClick={login}>
+                    <button className="uppercase font-medium text-md border-2 rounded-lg px-4 py-2" onClick={login}>
                         Login
                     </button>
                     {/* <img src={require("../../assets/logo-white.svg")}></img> */}
@@ -113,7 +96,7 @@ function NavBarContent(props) {
     return (
         <nav className="lg:flex items-center hidden">
             {!isUserCreated ? (
-                <div className="mx-6">
+                <div className="mx-2">
                     <button className="rounded-lg bg-transparent border-2 py-2 px-2 font-sen text-white uppercase text-base"
                         onClick={openModal}
                     >
@@ -123,7 +106,7 @@ function NavBarContent(props) {
                 (<></>)
             }
             <Menu as="div" className="relative inline-block text-left z-30">
-                <div>
+                <div className="ml-2">
                     <Menu.Button className="w-full p-2 bg-white rounded-full">
                         <BsPersonFill color="#27C0EF" size={24} />
                     </Menu.Button>
@@ -166,175 +149,8 @@ function NavBarContent(props) {
                 </Transition>
             </Menu>
             {!isUserCreated ? (
-                <Transition appear show={isOpen} as={Fragment}>
-                    <Dialog
-                        as="div"
-                        className="fixed inset-0 z-50 overflow-y-auto"
-                        onClose={closeModal}
-                    >
-                        <div className="min-h-screen px-4 text-center">
-                            <Transition.Child
-                                as={Fragment}
-                                enter="ease-out duration-300"
-                                enterFrom="opacity-0"
-                                enterTo="opacity-100"
-                                leave="ease-in duration-200"
-                                leaveFrom="opacity-100"
-                                leaveTo="opacity-0"
-                            >
-                                <Dialog.Overlay className="fixed inset-0 bg-[#F8F7FF] " />
-                            </Transition.Child>
-
-                            {/* This element is to trick the browser into centering the modal contents. */}
-                            <span
-                                className="inline-block h-screen align-middle"
-                                aria-hidden="true"
-                            >
-                                &#8203;
-                            </span>
-                            <Transition.Child
-                                as={Fragment}
-                                enter="ease-out duration-300"
-                                enterFrom="opacity-0 scale-95"
-                                enterTo="opacity-100 scale-100"
-                                leave="ease-in duration-200"
-                                leaveFrom="opacity-100 scale-100"
-                                leaveTo="opacity-0 scale-95"
-                            >
-                                <div className="min-w-[50%] inline-block w-full max-w-md p-6 my-8 overflow-hidden text-left align-middle transition-all transform bg-white shadow-xl rounded-2xl">
-                                    <Dialog.Title
-                                        as="h3"
-                                        className="text-lg font-medium leading-6 text-gray-900"
-                                    >
-                                        Crear un usuario nuevo
-                                    </Dialog.Title>
-                                    <div className="mt-2">
-                                        <p className="text-sm text-gray-500 border-b-2 pb-2">
-                                            Por favor, rellene este formulario para poder crear tu usuario. Al finalizar se va a cobrar un peaje de 0.05 NEARS para cubrir el storage,
-                                            el sobrante se rotornara. <br /><span className="font-bold">Estos datos son opcionales!!!</span>
-                                        </p>
-                                    </div>
-                                    <div className="mt-2">
-                                        <label className="text-gray-700 text-sm font-semibold">
-                                            Nombre legal
-                                        </label>
-                                        <input
-                                            value={legalNameInput}
-                                            onChange={(e) => { setLegalNameInput(e.target.value) }}
-                                            className="mb-2 bg-gray-200 appearance-none border-2 border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-[#27C0EF]"
-                                        ></input>
-
-                                        <label className="text-gray-700 text-sm font-semibold">
-                                            Educacion
-                                        </label>
-                                        <input
-                                            value={educacionInput}
-                                            onChange={(e) => { setEducacionInput(e.target.value) }}
-                                            className="mb-2 bg-gray-200 appearance-none border-2 border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-[#27C0EF]"
-                                        ></input>
-
-                                        <label className="text-gray-700 text-sm font-semibold">Links</label>
-                                        <div className="grid grid-cols-2 gap-2 mb-2">
-                                            {
-                                                linksInputs.map((v, index) => {
-                                                    return (
-                                                        <div key={index}>
-                                                            <input
-                                                                value={v}
-                                                                onChange={(e) => {
-                                                                    let newArr = [...linksInputs]
-                                                                    newArr[index] = e.target.value
-                                                                    setLinksInputs(newArr)
-                                                                }
-                                                                }
-                                                                className="bg-gray-200 appearance-none border-2 border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-[#27C0EF]"
-                                                            ></input>
-                                                        </div>
-                                                    )
-                                                })
-                                            }
-                                        </div>
-
-                                        <label className="text-gray-700 text-sm font-semibold">
-                                            Picture Link
-                                        </label>
-                                        <input
-                                            value={pictureInput}
-                                            onChange={(e) => { setPictureInput(e.target.value) }}
-                                            className="mb-2 bg-gray-200 appearance-none border-2 border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-[#27C0EF]"
-                                        ></input>
-
-                                        <label className="text-gray-700 text-sm font-semibold">
-                                            Bio
-                                        </label>
-                                        {/* bioInput, setBioInput */}
-                                        <textarea
-                                            value={bioInput}
-                                            onChange={(e) => { setBioInput(e.target.value) }}
-                                            className="mb-2 bg-gray-200 appearance-none border-2 border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-[#27C0EF]"
-                                        ></textarea>
-
-
-                                        <div className="mb-2">
-                                            <label className="text-gray-700 text-sm font-semibold">Pais</label>
-                                            <Select className="bg-gray-200" options={props.countries} value={countryInput} onChange={(value) => { setCountryInput(value) }} />
-                                        </div>
-                                    </div>
-
-                                    <div>
-                                        <input checked={beEmployeer} onChange={(e) => { setbeEmployeer(!beEmployeer) }} type="checkbox" className="checked:bg-[#27C0EF]"></input>
-                                        <label className="form-check-label inline-block text-gray-900 pl-2" for="flexCheckDefault">
-                                            Ser empleador
-                                        </label>
-                                    </div>
-                                    <div className="mt-4">
-                                        <button
-                                            type="button"
-                                            className="inline-flex justify-center px-4 py-2 mr-4 text-white bg-[#27C0EF] border border-transparent rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 font-bold"
-                                            onClick={async () => {
-                                                let amt = utils.format.parseNearAmount("0.05");
-                                                let personalData = JSON.stringify({
-                                                    legal_name: legalNameInput,
-                                                    education: educacionInput,
-                                                    links: linksInputs,
-                                                    picture: pictureInput,
-                                                    bio: bioInput,
-                                                    country: countryInput.label
-                                                })
-                                                try {
-
-                                                    let roles = ["Professional"];
-                                                    if (beEmployeer) {
-                                                        roles.push("Employeer");
-                                                    }
-                                                    let user = await window.contract.add_user({ roles: roles, personal_data: personalData }, "300000000000000", amt);
-                                                    console.log(personalData)
-
-                                                    setLegalNameInput("")
-                                                    setEducacionInput("")
-                                                    setPictureInput("")
-                                                    setBioInput("")
-                                                    setLinksInputs(linksInputs.map((v) => { return "" }))
-                                                } catch (e) {
-                                                    console.log(e.error)
-                                                }
-                                            }}
-                                        >
-                                            Crear!
-                                        </button>
-                                        <button
-                                            type="button"
-                                            className="inline-flex justify-center px-4 py-2 text-white bg-[#FF0000] border border-transparent rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 font-bold"
-                                            onClick={closeModal}
-                                        >
-                                            Ahora no!
-                                        </button>
-                                    </div>
-                                </div>
-                            </Transition.Child>
-                        </div>
-                    </Dialog>
-                </Transition>) :
+                <DialogUserCreator isOpen={isOpen} closeModal={closeModal} user={null}/>
+            ) :
                 (<></>)
             }
         </nav>

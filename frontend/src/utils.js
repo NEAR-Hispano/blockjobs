@@ -1,8 +1,9 @@
-import { connect, Contract, keyStores, WalletConnection } from "near-api-js"
+import { connect, Contract, keyStores, WalletConnection, utils } from "near-api-js"
 import { toast } from "react-toastify";
 import { async } from "regenerator-runtime";
-
 import getConfig from "./config"
+import { NFTStorage, File } from 'nft.storage'
+// import { pack } from 'ipfs-car/pack';
 
 const nearConfig = getConfig(process.env.NODE_ENV || "development")
 
@@ -42,14 +43,17 @@ export async function initContract() {
       "mint_service",
       "buy_service",
       "reclaim_dispute",
+      "reclaim_service",
+      "reclaim_service_test",
+      "update_user_data",
+      "update_service",
       "update_service_on_sale",
-      "update_service_duration",
-      "update_service_metadata",
       "return_service_by_admin",
     ],
     sender: nearConfig.contractName
   })
 
+  window.nftStorageClient = new NFTStorage({ token: String(process.env.NFT_STORAGE_API_KEY) })
 }
 
 export function logout() {
@@ -71,7 +75,69 @@ function getErrMsg(e) {
   return finalErrorMsg.substring(1, finalErrorMsg.length - 1) 
 }
 
-export async function getUserServices() {
+/* Services relate */
+
+export async function mintService(serviceMetadata, amountOfServices, durationService, amt) {
+  try {
+    return await window.contract.mint_service({ metadata: serviceMetadata, quantity: amountOfServices, duration: durationService }, "300000000000000", amt);
+  } catch(e) {
+    let finalErrorMsg = getErrMsg(e)
+    toast.error(finalErrorMsg)
+    console.log(e)
+    return null
+  }
+}
+
+export async function buyService(serviceId, deposit) {
+  try {
+    await window.contract.buy_service({service_id: serviceId}, "300000000000000", deposit)
+    return true
+  } catch(e) {
+    let finalErrorMsg = getErrMsg(e)
+    toast.error(finalErrorMsg)
+    console.log(e)
+    return false
+  }
+}
+
+export async function updateService(serviceId, serviceMetadata, durationService, amt) {
+  try {
+    await window.contract.update_service({service_id: serviceId, metadata: serviceMetadata, duration: durationService}, "300000000000000", amt)
+    return true
+  } catch(e) {
+    let finalErrorMsg = getErrMsg(e)
+    toast.error(finalErrorMsg)
+    console.log(e)
+    return false
+  }
+}
+
+export async function reclaimService() {
+  // let fee = utils.format.parseNearAmount("0.1");
+  try {
+    await window.contract.reclaim_service({service_id: serviceId}, "300000000000000")
+    return true
+  } catch(e) {
+    let finalErrorMsg = getErrMsg(e)
+    toast.error(finalErrorMsg)
+    console.log(e)
+    return false
+  }
+}
+export async function reclaimServiceTest(serviceId) {
+  // let fee = utils.format.parseNearAmount("0.1");
+  try {
+    await window.contract.reclaim_service_test({service_id: serviceId}, "300000000000000")
+    return true
+  } catch(e) {
+    let finalErrorMsg = getErrMsg(e)
+    toast.error(finalErrorMsg)
+    console.log(e)
+    return false
+  }
+}
+
+export async function getUserServices(serviceId) {
   try {
     return await window.contract.get_user_services({account_id: window.accountId, only_on_sale: false})
   } catch(e) {
@@ -105,9 +171,24 @@ export async function getServices(index, limit) {
   }
 }
 
-export async function mintService(serviceMetadata, amountOfServices, durationService, amt) {
+/* User relate */
+
+export async function addUser(roles, personalData) {
+  let amt = utils.format.parseNearAmount("0.1");
   try {
-    return await window.contract.mint_service({ metadata: serviceMetadata, quantity: amountOfServices, duration: durationService }, "300000000000000", amt);
+    return await window.contract.add_user({ roles: roles, personal_data: personalData }, "300000000000000", amt);
+  } catch(e) {
+    let finalErrorMsg = getErrMsg(e)
+    toast.error(finalErrorMsg)
+    console.log(e)
+    return null
+  }
+}
+
+export async function updateUserData(roles, data) {
+  let amt = utils.format.parseNearAmount("0.1");
+  try {
+    return await window.contract.update_user_data({roles: roles, data: data}, "300000000000000", amt)
   } catch(e) {
     let finalErrorMsg = getErrMsg(e)
     toast.error(finalErrorMsg)
@@ -124,17 +205,5 @@ export async function getUser(accountId) {
     toast.error(finalErrorMsg)
     console.log(e)
     return null
-  }
-}
-
-export async function buyService(serviceId, deposit) {
-  try {
-    await window.contract.buy_service({service_id: serviceId}, "300000000000000", deposit)
-    return true
-  } catch(e) {
-    let finalErrorMsg = getErrMsg(e)
-    toast.error(finalErrorMsg)
-    console.log(e)
-    return false
   }
 }

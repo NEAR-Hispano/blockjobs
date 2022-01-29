@@ -19,10 +19,6 @@ export default function ServicesCard(props) {
                     <div>
                         <div className="text-[#034D82] text-lg">{props.service.metadata.title}</div>
                         <div className="truncate text-slate-700">{props.service.metadata.description}</div>
-                        <div className=" text-sm flex items-center">
-                            {props.service.metadata.price}
-                            <img className="w-[26px]" src={require("../../assets/logo-black.svg")}></img>
-                        </div>
                     </div>
                 </div>
                 {/* <div class="border mx-2"></div> */}
@@ -60,12 +56,19 @@ export default function ServicesCard(props) {
                 </div>
             </div>
 
-            <div className="font-light text-sm flex whitespace-pre-wrap">
-                <div>
-                    <span className="font-semibold">Creador: </span>{props.service.creator_id}
-                    <span className="font-semibold"> | </span>
+            <div className="font-light text-sm flex justify-between items-center mt-1 whitespace-pre-wrap">
+                <div className="flex whitespace-pre-wrap">
+                    <div>
+                        <span className="font-semibold">Creador: </span>{props.service.creator_id}
+                        <span className="font-semibold"> | </span>
+                    </div>
+                    <div><span className="font-semibold">Dueño: </span>{props.service.actual_owner}</div>
                 </div>
-                <div><span className="font-semibold">Dueño: </span>{props.service.actual_owner}</div>
+
+                <div className=" text-sm flex items-center">
+                    {props.service.metadata.price}
+                    <img className="w-[26px]" src={require("../../assets/logo-black.svg")}></img>
+                </div>
             </div>
         </div>
     )
