@@ -17,6 +17,7 @@ const NO_DEPOSIT: Balance = 0;
 const BASE_GAS: Gas = 30_000_000_000_000;
 const MAX_GAS: Gas = 250_000_000_000_000;
 const ONE_DAY: u64 = 86400000000000;
+const YOCTO_NEAR: u128 = 1000000000000000000000000;
 
 setup_alloc!();
 
@@ -273,12 +274,15 @@ impl Mediator {
     /// 
     pub fn pay_service(&self, beneficiary: AccountId, amount: Balance) -> Balance {
         let sender = env::predecessor_account_id();
+        env::log(sender.as_bytes());
+        env::log(self.marketplace_contract.as_bytes());
+        env::log(self.owner.as_bytes());
         if sender != self.marketplace_contract && sender != self.owner {
             env::panic(b"You don't have permissions to generate a payment");
         }
 
         // Realizar el pago en NEARs.
-        Promise::new(beneficiary).transfer(amount);
+        Promise::new(beneficiary).transfer(amount * YOCTO_NEAR);
 
         env::account_balance()
     }

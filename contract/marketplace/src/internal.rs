@@ -33,6 +33,7 @@ pub(crate) fn deposit_refund(storage_used: u64) {
 }
 
 pub(crate) fn deposit_refund_to(storage_used: u64, to: AccountId) {
+    env::log(format!("Storage cost per bytes: {}", env::storage_byte_cost()).as_bytes());
     let required_cost = env::storage_byte_cost() * Balance::from(storage_used);
     let attached_deposit = env::attached_deposit();
 

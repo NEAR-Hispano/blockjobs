@@ -37,3 +37,5 @@ near view $MA_ID get_user_services '{"account_id": "'$MA_ID'", "only_on_sale": t
 near view $MA_ID get_user_service_id '{"account_id": "'$ID'"}' --accountId $MA_ID
 
 near view $MA_ID get_total_services '{}' --accountId $MA_ID
+
+near view $MA_ID get_services '{"from_index":, "limit": }'
