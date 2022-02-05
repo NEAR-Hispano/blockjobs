@@ -95,6 +95,15 @@ impl Token {
         self.pending_to_mint = 0;
     }
 
+    /// Mintear nuevos tokens, limitado por pending_amount.
+    /// No se puede mintear por sobre esa cantidad.
+    /// 
+    pub fn mint_test(&mut self, receiver: ValidAccountId) {
+        self.mint_into(&receiver.to_string(), self.pending_to_mint);
+
+        self.pending_to_mint = 0;
+    }
+
     /// Cambiar la cuenta con permisos para mintear.
     /// Solo puede haber un Minter.
     /// 
@@ -248,6 +257,18 @@ impl Token {
         } else {
             return true;
         }
+    }
+    /// Verificar que el ususario tenga el suficiente balance bloqueado para poder ser jurado.
+    /// Solo ejecutable por y desde desde Mediator.
+    /// 
+    pub fn validate_tokens_test(&self, account_id: AccountId) -> bool {
+        // let balance = self.get_allowance_of(&account_id);
+        // if balance < self.min_blocked_amount {
+        //     env::panic(b"Insufficient balance");
+        // } else {
+        //     return true;
+        // }
+        return true;
     }
 
     /**********************/

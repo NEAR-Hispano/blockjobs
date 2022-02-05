@@ -1,6 +1,6 @@
 use std::fmt::Display;
 use near_sdk::serde::{Deserialize, Serialize};
-// use serde_with::skip_serializing_none;
+use serde_with::skip_serializing_none;
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "snake_case")]
@@ -49,19 +49,24 @@ pub struct ServiceMintData {
     // on_dispute: bool,
 }
 
-// #[skip_serializing_none]
 #[derive(Serialize, Deserialize, Debug)]
 pub struct ServiceBuyData {id: u64, buyer_id: String}
 
 #[derive(Serialize, Deserialize, Debug)]
-pub struct ServiceReclaimData {id: u64, sender_id: String
-}
+pub struct ServiceReclaimData {id: u64, sender_id: String}
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct ServiceReturnData {id: u64, creator_id: String}
 
 #[derive(Serialize, Deserialize, Debug)]
-pub struct ServiceUpdateMetadataData {id: u64, metadata: String}
+pub struct ServiceUpdateMetadataData {
+    id: u64,
+    title: String,
+    description: String,
+    categories: String,
+    price: u128,
+    duration: u16,
+}
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct ServiceUpdateDurationData {id: u64, new_duration: u16}
@@ -69,14 +74,15 @@ pub struct ServiceUpdateDurationData {id: u64, new_duration: u16}
 #[derive(Serialize, Deserialize, Debug)]
 pub struct ServiceUpdateOnSaleData {id: u64, on_sale: bool}
 
+#[skip_serializing_none]
 #[derive(Serialize, Deserialize, Debug)]
-pub struct UserNewData {id: u64, roles: String, data: String, reputation: i16, banned: bool}
+pub struct UserNewData {id: String, roles: String, data: Option<String>, reputation: i16, banned: bool}
 
 #[derive(Serialize, Deserialize, Debug)]
-pub struct UserUpdateRolesData {id: u64, roles: String}
+pub struct UserUpdateRolesData {id: String, roles: String}
 
 #[derive(Serialize, Deserialize, Debug)]
-pub struct UserUpdateDatesData {id: u64, data: String}
+pub struct UserUpdateDatesData {id: String, data: String}
 
 // #[derive(Serialize, Deserialize, Debug)]
 // pub struct DisputeNewData {
@@ -107,7 +113,7 @@ impl NearEvent {
         NearEvent::service_mint(data).log();
     }
     fn service_mint(data: Vec<ServiceMintData>) -> Self {
-        NearEvent::new(EventKind::ServiceMint(data))
+        NearEvent::service_event(EventKind::ServiceMint(data))
     }
 
     // Compra de un servicio.
@@ -116,7 +122,7 @@ impl NearEvent {
         NearEvent::service_buy(data).log();
     }
     fn service_buy(data: Vec<ServiceBuyData>) -> Self {
-        NearEvent::new(EventKind::ServiceBuy(data))
+        NearEvent::service_event(EventKind::ServiceBuy(data))
     }
 
     // Reclamo de un servicio por parte del profesional.
@@ -125,7 +131,7 @@ impl NearEvent {
         NearEvent::service_reclaim(data).log();
     }
     fn service_reclaim(data: Vec<ServiceReclaimData>) -> Self {
-        NearEvent::new(EventKind::ServiceReclaim(data))
+        NearEvent::service_event(EventKind::ServiceReclaim(data))
     }
 
     // Retorno de un servicio por parte de un Admin.
@@ -134,17 +140,26 @@ impl NearEvent {
         NearEvent::service_return(data).log();
     }
     fn service_return(data: Vec<ServiceReturnData>) -> Self {
-        NearEvent::new(EventKind::ServiceReturn(data))
+        NearEvent::service_event(EventKind::ServiceReturn(data))
     }
 
     // TODO segmentar la metadata
     // Update de la metadata de un servicio por parte del profesional.
-    pub fn log_service_update_metadata(id: u64,  metadata: String) {
-        let data = vec![ServiceUpdateMetadataData {id, metadata}];
+    pub fn log_service_update_metadata(
+        id: u64, 
+        title: String,
+        description: String,
+        categories: String,
+        price: u128, 
+        duration: u16,) 
+    {
+        let data = vec![ServiceUpdateMetadataData {
+            id, title, description, categories, price, duration}
+        ];
         NearEvent::service_update_metadata(data).log();
     }
     fn service_update_metadata(data: Vec<ServiceUpdateMetadataData>) -> Self {
-        NearEvent::new(EventKind::ServiceUpdateMetadata(data))
+        NearEvent::service_event(EventKind::ServiceUpdateMetadata(data))
     }
 
     // Update de la duracion de un servicio por parte del profesional.
@@ -153,7 +168,7 @@ impl NearEvent {
         NearEvent::service_update_duration(data).log();
     }
     fn service_update_duration(data: Vec<ServiceUpdateDurationData>) -> Self {
-        NearEvent::new(EventKind::ServiceUpdateDuration(data))
+        NearEvent::service_event(EventKind::ServiceUpdateDuration(data))
     }
 
     // Update de si un servicio esta o no en venta por parte del profesional.
@@ -162,17 +177,35 @@ impl NearEvent {
         NearEvent::service_update_on_sale(data).log();
     }
     fn service_update_on_sale(data: Vec<ServiceUpdateOnSaleData>) -> Self {
-        NearEvent::new(EventKind::ServiceUpdateOnSale(data))
+        NearEvent::service_event(EventKind::ServiceUpdateOnSale(data))
     }
 
 
     // Registro de un nuevo usuario.
-    pub fn log_user_new(id: u64, roles: String, data: String, reputation: i16, banned: bool) {
+    pub fn log_user_new(id: String, roles: String, data: Option<String>, reputation: i16, banned: bool) {
         let data = vec![UserNewData {id, roles, data, reputation, banned}];
         NearEvent::user_new(data).log();
     }
     fn user_new(data: Vec<UserNewData>) -> Self {
-        NearEvent::new(EventKind::UserNew(data))
+        NearEvent::user_event(EventKind::UserNew(data))
+    }
+
+    // Modificar la data de un usuario.
+    pub fn log_user_update_data(id: String, data: String) {
+        let data = vec![UserUpdateDatesData {id, data}];
+        NearEvent::user_update_data(data).log();
+    }
+    fn user_update_data(data: Vec<UserUpdateDatesData>) -> Self {
+        NearEvent::user_event(EventKind::UserUpdateDates(data))
+    }
+
+    // Modificar los roles de un usuario.
+    pub fn log_user_update_roles(id: String, roles: String) {
+        let data = vec![UserUpdateRolesData {id, roles}];
+        NearEvent::user_update_roles(data).log();
+    }
+    fn user_update_roles(data: Vec<UserUpdateRolesData>) -> Self {
+        NearEvent::user_event(EventKind::UserUpdateRoles(data))
     }
 
 
@@ -182,22 +215,25 @@ impl NearEvent {
     //     NearEvent::dispute_new(data).log();
     // }
     // fn dispute_new(data: Vec<DisputeNewData>) -> Self {
-    //     NearEvent::new(EventKind::DisputeNew(data))
+    //     NearEvent::service_event(EventKind::DisputeNew(data))
     // }
 
     // Funciones internas.
-    fn new(event_kind: EventKind) -> Self {
+    fn service_event(event_kind: EventKind) -> Self {
         NearEvent::Service(Event { event_kind })
     }
 
-    pub(crate) fn to_json_string(&self) -> String {
-        serde_json::to_string(self).unwrap()
+    fn user_event(event_kind: EventKind) -> Self {
+        NearEvent::User(Event { event_kind })
     }
 
     fn log(&self) {
         near_sdk::env::log(&self.to_string().as_bytes());
     }
-    
+
+    pub(crate) fn to_json_string(&self) -> String {
+        serde_json::to_string(self).unwrap()
+    }    
     
 }
 

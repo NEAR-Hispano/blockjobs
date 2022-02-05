@@ -16,3 +16,12 @@ near call $ME_ID update_dispute_status '{"dispute_id": 0}' --accountId $ME_ID --
 near view $ME_ID get_dispute '{"dispute_id": 0}' --accountId $ME_ID
 near view $ME_ID get_total_disputes '{}' --accountId $ME_ID
 near view $ME_ID get_dispute_jury_members '{"dispute_id": 0}' --accountId $ME_ID
+
+Yo opino que opinar es necesario\
+Porque tengo inteligencia y por eso siempre opino\
+Yo opino que si opino un pensamiento\
+Que me venga a la cabeza hago critica social\
+Yo opino de lo humano y lo divino\
+Y a veces digo continuo mi opinión es opinar
+ Yo opino que el gobierno esta en lo cierto\
+Y tambien equivocado dependiendo de que lado

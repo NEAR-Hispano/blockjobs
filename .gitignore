@@ -26,6 +26,8 @@ workspace.code-workspace
 .env.production.local
 **/.cache
 
+/frontend/.env
+
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*

@@ -2,6 +2,7 @@ use std::collections::{HashSet};
 use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
 use near_sdk::serde::{Deserialize, Serialize};
 use near_sdk::{AccountId};
+use std::fmt::{Display, Formatter, Result};
 
 #[derive(BorshDeserialize, BorshSerialize, Serialize, Deserialize, Clone, Copy, PartialOrd, PartialEq, Eq, Hash, Debug)]
 #[serde(crate = "near_sdk::serde")]
@@ -10,6 +11,17 @@ pub enum UserRoles {
     Employeer = 1,
     Admin = 2,
     Judge = 3,
+}
+
+impl Display for UserRoles {
+    fn fmt(&self, f: &mut Formatter) -> Result {
+        match self {
+            UserRoles::Professional => write!(f, "Professional"),
+            UserRoles::Employeer => write!(f, "Employeer"),
+            UserRoles::Admin => write!(f, "Admin"),
+            UserRoles::Judge => write!(f, "Judge"),
+        }
+    }
 }
 
 

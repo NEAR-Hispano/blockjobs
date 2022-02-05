@@ -55,6 +55,10 @@ export default function CreateServiceDialog({ isOpen, closeModal, openModal, ser
         setterHook(v)
     }
 
+    const fiatUSD2NEAR = (usdAmount) => {
+
+    }
+
     return (
         <Transition appear show={isOpen} as={Fragment}>
             <Dialog
@@ -177,7 +181,7 @@ export default function CreateServiceDialog({ isOpen, closeModal, openModal, ser
                                                         <button className=" bg-gray-300 text-gray-600 hover:text-gray-700 hover:bg-gray-400 h-full w-20 rounded-l cursor-pointer outline-none" onClick={() => { v.counter(-1, v.value, v.setter) }}>
                                                             <span className="m-auto text-2xl font-thin">−</span>
                                                         </button>
-                                                        <input className="outline-none focus:outline-none text-center w-full bg-gray-300 font-semibold text-md hover:text-black focus:text-black  md:text-basecursor-default flex items-center text-gray-700  outline-none"
+                                                        <input className="outline-none focus:outline-none text-center w-full bg-gray-300 font-semibold text-md hover:text-black focus:text-black  md:text-basecursor-default flex items-center text-gray-700 "
                                                             value={v.value} onChange={v.action}
                                                         ></input>
                                                         <button className="bg-gray-300 text-gray-600 hover:text-gray-700 hover:bg-gray-400 h-full w-20 rounded-r cursor-pointer" onClick={() => { v.counter(1, v.value, v.setter) }}>
@@ -199,7 +203,7 @@ export default function CreateServiceDialog({ isOpen, closeModal, openModal, ser
                                                         <button className=" bg-gray-300 text-gray-600 hover:text-gray-700 hover:bg-gray-400 h-full w-20 rounded-l cursor-pointer outline-none" onClick={() => { v.counter(-1, v.value, v.setter) }}>
                                                             <span className="m-auto text-2xl font-thin">−</span>
                                                         </button>
-                                                        <input className="outline-none focus:outline-none text-center w-full bg-gray-300 font-semibold text-md hover:text-black focus:text-black  md:text-basecursor-default flex items-center text-gray-700  outline-none"
+                                                        <input className="outline-none focus:outline-none text-center w-full bg-gray-300 font-semibold text-md hover:text-black focus:text-black  md:text-basecursor-default flex items-center text-gray-700"
                                                             value={v.value} onChange={v.action}
                                                         ></input>
                                                         <button className="bg-gray-300 text-gray-600 hover:text-gray-700 hover:bg-gray-400 h-full w-20 rounded-r cursor-pointer" onClick={() => { v.counter(1, v.value, v.setter) }}>
@@ -298,6 +302,7 @@ export default function CreateServiceDialog({ isOpen, closeModal, openModal, ser
                                                             })
                                                             const imgData = metadata.data.image;
                                                             const finalUrl = `https://ipfs.io/ipfs/${imgData.host}${imgData.pathname}`
+                                                            console.log(finalUrl)
                                                             serviceMetadata.icon = finalUrl
                                                             setLoadingPicture(false)
                                                         }
@@ -306,6 +311,7 @@ export default function CreateServiceDialog({ isOpen, closeModal, openModal, ser
                                                         }
                                                     }
                                                         
+                                                    console.log(serviceMetadata)
                                                     if (!service) {
                                                         await mintService(serviceMetadata, amountOfServices, durationService, amt)
                                                     }
@@ -315,7 +321,6 @@ export default function CreateServiceDialog({ isOpen, closeModal, openModal, ser
                                                 } else {
                                                     toast.error(finalValidatorMsg)
                                                 }
-                                                console.log(serviceMetadata)
 
 
                                             } catch (e) {

@@ -32,6 +32,13 @@ export FT_ID=$CONTRACT_NAME
 
 cd ../../
 
+echo "Creando el fichero .env en frontend"
+cd ./frontend/src/
+NEWLINE=$'\n'
+TAP=$'\t'
+echo "{${NEWLINE}${TAP}\"MARKETPLACE_CONTRACT\": \"$MA_ID\",${NEWLINE}${TAP}\"MEDIATOR_CONTRACT\": \"$ME_ID\",${NEWLINE}${TAP}\"FT_CONTRACT\": \"${FT_ID}\"${NEWLINE}}" > contractsAccounts.json
+cd ../../
+
 echo "inicializando el contrato de FT"
 near call $FT_ID new_default_meta '{"owner_id": "'$FT_ID'", "initial_supply": "100001"}' --accountId $FT_ID
 

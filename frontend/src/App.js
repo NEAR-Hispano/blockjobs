@@ -19,6 +19,8 @@ import Service from './views/Service';
 
 import { useGlobalState, setIsUserCreated } from "./state"
 import { getUser } from './utils';
+import Disputes from './views/Disputes';
+import Dispute from './views/Dispute';
 
 export default function App() {
     const [isUserCreated] = useGlobalState('isUserCreated');
@@ -59,6 +61,9 @@ export default function App() {
 
                         <Route path="services" element={<Services />} />
                         <Route path="service/:id" element={<Service />} />
+
+                        <Route path="disputes" element={<Disputes />} />
+                        <Route path="dispute/:id" element={<Dispute />} />
                     </Routes>
                     <Footer />
                     <ToastContainer

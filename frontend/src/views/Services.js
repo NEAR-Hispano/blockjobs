@@ -6,7 +6,6 @@ import ServicesCard from "../components/ServicesCard";
 import { getServices, getUserServices } from "../utils";
 
 export default function Services() {
-    const navigate = useNavigate()
     let [services, setServices] = useState([]);
     let [loading, setLoading] = useState(true)
 
@@ -32,7 +31,7 @@ export default function Services() {
                             {/* <div className="text-xl font-bold text-gray-800">Servicios</div> */}
                             {
                                 services.map((v, i) => {return (
-                                    <div className="hover:cursor-pointer my-4" onClick={()=>{navigate(`/service/${v.id}`)}} key={v.id}>
+                                    <div className="my-4" key={v.id}>
                                         <ServicesCard service={v} />
                                     </div>
                                 )})
