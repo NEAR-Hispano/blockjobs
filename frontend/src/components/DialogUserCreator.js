@@ -416,12 +416,12 @@ export default function DialogUserCreator({ isOpen, closeModal, user }) {
                                             email: emailInput,
                                             idioms: idiomInput
                                         }
+                                        console.log(personalData)
                                         try {
                                             let roles = ["Professional", "Employeer"];
                                             
                                             if (selectFile) {
 
-                                                console.log(selectFile)
                                                 if (selectFile.size < ((1024 ** 1024) * 5)) {
                                                     setLoadingPicture(true)
                                                     const metadata = await window.nftStorageClient.store({
@@ -430,6 +430,7 @@ export default function DialogUserCreator({ isOpen, closeModal, user }) {
                                                         image: selectFile
                                                     })
                                                     const imgData = metadata.data.image;
+                                                    console.log(imgData)
                                                     const finalUrl = `https://ipfs.io/ipfs/${imgData.host}${imgData.pathname}`
                                                     personalData.picture = finalUrl
                                                     setLoadingPicture(false)

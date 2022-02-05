@@ -105,3 +105,7 @@
   max-height: 40px;
   margin-bottom: auto;
 }
+
+.prose :where(pre):not(:where([class~="not-prose"] *)) {
+  background-color: #f5f7ff00 !important
+}

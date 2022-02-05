@@ -577,6 +577,15 @@ impl Marketplace {
             env::log(format!("Required storage in bytes: {}", required_storage_in_bytes).as_bytes());
             deposit_refund_to(required_storage_in_bytes, env::predecessor_account_id());
         }
+
+        NearEvent::log_service_update_metadata(
+            service.id.clone(),
+            service.metadata.title.clone(),
+            service.metadata.description.clone(),
+            service.metadata.categories.clone(),
+            service.metadata.price.clone(),
+            service.duration.clone(),
+        );
         
         service
     }
@@ -625,8 +634,8 @@ impl Marketplace {
     ///
     /// #Arguments
     /// * `account_id`  - La cuenta de mainnet/testnet de quien sera registrado.
-    /// * `role`        - El role que tendra el usuario. Solo los admin puenden decir quien es moderador.
-    /// * `category`    - La categoria en la cual el usuario puede decir a que se dedica.
+    /// * `roles`        - El rol o roles que tendra el usuario. Solo los admin puenden decir quien es moderador.
+    /// * `personal_data`    - Categorias y areas las cuales el usuario puede decir a que se dedica.
     #[payable]
     pub fn add_user(&mut self, roles: Vec<UserRoles>, personal_data: Option<String>) -> User {
         let initial_storage_usage = env::storage_usage();
@@ -634,16 +643,14 @@ impl Marketplace {
 
         let account_id: AccountId = env::predecessor_account_id();
 
-        if personal_data.is_some()
-        {
-            // solo vereficar los nombre del json
+        if personal_data.is_some() {
+            // Solo vereficar los nombre del json.
             let _p: PersonalData = serde_json::from_str(personal_data.as_ref().unwrap()).unwrap();
         }
         
         let services_set = UnorderedSet::new(unique_prefix(&account_id));
 
         self.services_by_account.insert(&account_id, &services_set);
-
 
         let mut new_user = User{
             account_id: account_id.clone(),
@@ -670,10 +677,15 @@ impl Marketplace {
 
         deposit_refund_to(required_storage_in_bytes, account_id);
 
-        // NearEvent::log_user_new(
-        //     account_id.clone(),
-        //     on_sale.clone()
-        // );
+        let rol: String = roles[0].to_string();
+
+        NearEvent::log_user_new(
+            new_user.account_id.clone().to_string(),
+            rol,
+            new_user.personal_data.clone(),
+            new_user.reputation.clone(),
+            new_user.banned.clone()
+        );
 
         new_user
     }
@@ -687,7 +699,7 @@ impl Marketplace {
         self.services_by_account.insert(&account_id, &services_set);
 
         let initial_storage_usage = env::storage_usage();
-        env::log(format!("initial store usage: {}", initial_storage_usage).as_bytes());
+        env::log(format!("Initial store usage: {}", initial_storage_usage).as_bytes());
 
         let mut new_user = User{
             account_id: account_id.clone(),
@@ -737,29 +749,25 @@ impl Marketplace {
     /// * `account_id`  - La cuenta de mainnet/testnet de quien sera registrado.
     /// * `category`    - La categoria en la cual el usuario puede decir a que se dedica.
     #[payable]
-    pub fn update_user_data(&mut self, roles: Vec<UserRoles>, data: String) -> User {
+    pub fn update_user_data(&mut self, data: String) -> User {
         let initial_storage_usage = env::storage_usage();
         env::log(format!("Initial store usage: {}", initial_storage_usage).as_bytes());
         
-        // solo vereficar los nombre del json
+        // Solo vereficar los nombre del json.
         let _p: PersonalData = serde_json::from_str(&data).unwrap();
         
         let account_id: AccountId = env::predecessor_account_id();
         let mut user = self.get_user(string_to_valid_account_id(&account_id));
         
         if account_id.to_string() != user.account_id {
-            env::panic(b"Only the user cant modify it self");
+            env::panic(b"Only the user can modify this parameter");
         }
         
-        user.personal_data = Some(data);
-
-        for r in roles.iter() {
-            user.roles.insert(*r);
-        }
+        user.personal_data = Some(data.clone());
 
         self.users.insert(&account_id.clone(), &user);
 
-        env::log(format!("secun store usage: {}", env::storage_usage()).as_bytes());
+        env::log(format!("Segund store usage: {}", env::storage_usage()).as_bytes());
         if initial_storage_usage <  env::storage_usage() {
             let new_services_size_in_bytes = env::storage_usage() - initial_storage_usage;
             env::log(format!("New size in bytes: {}", new_services_size_in_bytes).as_bytes());
@@ -769,7 +777,12 @@ impl Marketplace {
             deposit_refund_to(required_storage_in_bytes, account_id);
         }
 
-        return user;
+        NearEvent::log_user_update_data(
+            user.account_id.clone(),
+            data.clone()
+        );
+
+        user
     }
 
     /// Agregar o quitar un rol al usuario.
@@ -783,24 +796,27 @@ impl Marketplace {
         let is_owner_sender = env::predecessor_account_id() != self.contract_owner;
 
         if is_user_sender && is_owner_sender {
-            env::panic(b"Only the user and admins cant modify it self");
+            env::panic(b"Only the user and admins can modify this parameter");
         }
         if is_owner_sender && (role as u8 > 1) {
-            env::panic(b"Only the admins cant grant the admin or mod role");
+            env::panic(b"Only the admins can have the Admin or Modder role");
         }
 
         let mut user = self.get_user(account_id.clone());
 
-        if !remove {
-            user.roles.insert(role);
-        }
-        else {
-            user.roles.remove(&role);
-        }
+        if !remove { user.roles.insert(role); }
+        else { user.roles.remove(&role); }
 
-        self.users.insert(&account_id.into(), &user);
+        self.users.insert(&account_id.clone().into(), &user);
         
-        return user
+        let rol: String = role.to_string();
+
+        NearEvent::log_user_update_roles(
+            account_id.clone().to_string(),
+            rol
+        );
+
+        user
     }
     
     /*******************************/
@@ -810,7 +826,7 @@ impl Marketplace {
     /// #Arguments
     /// * `account_id`  - La cuenta de mainnet/testnet del usuario.
     pub fn get_user(&self, account_id: ValidAccountId) -> User {
-        expect_value_found(self.users.get(&account_id.into()), "No users found. Register the user first".as_bytes())
+        expect_value_found(self.users.get(&account_id.into()), b"No users found. Register the user first")
     }
 
     /// TODO(Sebas): Optimizar con paginacion
@@ -908,6 +924,20 @@ impl Marketplace {
         if user.reputation < 3 {
             env::panic(b"Your reputation isn't sufficient");
         }
+        
+        true
+    }
+    
+    pub fn validate_user_test(&self, account_id: AccountId) -> bool {
+        // let user_id = string_to_valid_account_id(&account_id);
+        // let user = self.get_user(user_id);
+
+        // if !user.roles.get(&UserRoles::Judge).is_some() {
+        //     env::panic(b"Is required have a Judge status to can vote");
+        // }
+        // if user.reputation < 3 {
+        //     env::panic(b"Your reputation isn't sufficient");
+        // }
         
         true
     }

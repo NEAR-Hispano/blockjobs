@@ -8,6 +8,7 @@ import { Menu, Transition } from '@headlessui/react'
 import { ImProfile } from "react-icons/im"
 import { RiSuitcaseFill } from "react-icons/ri"
 import { MdHowToVote, MdLogout } from "react-icons/md"
+import { BiCoinStack } from "react-icons/bi"
 
 import { useGlobalState } from "../state"
 
@@ -20,14 +21,17 @@ export default function NavBar() {
         <div className="bg-[#27C0EF] h-20 flex items-center z-30 w-full relative">
             <div className="container mx-auto px-6 flex items-center justify-between">
                 <div className="flex items-center">
-                    <Link to="/" className="text-white font-bold text-4xl">
+                    <Link to="/" className="text-white font-bold text-4xl transition ease-in-out hover:scale-105 duration-300">
                         <span className="font-normal">Block</span>
                         Jobs
                     </Link>
                 </div>
                 <div className="flex items-center">
-                    <Link to="/services" className="uppercase py-2 px-4 rounded-lg bg-transparent border-2 text-white text-md mr-4">
+                    <Link to="/services" className="uppercase py-2 px-4 rounded-lg bg-transparent border-2 text-white text-md mr-4 transition ease-in-out hover:scale-105 duration-300 shadow-lg shadow-sky-500">
                         Buscar Servicios
+                    </Link>
+                    <Link to="/disputes" className="uppercase py-2 px-4 rounded-lg bg-transparent border-2 text-white text-md mr-4 transition ease-in-out hover:scale-105 duration-300 shadow-lg shadow-sky-500">
+                        Ver Disputas
                     </Link>
                     <NavBarContent />
                 </div>
@@ -66,6 +70,13 @@ function NavBarContent() {
             }
         },
         {
+            title: "JobsCoin",
+            icon: <BiCoinStack />,
+            action: () => {
+                navegation("/dashboard/tokens")
+            }
+        },
+        {
             title: "Logout",
             icon: <MdLogout />,
             action: logout
@@ -84,7 +95,7 @@ function NavBarContent() {
         return (
             <nav className="font-sen text-white uppercase text-base lg:flex items-center hidden">
                 <div className="py-2 pl-3 pr-4 flex items-center">
-                    <button className="uppercase font-medium text-md border-2 rounded-lg px-4 py-2" onClick={login}>
+                    <button className="uppercase font-medium text-md border-2 rounded-lg px-4 py-2 transition ease-in-out hover:scale-105 duration-300 shadow-lg shadow-sky-500" onClick={login}>
                         Login
                     </button>
                     {/* <img src={require("../../assets/logo-white.svg")}></img> */}
@@ -97,7 +108,7 @@ function NavBarContent() {
         <nav className="lg:flex items-center hidden">
             {!isUserCreated ? (
                 <div className="mx-2">
-                    <button className="rounded-lg bg-transparent border-2 py-2 px-2 font-sen text-white uppercase text-base"
+                    <button className="rounded-lg bg-transparent border-2 py-2 px-2 font-sen text-white uppercase text-base transition ease-in-out hover:scale-105 duration-300 shadow-lg shadow-sky-500"
                         onClick={openModal}
                     >
                         Crear usuario
@@ -107,7 +118,7 @@ function NavBarContent() {
             }
             <Menu as="div" className="relative inline-block text-left z-30">
                 <div className="ml-2">
-                    <Menu.Button className="w-full p-2 bg-white rounded-full">
+                    <Menu.Button className="w-full p-2 bg-white rounded-full transition ease-in-out hover:scale-105 duration-300 shadow-lg shadow-sky-500">
                         <BsPersonFill color="#27C0EF" size={24} />
                     </Menu.Button>
                 </div>
@@ -132,7 +143,7 @@ function NavBarContent() {
                                     return (
                                         <Menu.Item key={i}>
                                             {({ active }) => (
-                                                <button onClick={v.action} className={`${active ? 'bg-[#00A8DB] text-white' : 'text-[#00A8DB]'
+                                                <button onClick={v.action} className={`${active ? 'transition hover:bg-[#00A8DB] duration-75 text-white' : 'transition hover:bg-white duration-300 text-[#00A8DB]'
                                                     } group flex rounded-md items-center w-full px-2 py-2 mt-1 text-sm`}
                                                 >
                                                     <div className="flex items-center">

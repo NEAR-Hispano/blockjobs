@@ -21,10 +21,10 @@ export default function Home() {
                                 BlockJob is a dapp to search for jobs and freelancers. In addition to being an arbitrator to ensure that both parties are compliant.
                             </p>
                             <div className="flex mt-8">
-                                <Link to="/help" className="uppercase py-2 px-4 rounded-lg bg-white border-transparent text-cyan-500 text-md mr-4">
+                                <Link to="/help" className="uppercase py-2 px-4 rounded-lg bg-white border-transparent text-cyan-500 text-md mr-4 transition ease-in-out hover:scale-105 hover:-translate-y-0.5 duration-300 shadow-lg shadow-sky-500">
                                     See how it works
                                 </Link>
-                                <button className="uppercase py-2 px-4 rounded-lg bg-transparent border-2 text-white text-md" 
+                                <button className="uppercase py-2 px-4 rounded-lg bg-transparent border-2 text-white text-md transition ease-in-out hover:scale-105 hover:-translate-y-0.5 duration-300 shadow-lg shadow-sky-500" 
                                     onClick={login}>
                                     Start now</button>
                             </div>
@@ -45,7 +45,7 @@ export default function Home() {
                 <div className="font-bebas-neue grid grid-cols-2 gap-4">
                     <Fade left>
                         <div className="flex justify-center">
-                            <img src={require("../../assets/iphone-12.svg")}></img>
+                            <img className="-skew-y-3" src={require("../../assets/iphone-12.svg")}></img>
                         </div>
                     </Fade>
                     <Fade right cascade>
@@ -78,7 +78,7 @@ export default function Home() {
                     </Fade>
                     <Fade right>
                         <div className="flex justify-center">
-                            <img src={require("../../assets/logo-black.svg")}></img>
+                            <img className="skew-y-6" src={require("../../assets/logo-black.svg")}></img>
                         </div>
                     </Fade>
                 </div>
@@ -90,7 +90,7 @@ export default function Home() {
                     <Fade top cascade>
                         <div className="flex flex-col justify-center items-center">
                             <div className="text-center text-[#034D82] text-2xl italic font-bold ">Become a Freelancer</div>
-                            <img className="max-w-[100px] mt-4 mb-1" src={require("../../assets/image 4.png")}></img>
+                            <img className=" max-w-[100px] mt-4 mb-1" src={require("../../assets/image 4.png")}></img>
                             <div className="text-center text-[#034D82] text-xl font-bold ">Find Job</div>
                             <VscArrowDown size={40} color="#034D82" className="w-full my-4"/>
                             <img className="max-w-[100px] mb-1" src={require("../../assets/image 5.png")}></img>

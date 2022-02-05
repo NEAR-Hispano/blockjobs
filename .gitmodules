@@ -1,3 +1,6 @@
-[submodule "SubGraph-BlockJobs-Testnet"]
-	path = SubGraph-BlockJobs-Testnet
-	url = https://github.com/SanchezDario/SubGraph-BlockJobs-Testnet
+[submodule "NEAR-SubGraph-BlockJobs-MKP"]
+	path = NEAR-SubGraph-BlockJobs-MKP
+	url = https://github.com/SanchezDario/NEAR-SubGraph-BlockJobs-MKP
+[submodule "NEAR-SubGraph-BlockJobs-MDT"]
+	path = NEAR-SubGraph-BlockJobs-MDT
+	url = https://github.com/SanchezDario/-NEAR-SubGraph-BlockJobs-MDT.git

@@ -5,6 +5,7 @@ import { toast } from "react-toastify";
 
 import { buyService, getServiceById, getUser, login, reclaimService, reclaimServiceTest } from "../utils";
 import CreateServiceDialog from "../components/CreateServiceDialog";
+import CreateDisputeDialog from "../components/CreateDisputeDialog";
 import ServicesCard from "../components/ServicesCard";
 import UserProfile from "../components/UserProfile";
 
@@ -17,12 +18,12 @@ export default function Service() {
     let [loading, setLoading] = useState(true)
     let [loadingReclaimService, setLoadingReclaimService] = useState(false)
     let [isOpen, setIsOpen] = useState(false)
-    let [clock, setClockLeft] = useState(new Date())
     const params = useParams();
     
     useEffect(async ()=>{
         let loadingService = true
         let loadingUser = true
+
         let s = await getServiceById(Number(params.id))
         console.log(s)
         if (s) {
@@ -41,15 +42,6 @@ export default function Service() {
             setLoading(false)
         }
     }, [])
-
-    useEffect(() => {
-        let timerId = setTimeout(() => {
-            setClockLeft(new Date())
-        }, 1000)
-        return function cleanup() {
-            clearInterval(timerId);
-        }
-    }, [clock])
     
     const handleBuyService = async () => {
         const userBalance = utils.format.formatNearAmount((await window.walletConnection.account().getAccountBalance()).available)
@@ -77,23 +69,20 @@ export default function Service() {
         return d
     }
     
-    const dateToString2 = (date) => {
-        return new Date(date).toLocaleDateString()
-    }
-
-    
     const timeLeftService = (sold_moment) => {
-        let s = new Date(Math.round((sold_moment * service.duration) / 1000000)) - clock
-        let diff = new Date(s)
-        return `${diff.getHours()}:${diff.getMinutes()}:${diff.getSeconds()}`
+        // let s = new Date(Math.round((sold_moment) / 1000000)) - clock
+        let s = new Date(Math.round((sold_moment) / 1000000))
+        s.setDate(s.getDate() + service.duration)
+        return s.getDate() + "/" + (s.getMonth() + 1) + "/" + s.getFullYear() + "  (" +  s.getHours() + ":" + s.getMinutes() + ":" + s.getSeconds() + ")";
     }
 
     const handleReclainService = async () => {
         let now = new Date().getTime()
         setLoadingReclaimService(true)
         if (now >= getReclaimDate()) {
-            await reclaimService(service.id)
-            location.reload();
+            // await reclaimService(service.id)
+            // location.reload();
+            console.log("Hora correcta")
         }
         else {
             await reclaimServiceTest(service.id)
@@ -108,7 +97,18 @@ export default function Service() {
 
     return (
         <div className="">
-            { service && <CreateServiceDialog isOpen={isOpen} closeModal={closeModal} openModal={openModal} service={service}/>}
+            {
+                service ? 
+                ((service.actual_owner == window.accountId) && (service.creator_id == window.accountId) && (!service.sold) && isUserCreated) ? (
+                    <CreateServiceDialog isOpen={isOpen} closeModal={closeModal} openModal={openModal} service={service}/>
+                ) : ((service.actual_owner == window.accountId) && (service.creator_id != window.accountId) && (service.sold) && isUserCreated) ? (
+                    <CreateDisputeDialog isOpen={isOpen} closeModal={closeModal} openModal={openModal} serviceId={service.id}/>
+                ) : (
+                    <></>
+                ): (
+                    <></>
+                )
+            }
             <div className="m-8">
                 {
                     loading ? (
@@ -131,9 +131,11 @@ export default function Service() {
                                             <button className="uppercase py-2 px-4 rounded-lg bg-red-400 border-transparent text-white text-md mr-4">Eliminar servicio</button>
                                         </div>
                                     </div>
-                                ) : ((service.actual_owner == window.accountId) && (service.creator_id != window.accountId) && (service.sold) && isUserCreated) ? (
-                                    <span className="uppercase py-2 px-4 rounded-lg bg-green-500 border-transparent text-white text-md mr-4">Usted ya adquirio este servicio!</span>
-                                ) : ((service.actual_owner != window.accountId) && (service.creator_id == window.accountId) && (service.sold) && isUserCreated) ? (
+                                ) : ((service.actual_owner == window.accountId) && (service.creator_id != window.accountId) && (service.sold) && (!service.on_dispute) && isUserCreated) ? (
+                                    <div className="flex justify-end">
+                                        <button onClick={openModal} className="uppercase py-2 px-4 rounded-lg bg-red-400 border-transparent text-white text-md mr-4">Reclamar!</button>
+                                    </div>
+                                ) : ((service.actual_owner != window.accountId) && (service.creator_id == window.accountId) && (service.sold) && (!service.on_dispute) && isUserCreated) ? (
                                     <div>
                                         <button onClick={handleReclainService} disabled={loadingReclaimService} className="uppercase py-2 px-4 rounded-lg bg-green-600 border-transparent text-white text-md mr-4">
                                             Reclamar Pago!
@@ -150,7 +152,7 @@ export default function Service() {
                                     service.sold &&
                                     <>
                                         <div className="text font-bold text-gray-800 mb-4">Momento de compra {dateToString(service.buy_moment)}</div>
-                                        <div className="text font-bold text-gray-800 mb-4">Terminara en {timeLeftService(service.buy_moment)} ( {dateToString2(getReclaimDate())} )</div>
+                                        <div className="text font-bold text-gray-800 mb-4">Terminara el {timeLeftService(service.buy_moment)}</div>
                                     </>
                                 }
                             </div>
