@@ -2,8 +2,9 @@
   "name": "BlockJobs",
   "version": "0.1.0",
   "license": "UNLICENSED",
+  "homepage": "http://NEAR-Hispano.github.io/mkt-servicios-profesionales",
   "scripts": {
-    "build:web": "parcel build src/index.html --public-url ./",
+    "build:web": "parcel build src/index.html --public-url ../",
     "deploy:pages": "gh-pages -d dist/",
     "start": "echo The app is starting! It will automatically open in your browser when ready && env-cmd -f ./.env parcel src/index.html --open",
     "watch:css": "tailwindcss -i ./assets/tailwind.css -o ./assets/main.css --watch",
