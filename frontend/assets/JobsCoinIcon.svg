@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="210mm"
+   height="297mm"
+   viewBox="0 0 210 297"
+   version="1.1"
+   id="svg5"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs2" />
+  <g
+     id="layer1">
+    <circle
+       style="fill:#27c0ef;fill-opacity:1;fill-rule:evenodd;stroke-width:0.264583"
+       id="path31"
+       cx="105.83802"
+       cy="131.97983"
+       r="100" />
+    <path
+       style="fill:#ffffff;fill-opacity:1"
+       id="path1358"
+       d="M 1247.0849,385.15023 1111.2318,744.48864 1265.1521,643.77645 881.42001,625.61413 1024.767,740.87921 923.46063,370.31587 858.13367,542.26579 1179.255,331.40737 995.53374,322.41318 1295.304,562.65886 Z"
+       transform="matrix(0.43881635,-0.110478,0.11129644,0.44206717,-425.91049,18.12306)" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:79.8997px;line-height:1.25;font-family:'Bernard MT Condensed';-inkscape-font-specification:'Bernard MT Condensed, ';fill:#1a1a1a;fill-opacity:1;stroke:none;stroke-width:0.936328"
+       x="100.96188"
+       y="160.4895"
+       id="text4898"
+       transform="matrix(1.0661398,0.18159818,-0.13522952,0.91492932,0,0)"><tspan
+         id="tspan4896"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:79.8997px;font-family:'Bernard MT Condensed';-inkscape-font-specification:'Bernard MT Condensed, ';fill:#1a1a1a;fill-opacity:1;stroke-width:0.936328"
+         x="100.96188"
+         y="160.4895">J</tspan></text>
+    <ellipse
+       style="fill:#1a1a1a;fill-opacity:1;stroke-width:0.264583"
+       id="path19001"
+       cx="102.38392"
+       cy="90.818542"
+       rx="7.3871169"
+       ry="7.5765305" />
+  </g>
+</svg>

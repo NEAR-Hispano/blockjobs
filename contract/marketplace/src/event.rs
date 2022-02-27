@@ -7,7 +7,6 @@ use serde_with::skip_serializing_none;
 pub enum NearEvent {
     Service(Event),
     User(Event),
-    // Dispute(Event)
 }
 
 #[derive(Serialize, Deserialize, Debug)]

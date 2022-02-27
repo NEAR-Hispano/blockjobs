@@ -1,7 +1,9 @@
-import React from 'react'
+import React from "react";
 
 export default function AboutUs() {
-    return (
-        <>Sobre nosotros</>
-    )
+  return (
+    <div>
+      <div>Sobre nosotros</div>
+    </div>
+  );
 }

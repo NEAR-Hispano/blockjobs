@@ -1,41 +1,52 @@
 npx tailwindcss -i ./src/assets/tailwind.css -o ./src/assets/main.css --watch
 
-near call $MA_ID new '{"owner_id": "'$MA_ID'", "mediator": "'$ME_ID'", "ft": "'$FT_ID'"}' --accountId $MA_ID --amount 0.03
+near call $MA new '{"owner_id": "'$MA'", "mediator": "'$ME'", "ft": "'$FT'"}' --accountId $MA --amount 0.03
 
-near call $MA_ID add_user '{"roles": ["Professional"], "personal_data": {"legal_name": "Pepe Ramos", "education": "I am a smart contract, I dont need school", "links": [], "bio": "I live inside of a smart contract in the NEAR protocol", "picture": "foto.jpg", "country": "NEARland"}}}' --accountId $ID --amount 0.03
-near call $MA_ID add_user '{"roles": ["Employeer"], "personal_data": {"legal_name": "Pepe Ramos2", "education": "I am a smart contract, I dont need school", "links": [], "bio": "I live inside of a smart contract in the NEAR protocol", "picture": "foto.jpg", "country": "NEARland"}}}' --accountId $ID2 --amount 0.03
+near call $MA add_user '{"roles": ["Professional"], "personal_data": {"legal_name": "Pepe Ramos", "education": "I am a smart contract, I dont need school", "links": [], "bio": "I live inside of a smart contract in the NEAR protocol", "picture": "foto.jpg", "country": "NEARland"}}}' --accountId $ID --amount 0.03
+near call $MA add_user '{"roles": ["Employeer"], "personal_data": {"legal_name": "Pepe Ramos2", "education": "I am a smart contract, I dont need school", "links": [], "bio": "I live inside of a smart contract in the NEAR protocol", "picture": "foto.jpg", "country": "NEARland"}}}' --accountId $ID2 --amount 0.03
+near call $MA add_user '{"roles": ["Employeer"]}' --accountId $ID2 --amount 0.03
 
-near call $MA_ID update_user_data '{"account_id": "'$ID'", "data": "{"education": "I am not a smart contract, I need school", "links": [], "bio": "I live inside of a smart contract in the NEAR protocol", "picture": "foto.jpg"}"}' --accountId $MA_ID
+near call $MA update_user_data '{"account_id": "'$ID'", "data": "{"education": "I am not a smart contract, I need school", "links": [], "bio": "I live inside of a smart contract in the NEAR protocol", "picture": "foto.jpg"}"}' --accountId $MA
 
-near call $MA_ID set_user_role '{"account_id": "'$ID'", "role": "Employeer", "remove": false}' --accountId $MA_ID
-near call $MA_ID set_user_role '{"account_id": "'$ID'", "role": "Employeer", "remove": true}' --accountId $MA_ID
+near call $MA set_user_role '{"account_id": "'$ID'", "role": "Employeer", "remove": false}' --accountId $MA
+near call $MA set_user_role '{"account_id": "'$ID'", "role": "Employeer", "remove": true}' --accountId $MA
 #debe fallar
-near call $MA_ID set_user_role '{"account_id": "'$ID'", "role": "Admin", "remove": false}' --accountId $ID
+near call $MA set_user_role '{"account_id": "'$ID'", "role": "Admin", "remove": false}' --accountId $ID
 
-near call $MA_ID mint_service '{"metadata": {"title": "Desarrollo web", "description": "Trabajo part-time con React", "icon": "foto.png", "price": 1, "categories": "programing"}, "quantity": 3, "duration": 30}' --accountId $ID --amount 0.029
-near call $MA_ID buy_service '{"service_id": 0}' --accountId $ID2 --amount 1 --gas 300000000000000
+near call $MA mint_service '{"metadata": {"title": "Near Apps", "description": "Trabajo part-time con Rust", "icon": "foto.png", "price": 2000000000000000000, "categories": "none", "token": "'$FT'"}, "quantity": 1, "duration": 20}' --accountId $ID --amount 0.029
+near call $MA buy_service '{"service_id": 0}' --accountId $ID2 --amount 1 --gas 300000000000000
+near call $MA buy_service '{"service_id": 0}' --accountId $ID2 --depositYocto 1 --gas 300000000000000
 
-near call $MA_ID reclaim_dispute '{"service_id": 0, "proves": "none"}' --accountId $ID2 --amount 1 --gas 300000000000000
+near call $MA approve_service '{"service_id": 2}' --accountId $ID2 --depositYocto 1 --gas 300000000000000
 
-near call $MA_ID update_service_on_sale '{"service_id": 1, "on_sale": false}' --accountId $ID
-near call $MA_ID update_service_duration '{"service_id": 1, "new_duration": 20}' --accountId $ID
-near call $MA_ID update_service_metadata '{"service_id": 1, "metadata": {"title": "Vitalik Buterin", "description": "description 2", "icon": "foto.png", "price": 2, "categories": "art"} }' --accountId $ID
+near call $MA reclaim_dispute '{"service_id": 0, "proves": "none"}' --accountId $ID2 --amount 1 --gas 300000000000000
 
-near call $MA_ID return_service_by_admin '{"service_id": 0}' --accountId $MA_ID
+near call $MA update_service_on_sale '{"service_id": 1, "on_sale": false}' --accountId $ID
+near call $MA update_service_duration '{"service_id": 1, "new_duration": 20}' --accountId $ID
+near call $MA update_service_metadata '{"service_id": 1, "metadata": {"title": "Vitalik Buterin", "description": "description 2", "icon": "foto.png", "price": 2, "categories": "art"} }' --accountId $ID
+
+near call $MA return_service_by_admin '{"service_id": 0}' --accountId $MA
 
 # Get functions
-near view $MA_ID get_user '{"account_id": "'$MA_ID'"}' --accountId $MA_ID
-near view $MA_ID get_user '{"account_id": "'$ID'"}' --accountId $MA_ID
+near view $MA get_user '{"account_id": "'$MA'"}' --accountId $MA
+near view $MA get_user '{"account_id": "'$ID2'"}' --accountId $MA
 
-near view $MA_ID get_users_by_role '{"role": "Professional", "from_index": 0, "limit": 2}' --accountId $MA_ID
+near view $MA get_users_by_role '{"role": "Professional", "from_index": 0, "limit": 2}' --accountId $MA
 
-near view $MA_ID get_service_by_id '{"service_id": 0}' --accountId $MA_ID
-near view $MA_ID get_service_by_ids '{"ids": [0, 1, 2]}' --accountId $MA_ID
+near view $MA get_service_by_id '{"service_id": 0}' --accountId $MA
+near view $MA get_service_by_ids '{"ids": [0, 1, 2]}' --accountId $MA
 
-near view $MA_ID get_user_services '{"account_id": "'$ID'", "only_on_sale": false}' --accountId $MA_ID
-near view $MA_ID get_user_services '{"account_id": "'$MA_ID'", "only_on_sale": true}' --accountId $MA_ID
-near view $MA_ID get_user_service_id '{"account_id": "'$ID'"}' --accountId $MA_ID
+near view $MA get_user_services '{"account_id": "'$ID'", "only_on_sale": false}' --accountId $MA
+near view $MA get_user_services '{"account_id": "'$MA'", "only_on_sale": true}' --accountId $MA
+near view $MA get_user_service_id '{"account_id": "'$ID'"}' --accountId $MA
 
-near view $MA_ID get_total_services '{}' --accountId $MA_ID
+near view $MA get_total_services '{}' --accountId $MA
 
-near view $MA_ID get_services '{"from_index":, "limit": }'
+near view $MA get_services '{"from_index":, "limit": }' --accountId $MA
+
+near call $MA get_ft_balance '{"token": "jobs"}' --accountId $ID2
+near view $MA get_ft_balance_of '{"token": "jobs", "user": "'$ID2'"}' --accountId $ID2
+
+near call $MA withdraw_ft '{"amount":"500000000000000000","token":"jobs"}' --accountId $ID2 --gas 300000000000000
+                                     500000000000000000 
+near view exchange.ref-dev.testnet get_pool '{"pool_id":347}' --accountId stolkerve4.testnet

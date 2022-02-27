@@ -7,10 +7,12 @@ use near_sdk::serde::{Deserialize, Serialize};
 use near_sdk::collections::{LazyOption, LookupMap};
 use std::collections::HashSet;
 use near_sdk::json_types::{ValidAccountId, U128};
-use near_sdk::{env, log, near_bindgen, AccountId, Balance, PanicOnDefault, PromiseOrValue};
-//use std::convert::TryFrom;
+use near_sdk::{env, log, near_bindgen, AccountId, Balance,
+    PanicOnDefault, PromiseOrValue};
 
 near_sdk::setup_alloc!();
+
+const DECIMALS: Balance = 1_000_000_000_000_000_000; 
 
 #[derive(BorshDeserialize, BorshSerialize, Serialize, Deserialize, Debug, Hash, Eq, PartialOrd, PartialEq, Clone)]
 #[serde(crate = "near_sdk::serde")]
@@ -33,6 +35,7 @@ pub struct Token {
     pub pending_to_mint: Balance,
     // Cantidad de tokens bloqueados minima para poder ser miembro del jurado.
     pub min_blocked_amount: Balance,
+    sales_contract: AccountId,
 }
 
 const IMAGE_ICON: &str = "";
@@ -42,19 +45,20 @@ impl Token {
     /// Inicializa el contrato estableciendo el total supply
     /// Asigna la metadata por default
     #[init]
-    pub fn new_default_meta(owner_id: ValidAccountId, initial_supply: U128) -> Self {
+    pub fn new_default_meta(owner_id: ValidAccountId, initial_supply: U128, sales_contract: AccountId) -> Self {
         Self::new(
             owner_id,
             initial_supply,
             FungibleTokenMetadata {
                 spec: FT_METADATA_SPEC.to_string(),
-                name: "BlockJobs fungible token".to_string(),
-                symbol: "BJT".to_string(),
+                name: "JobsCoin Proof".to_string(),
+                symbol: "JOBSP".to_string(),
                 icon: Some(IMAGE_ICON.to_string()),
                 reference: None,
                 reference_hash: None,
-                decimals: 24,
+                decimals: 18,
             },
+            sales_contract,
         )
     }
 
@@ -62,22 +66,25 @@ impl Token {
     #[init]
     pub fn new(
         owner_id: ValidAccountId,
-        total_services: U128,
+        total_supply: U128,
         metadata: FungibleTokenMetadata,
+        sales_contract: AccountId
     ) -> Self {
         assert!(!env::state_exists(), "Already initialized");
         metadata.assert_valid();
         let mut this = Self {
-            token: FungibleToken::new(b"b".to_vec()),
+            token: FungibleToken::new(b"t".to_vec()),
             metadata: LazyOption::new(b"m".to_vec(), Some(&metadata)),
             minter: env::predecessor_account_id(),
             owner: owner_id.clone(),
             allowance: LookupMap::new(b"a".to_vec()),
             pending_to_mint: 0,
             min_blocked_amount: 10_000,
+            sales_contract: sales_contract
         };
+        let amount: Balance = total_supply.into();
         this.token.internal_register_account(owner_id.as_ref());
-        this.token.internal_deposit(owner_id.as_ref(), total_services.into());
+        this.token.internal_deposit(owner_id.as_ref(), amount*DECIMALS);
         this
     }
 
@@ -90,19 +97,19 @@ impl Token {
     /// 
     pub fn mint(&mut self, receiver: ValidAccountId) {
         self.assert_minter(env::predecessor_account_id());
-        self.mint_into(&receiver.to_string(), self.pending_to_mint);
+        self.mint_into(&receiver.to_string(), self.pending_to_mint*DECIMALS);
 
         self.pending_to_mint = 0;
     }
 
-    /// Mintear nuevos tokens, limitado por pending_amount.
-    /// No se puede mintear por sobre esa cantidad.
-    /// 
-    pub fn mint_test(&mut self, receiver: ValidAccountId) {
-        self.mint_into(&receiver.to_string(), self.pending_to_mint);
+    // /// Mintear nuevos tokens, limitado por pending_amount.
+    // /// No se puede mintear por sobre esa cantidad.
+    // /// 
+    // pub fn mint_test(&mut self, receiver: ValidAccountId) {
+    //     self.mint_into(&receiver.to_string(), self.pending_to_mint*DECIMALS);
 
-        self.pending_to_mint = 0;
-    }
+    //     self.pending_to_mint = 0;
+    // }
 
     /// Cambiar la cuenta con permisos para mintear.
     /// Solo puede haber un Minter.
@@ -115,17 +122,20 @@ impl Token {
     /// Cambiar la cantidad minima de tokens a bloquear para poder
     /// ser miembro del jurado.
     /// 
-    pub fn update_min_blocked_amount(&mut self, amount: u128) -> bool {
+    pub fn update_min_blocked_amount(&mut self, amount: Balance) -> bool {
         self.assert_owner();
-        self.min_blocked_amount = amount;
+        self.min_blocked_amount = amount*DECIMALS;
         true
     }
 
-    pub fn transfer_tokens(&mut self, to: AccountId, amount: Balance) -> Balance {
+    pub fn transfer_ft(&mut self, to: AccountId, amount: U128) -> U128 {
         let sender = env::predecessor_account_id();
 
-        self.token.internal_register_account(&to);
-        self.token.internal_transfer(&sender, &to, amount, None);
+        // self.token.internal_register_account(&to);
+        if !self.token.accounts.contains_key(&to) {
+            self.token.accounts.insert(&to, &0);
+        }
+        self.token.internal_transfer(&sender, &to, amount.into(), None);
 
         amount
     }
@@ -137,10 +147,10 @@ impl Token {
     pub fn block_tokens(&mut self, amount: Balance) -> Balance {
         let sender = env::signer_account_id();
         let contract = self.owner.clone();
-        self.ft_transfer(contract, amount.into(), None);
+        self.ft_transfer(contract, (amount*DECIMALS).into() , None);
 
         // Modificar allowance sumando lo bloqueado
-        self.allowance.insert(&sender, &(amount + self.allowance.get(&sender).unwrap_or(0)));
+        self.allowance.insert(&sender, &(amount*DECIMALS + self.allowance.get(&sender).unwrap_or(0)));
 
         // Retornar allowance
         self.allowance.get(&sender).unwrap_or(0)
@@ -154,13 +164,13 @@ impl Token {
         let sender = env::signer_account_id();
         let contract = self.owner.clone().into();
 
-        if self.allowance.get(&sender) >= Some(amount) {
-            self.token.internal_transfer(&contract, &sender, amount, None);
+        if self.allowance.get(&sender) >= Some(amount*DECIMALS) {
+            self.token.internal_transfer(&contract, &sender, amount*DECIMALS, None);
         };
 
-        let new_allowace = self.allowance.get(&sender).unwrap_or(0) - amount;
+        let new_allowance = self.allowance.get(&sender).unwrap_or(0) - amount*DECIMALS;
         // Modificar allowance restando lo que se retira
-        self.allowance.insert(&sender, &new_allowace);
+        self.allowance.insert(&sender, &new_allowance);
         
         // Retornar la allowance actualizada
         self.allowance.get(&sender).unwrap_or(0)
@@ -252,23 +262,30 @@ impl Token {
     /// 
     pub fn validate_tokens(&self, account_id: AccountId) -> bool {
         let balance = self.get_allowance_of(&account_id);
+        
         if balance < self.min_blocked_amount {
             env::panic(b"Insufficient balance");
         } else {
             return true;
         }
     }
-    /// Verificar que el ususario tenga el suficiente balance bloqueado para poder ser jurado.
-    /// Solo ejecutable por y desde desde Mediator.
-    /// 
-    pub fn validate_tokens_test(&self, account_id: AccountId) -> bool {
-        // let balance = self.get_allowance_of(&account_id);
-        // if balance < self.min_blocked_amount {
-        //     env::panic(b"Insufficient balance");
-        // } else {
-        //     return true;
-        // }
-        return true;
+
+    // /// Verificar que el ususario tenga el suficiente balance bloqueado para poder ser jurado.
+    // /// Solo ejecutable por y desde desde Mediator.
+    // /// 
+    // pub fn validate_tokens_test(&self, _account_id: AccountId) -> bool {
+    //     true
+    // }
+
+    // #[payable]
+    pub fn ft_sale(&mut self, from: AccountId, to: AccountId, amount: Balance) -> Balance {    
+        assert!(env::predecessor_account_id() == self.sales_contract, "You haven't permissions");
+
+        if !self.token.accounts.contains_key(&to) {
+            self.token.accounts.insert(&to, &0);
+        }
+        self.token.internal_transfer(&from, &to, amount*DECIMALS, None);
+        amount
     }
 
     /**********************/

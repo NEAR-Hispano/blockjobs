@@ -4,27 +4,25 @@ use near_sdk::json_types::{ValidAccountId, U128};
 use near_sdk::serde::{Deserialize, Serialize};
 use near_sdk::serde_json;
 use near_sdk::{env, near_bindgen, AccountId, Balance, PanicOnDefault, Promise, StorageUsage, 
-    ext_contract, Gas, PromiseResult};
+    ext_contract, Gas, PromiseResult, PromiseOrValue};
 use std::collections::{HashSet};
 use std::convert::TryFrom;
 // use near_env::PanicMessage;
 
-use crate::internal::*;
 use crate::user::*;
-mod internal;
-mod user;
-
-mod event;
+use crate::internal::*;
+use crate::external::*;
 pub use event::NearEvent;
+mod internal; mod user; mod external; mod event;
 
 near_sdk::setup_alloc!();
 
 const NO_DEPOSIT: Balance = 0;
 const BASE_GAS: Gas = 30_000_000_000_000;
+const GAS_FT_TRANSFER: Gas = 14_000_000_000_000;
 const USER_MINT_LIMIT: u16 = 100;
 const ONE_DAY: u64 = 86400000000000;
-// const GAS_FOR_FT_TRANSFER: Gas = 5_000_000_000_000;
-// const ON_CALLBACK_GAS: u64 = 20_000_000_000_000; 
+const ONE_YOCTO: Balance = 1;
 
 #[derive(BorshDeserialize, BorshSerialize, Serialize, Deserialize)]
 #[serde(crate = "near_sdk::serde")]
@@ -34,15 +32,15 @@ pub struct Service {
     pub creator_id: AccountId,
     pub actual_owner: AccountId,
     pub employers_account_ids: HashSet<AccountId>,
-    // Dias que va a durar el trabajo ofrecido 
+    // Dias que va a durar el trabajo ofrecido.
     pub duration: u16,
-    // Uso de timestamp para fijar momento de compra
+    // Uso de timestamp para fijar momento de compra.
     pub buy_moment: u64,
-    // Determinar si esta en manos del profesional (false) o de un empleador (true)
+    // Determinar si esta en manos del profesional (false) o de un empleador (true).
     pub sold: bool,
-    // Determinar si esta en venta
+    // Determinar si esta en venta.
     pub on_sale: bool,
-    // Determinar si esta en disputa
+    // Determinar si esta en disputa.
     pub on_dispute: bool,
 }
 
@@ -51,9 +49,10 @@ pub struct Service {
 pub struct ServiceMetadata {
     pub title: String,
     pub description: String,
+    pub categories: String,
     pub icon: String,
     pub price: u128,
-    pub categories: String
+    pub token: AccountId
 }
 
 #[near_bindgen]
@@ -68,6 +67,11 @@ pub struct Marketplace {
     pub contract_owner: AccountId,
     pub contract_me: AccountId,
     pub contract_ft: AccountId,
+    // Tokens soportados.
+    pub tokens: UnorderedSet<AccountId>,
+    // Balance disponible de tokens de los usuarios.
+    pub usdc_balances: LookupMap<AccountId, Balance>,
+    pub jobs_balances: LookupMap<AccountId, Balance>,
     // Storage en bytes por cada cuenta.
     pub extra_storage_in_bytes_per_service: StorageUsage,
 }
@@ -80,71 +84,53 @@ impl Marketplace {
     /// * `owner_id`    - La cuenta de mainnet/testnet de quien sera el Owner del contrato.
     #[init]
     #[payable]
-    pub fn new(owner_id: ValidAccountId, mediator: ValidAccountId, ft: ValidAccountId) -> Self {
-        if env::state_exists() {
-            env::panic("Contract already inicialized".as_bytes());
-        }
+    pub fn new(
+        owner_id: ValidAccountId, 
+        mediator: ValidAccountId, 
+        ft: ValidAccountId, 
+        tokens: Option<Vec<ValidAccountId>>) 
+        -> Self 
+        {
+        if env::state_exists() { env::panic("Contract already inicialized".as_bytes()); }
 
         let mut this = Self {
             total_services: 0,
             services_by_account: LookupMap::new(b"a".to_vec()),
-            service_by_id: UnorderedMap::new(b"t".to_vec()),
-            users: UnorderedMap::new(b"u".to_vec()),
+            service_by_id: UnorderedMap::new(b"b".to_vec()),
+            users: UnorderedMap::new(b"c".to_vec()),
             contract_owner: owner_id.clone().into(),
             contract_me: mediator.clone().into(),
             contract_ft: ft.clone().into(),
+            tokens: UnorderedSet::new(b"d".to_vec()),
+            usdc_balances: LookupMap::new(b"e".to_vec()),
+            jobs_balances: LookupMap::new(b"f".to_vec()),
             extra_storage_in_bytes_per_service: 0,
         };
+        // Agregar NEAR por default.
+        this.tokens.insert(&"near".to_string());
+
+        // Agregar otros tokens en caso de haberse indicado como parametro.
+        if let Some(tokens) = tokens {
+            for id in tokens {
+                this.tokens.insert(id.as_ref());
+            }
+        }
 
         let mut roles: Vec<UserRoles> = Vec::new();
         roles.push(UserRoles::Judge);
-        this.add_user_p(roles.clone(), owner_id.into(), 
-            "{
-                \"legal_name\": \"Marketplace Contract\",
-                \"education\": \"I'am a smart contract, I dont need school\",
-                \"links\": [],
-                \"bio\": \"I live inside of a smart contract in the NEAR protocol\",
-                \"picture\": \"https://photo.png\",
-                \"country\": \"NEARland\",
-                \"email\": \"marketplace@nearmail.com\",
-                \"idioms\": [{
-                    \"idiom\": \"binary\",
-                    \"level\": \"Native\"
-                }]
-            }".to_string());
-        
-        this.add_user_p(roles.clone(), mediator.into(), 
-            "{
-                \"legal_name\": \"Mediator Contract\",
-                \"education\": \"I'am a smart contract, I dont need school\",
-                \"links\": [],
-                \"bio\": \"I live inside of a smart contract in the NEAR protocol\",
-                \"picture\": \"https://photo.png\",
-                \"country\": \"NEARland\",
-                \"email\": \"mediator@nearmail.com\",
-                \"idioms\": [{
-                    \"idiom\": \"binary\",
-                    \"level\": \"Native\"
-                }]
-            }".to_string());
-
-        this.add_user_p(roles.clone(), ft.into(), 
-            "{
-                \"legal_name\": \"FT Contract\",
-                \"education\": \"I'am a smart contract, I dont need school\",
-                \"links\": [],
-                \"bio\": \"I live inside of a smart contract in the NEAR protocol\",
-                \"picture\": \"https://photo.png\",
-                \"country\": \"NEARland\",
-                \"email\": \"ft@nearmail.com\",
-                \"idioms\": [{
-                    \"idiom\": \"binary\",
-                    \"level\": \"Native\"
-                }]
-            }".to_string());
+        this.add_user_p(roles.clone(), owner_id.into(), "{ \"legal_name\": \"Marketplace Contract\", \"education\": \"I'am a smart contract, I dont need school\", \"links\": [], \"bio\": \"I live inside of a smart contract in the NEAR protocol\", \"picture\": \"https://photo.png\", \"country\": \"NEARland\", \"email\": \"marketplace@nearmail.com\", \"idioms\": [{ \"idiom\": \"binary\", \"level\": \"Native\" }]}".to_string());
+        this.add_user_p(roles.clone(), mediator.into(), "{ \"legal_name\": \"Marketplace Contract\", \"education\": \"I'am a smart contract, I dont need school\", \"links\": [], \"bio\": \"I live inside of a smart contract in the NEAR protocol\", \"picture\": \"https://photo.png\", \"country\": \"NEARland\", \"email\": \"marketplace@nearmail.com\", \"idioms\": [{ \"idiom\": \"binary\", \"level\": \"Native\" }]}".to_string());
+        this.add_user_p(roles.clone(), ft.into(), "{ \"legal_name\": \"Marketplace Contract\", \"education\": \"I'am a smart contract, I dont need school\", \"links\": [], \"bio\": \"I live inside of a smart contract in the NEAR protocol\", \"picture\": \"https://photo.png\", \"country\": \"NEARland\", \"email\": \"marketplace@nearmail.com\", \"idioms\": [{ \"idiom\": \"binary\", \"level\": \"Native\" }]}".to_string());
             
         this.measure_min_service_storage_cost();
-        return this;
+        this
+    }
+
+    /// Agregar nuevo token soportado.
+    pub fn add_token(&mut self, token: ValidAccountId) -> ValidAccountId {
+        self.assert_admin();
+        self.tokens.insert(token.as_ref());
+        token
     }
     
 
@@ -195,11 +181,11 @@ impl Marketplace {
             if self.service_by_id.insert(&self.total_services, &service).is_some() {
                 env::panic(b"Service already exists");
             }
-
-            services_set.insert(&self.total_services);
+            
             self.total_services += 1;
             service.id = self.total_services;
-
+            services_set.insert(&self.total_services);
+            
             NearEvent::log_service_mint(
                 service.id.clone(),
                 service.actual_owner.clone().to_string(),
@@ -213,16 +199,13 @@ impl Marketplace {
 
         self.services_by_account.insert(&sender, &services_set);
 
-        // Manejo de storage
+        // Manejo del storage.
         let new_services_size_in_bytes = env::storage_usage() - initial_storage_usage;
         // env::log(format!("New services size in bytes: {}", new_services_size_in_bytes).as_bytes());
-
         let required_storage_in_bytes = self.extra_storage_in_bytes_per_service + new_services_size_in_bytes;
         // env::log(format!("Required storage in bytes: {}", required_storage_in_bytes).as_bytes());
 
         deposit_refund(required_storage_in_bytes);
-
-        // Retornar datos del servicio
         service
     }
 
@@ -231,12 +214,12 @@ impl Marketplace {
     /// Solo ejecutable por empleadores.
     #[payable]
     pub fn buy_service(&mut self, service_id: u64) {
-        // Verificar que el servicio exista
+        // Verificar que el servicio exista.
         self.assert_service_exists(&service_id);
 
         let mut service = self.get_service_by_id(service_id.clone());
         
-        // Verificar que este en venta
+        // Verificar que este en venta.
         if !service.on_sale {
             env::panic(b"The indicated service is not on sale")
         }
@@ -252,8 +235,9 @@ impl Marketplace {
             env::panic(b"Already is the service owner");
         }
         
+        let token = &service.metadata.token;
         // Realizar el pago en NEARs.
-        if env::attached_deposit() >= service.metadata.price {
+        if token == "near" {
             Promise::new(self.contract_me.clone()).transfer(service.metadata.price);
 
             // Establecer como servicio vendido y no en venta.
@@ -269,14 +253,28 @@ impl Marketplace {
             service.buy_moment = env::block_timestamp();
 
             self.service_by_id.insert(&service_id, &service);
-        }
-        else {
-            // Realizar el pago en BJT tokens.
-            let _res = ext_token::transfer_tokens(
+        } else {
+            let token = service.metadata.token;
+
+            if token == "usdc.fakes.testnet".to_string() {
+                let buyer_balance = self.usdc_balances.get(&buyer.account_id).unwrap_or(0);
+                assert!(buyer_balance >= service.metadata.price, "Insufficient balance");
+            }
+            else if token == "ft.blockjobs.testnet".to_string() {
+                let buyer_balance = self.jobs_balances.get(&buyer.account_id).unwrap_or(0);
+                assert!(buyer_balance >= service.metadata.price, "Insufficient balance");
+            } 
+            else {
+                env::panic(b"Token not soported");
+            }        
+
+            // Realizar el pago en el token indicado.
+            ext_contract::ft_transfer(
                 self.contract_me.clone(),
-                service.metadata.price,
-                &self.contract_ft, NO_DEPOSIT, BASE_GAS)
-            .then(ext_self::on_buy_service(
+                (service.metadata.price).into(),
+                None,
+                &token, ONE_YOCTO, GAS_FT_TRANSFER
+            ).then(ext_self::on_buy_service(
                 service_id,
                 &env::current_account_id(), NO_DEPOSIT, BASE_GAS)
             );
@@ -288,36 +286,41 @@ impl Marketplace {
         );
     }
 
-    /// Callback luego de realizarse el pago que queda inicialmente bloqueado.
+
+    /// Dar por aprobado un servicio por parte del empleador.
     /// 
-    pub fn on_buy_service(&mut self, service_id: u64) -> Service {
-        match env::promise_result(0) {
-            PromiseResult::Successful(_data) => {
-                let mut service = self.get_service_by_id(service_id.clone());
-                let sender = env::predecessor_account_id();
-                let buyer = self.get_user(string_to_valid_account_id(&sender).clone());
+    #[payable]
+    pub fn approve_service(&mut self, service_id: u64) {
+        let service = self.get_service_by_id(service_id.clone());
+        let user = env::predecessor_account_id();
 
-                // Establecer como servicio vendido y no en venta.
-                service.sold = true;
-                service.on_sale = false;
+        assert!(service.actual_owner == user, "You aren't the owner");
+        assert!(service.on_dispute == false, "You already have requested a dispute for this service");
 
-                // Cambiar propiedad del servicio.
-                service.actual_owner = sender.clone();
-                self.delete_service(&service_id, &service.actual_owner);
-                self.add_service(&service_id, &buyer.account_id);
+        let _res = ext_mediator::pay_service(
+            env::signer_account_id(),
+            service.metadata.price.into(),
+            service.metadata.token.clone(),
+            &self.contract_me,
+            ONE_YOCTO,
+            BASE_GAS,
+        ).then(ext_self::on_return_service(
+            service_id,
+            &env::current_account_id(),
+            NO_DEPOSIT,
+            BASE_GAS,
+        ));
 
-                // Establecer tiempo de la compra.
-                service.buy_moment = env::block_timestamp();
+        // self.delete_service(&service_id, &service.actual_owner);
+        // self.add_service(&service_id, &service.creator_id);
+        // service.on_sale = true;
+        // service.actual_owner = service.creator_id.clone();
+        // service.buy_moment = 0;
+        // service.sold = false;
+        // self.service_by_id.insert(&service_id, &service);
 
-                self.service_by_id.insert(&service_id, &service);
-
-                return service;
-            }
-            PromiseResult::Failed => env::panic(b"Callback faild"),
-            PromiseResult::NotReady => env::panic(b"Callback faild"),
-        };
+        // service
     }
-
 
     /// Crear disputa en el contrato mediador.
     /// Solo ejecutable por el empleador que compro el servicio.
@@ -360,30 +363,6 @@ impl Marketplace {
         ));
     }
 
-    /// Callback desde contrato mediador.
-    /// 
-    pub fn on_new_dispute(&mut self, service_id: u64) {
-        if env::predecessor_account_id() != env::current_account_id() {
-            env::panic(b"Only the contract can call its function")
-        }
-        assert_eq!(env::promise_results_count(), 1, "Contract expected a result on the callback");
-        
-        match env::promise_result(0) {
-            PromiseResult::Successful(_data) => {
-                let mut service = self.get_service_by_id(service_id.clone());
-
-                service.on_dispute = true;
-                self.service_by_id.insert(&service_id, &service);
-
-                // NearEvent::log_dispute_new(
-                    
-                // );
-            }
-            PromiseResult::Failed => env::panic(b"Callback faild"),
-            PromiseResult::NotReady => env::panic(b"Callback faild"),
-        };
-    }
-
 
     /// Retornar un servicio al creador.
     /// Solo ejecutable por el profesional creador del servicio una vez pasado el tiempo establecido.
@@ -413,7 +392,8 @@ impl Marketplace {
 
         let _res = ext_mediator::pay_service(
             env::signer_account_id(),
-            service.metadata.price,
+            service.metadata.price.into(),
+            service.metadata.token.clone(),
             &self.contract_me,
             NO_DEPOSIT,
             BASE_GAS,
@@ -430,45 +410,14 @@ impl Marketplace {
         );
     }
 
-    /// Retornar un servicio al creador.
-    /// Solo ejecutable por el profesional creador del servicio una vez pasado el tiempo establecido.
-    #[payable]
-    pub fn reclaim_service_test(&mut self, service_id: u64) {
-        // Verificar que el servicio exista.
-        self.assert_service_exists(&service_id);
-
-        let service = self.get_service_by_id(service_id.clone());
-
-        // Verificar que haya pasado el tiempo establecido para poder hacer el reclamo.
-        // if env::block_timestamp() < service.buy_moment + ONE_DAY * (service.duration as u64 + 2) {
-        //     env::panic("Insuficient time to reclame the service".as_bytes());
-        // }
-
-        // Verificar que el empleador no haya solicitado una disputa.
-        if service.on_dispute == true {
-            env::panic(b"Actually the service is in dispute");
-        }
-
-        let sender_id = string_to_valid_account_id(&env::predecessor_account_id());
-        env::log(sender_id.to_string().as_bytes());
-
-        if service.creator_id != env::signer_account_id() {
-            env::panic(b"Only the corresponding professional can reclaim the service");
-        }
-
-        let _res = ext_mediator::pay_service(
-            env::signer_account_id(),
-            service.metadata.price,
-            &self.contract_me,
-            NO_DEPOSIT,
-            BASE_GAS,
-        ).then(ext_self::on_return_service(
-            service_id,
-            &env::current_account_id(),
-            NO_DEPOSIT,
-            BASE_GAS,
-        ));
-    }
+    // #[payable]
+    // pub fn reclaim_service_test(&mut self, service_id: u64) {
+    //     self.assert_service_exists(&service_id);
+    //     let service = self.get_service_by_id(service_id.clone());
+    //     let sender_id = string_to_valid_account_id(&env::predecessor_account_id());
+    //     env::log(sender_id.to_string().as_bytes());
+    //     let _res = ext_mediator::pay_service(env::signer_account_id(), service.metadata.price, &self.contract_me, NO_DEPOSIT, BASE_GAS,).then(ext_self::on_return_service(service_id, &env::current_account_id(), NO_DEPOSIT, BASE_GAS,));
+    // }
 
 
     /// Retornar un servicio al creador.
@@ -489,7 +438,8 @@ impl Marketplace {
 
         let _res = ext_mediator::pay_service(
             env::signer_account_id(),
-            service.metadata.price,
+            service.metadata.price.into(),
+            service.metadata.token.clone(),
             &self.contract_me,
             NO_DEPOSIT,
             BASE_GAS,
@@ -507,35 +457,7 @@ impl Marketplace {
     }
 
 
-    /// Callback por reclamo de un servicio por parte del profesional.
-    /// 
-    pub fn on_return_service(&mut self, service_id: u64) -> Service {
-        if env::predecessor_account_id() != env::current_account_id() {
-            env::panic(b"Only the contract can call its function")
-        }
-        assert_eq!(env::promise_results_count(), 1, "Contract expected a result on the callback");
-        
-        match env::promise_result(0) {
-            PromiseResult::Successful(_data) => {
-                let mut service = self.get_service_by_id(service_id.clone());
 
-                self.delete_service(&service_id, &service.actual_owner);
-                self.add_service(&service_id, &service.creator_id);
-
-                // Modificar los datos del servicio.
-                service.actual_owner = service.creator_id.clone();
-                service.on_sale = true;
-                service.buy_moment = 0;
-                service.sold = false;
-                self.service_by_id.insert(&service_id, &service);
-
-                return service;
-            }
-            PromiseResult::Failed => env::panic(b"Callback faild"),
-            PromiseResult::NotReady => env::panic(b"Callback faild"),
-        };
-    }
-    
     /// Modificar la metadata de un servicio.
     /// Solo ejecutable por el profesional si es que lo posee.
     ///
@@ -585,8 +507,7 @@ impl Marketplace {
             service.metadata.categories.clone(),
             service.metadata.price.clone(),
             service.duration.clone(),
-        );
-        
+        );  
         service
     }
 
@@ -686,37 +607,19 @@ impl Marketplace {
             new_user.reputation.clone(),
             new_user.banned.clone()
         );
-
         new_user
     }
 
     fn add_user_p(&mut self, roles: Vec<UserRoles>, account_id: AccountId, data: String) -> User {
         // solo vereficar los nombre del json
         let _p: PersonalData = serde_json::from_str(&data).unwrap();
-
-
         let services_set = UnorderedSet::new(unique_prefix(&account_id));
         self.services_by_account.insert(&account_id, &services_set);
-
         let initial_storage_usage = env::storage_usage();
         env::log(format!("Initial store usage: {}", initial_storage_usage).as_bytes());
-
-        let mut new_user = User{
-            account_id: account_id.clone(),
-            mints: 0,
-            roles: HashSet::new(),
-            reputation: 3,
-            personal_data: Some(data),
-            banned: false,
-        };
-
-        for r in roles.iter() {
-            new_user.roles.insert(*r);
-        }
-
-        if self.users.insert(&account_id, &new_user).is_some() {
-            env::panic(b"User account already added");
-        }
+        let mut new_user = User{ account_id: account_id.clone(), mints: 0, roles: HashSet::new(), reputation: 3, personal_data: Some(data), banned: false, };
+        for r in roles.iter() { new_user.roles.insert(*r); }
+        if self.users.insert(&account_id, &new_user).is_some() { env::panic(b"User account already added"); }
 
         let new_services_size_in_bytes = env::storage_usage() - initial_storage_usage;
         env::log(format!("New services size in bytes: {}", new_services_size_in_bytes).as_bytes());
@@ -725,8 +628,7 @@ impl Marketplace {
         env::log(format!("Required storage in bytes: {}", required_storage_in_bytes).as_bytes());
 
         deposit_refund_to(required_storage_in_bytes, account_id);
-
-        return new_user
+        new_user
     }
 
     /// Eliminar un usuario.
@@ -735,7 +637,7 @@ impl Marketplace {
     /// #Arguments
     /// * `account_id`  - La cuenta de mainnet/testnet de quien sera registrado.
     pub fn remove_user(&mut self, account_id: ValidAccountId) {
-        self.assert_admin(&env::predecessor_account_id());
+        self.assert_admin();
         
         let user = self.get_user(account_id.clone());
 
@@ -767,7 +669,7 @@ impl Marketplace {
 
         self.users.insert(&account_id.clone(), &user);
 
-        env::log(format!("Segund store usage: {}", env::storage_usage()).as_bytes());
+        env::log(format!("Second store usage: {}", env::storage_usage()).as_bytes());
         if initial_storage_usage <  env::storage_usage() {
             let new_services_size_in_bytes = env::storage_usage() - initial_storage_usage;
             env::log(format!("New size in bytes: {}", new_services_size_in_bytes).as_bytes());
@@ -781,7 +683,6 @@ impl Marketplace {
             user.account_id.clone(),
             data.clone()
         );
-
         user
     }
 
@@ -808,104 +709,55 @@ impl Marketplace {
         else { user.roles.remove(&role); }
 
         self.users.insert(&account_id.clone().into(), &user);
-        
         let rol: String = role.to_string();
 
         NearEvent::log_user_update_roles(
             account_id.clone().to_string(),
             rol
         );
-
         user
     }
-    
-    /*******************************/
-    /******* GET FUNCTIONS  ********/
-    /*******************************/
 
-    /// #Arguments
-    /// * `account_id`  - La cuenta de mainnet/testnet del usuario.
-    pub fn get_user(&self, account_id: ValidAccountId) -> User {
-        expect_value_found(self.users.get(&account_id.into()), b"No users found. Register the user first")
-    }
 
-    /// TODO(Sebas): Optimizar con paginacion
-    /// #Arguments
-    /// * `account_id`  - La cuenta de mainnet/testnet del usuario.
-    pub fn get_users_by_role(&self, role: UserRoles, from_index: u64, limit: u64) -> Vec<User> {
-        let mut users_by_role: Vec<User> = Vec::new();
+    /// Hacer withdraw de los FT por parte del usuario.
+    /// 
+    pub fn withdraw_ft(&mut self, amount: U128, token: AccountId) -> Balance {
+        let sender = env::predecessor_account_id();
+        if token == "usdc.fakes.testnet".to_string() {
+            let actual_balance = self.usdc_balances.get(&sender).unwrap_or(0);
+            assert!(actual_balance >= amount.into(), "Insufficient balance");
 
-        let users = self.get_users(from_index, limit);
+            let new_balance = actual_balance - amount.0;
+            self.usdc_balances.insert(&sender, &new_balance);
 
-        for (_account_id, user) in users.iter() {
-            if user.roles.get(&role).is_some() {
-                users_by_role.push((*user).clone());
-            }
+            ext_contract::ft_transfer(
+                sender.clone(),
+                amount.clone(),
+                None,
+                &token, ONE_YOCTO, GAS_FT_TRANSFER
+            );
+            return new_balance;
+        } else {
+            let actual_balance = self.jobs_balances.get(&sender).unwrap_or(0);
+            assert!(actual_balance >= amount.into(), "Insufficient balance");
+
+            let new_balance = actual_balance - amount.0;
+            self.jobs_balances.insert(&sender, &new_balance);
+
+            ext_contract::ft_transfer(
+                sender.clone(),
+                amount.clone(),
+                None,
+                &token, ONE_YOCTO, GAS_FT_TRANSFER
+            );
+            return new_balance;
         }
-        users_by_role
-    }
 
-    /// Obtener id de los servicios de un usuario.
-    ///
-    /// #Arguments
-    /// * `account_id`  - La cuenta de mainnet/testnet del usuario.
-    pub fn get_user_service_id(&self, account_id: ValidAccountId) -> Vec<u64> {
-        return expect_value_found(self.services_by_account.get(&account_id.into()), "No users found or dont have any service".as_bytes()).to_vec();
-    }
+        // .then(ext_self::on_withdraw_ft(
+        //     amount,
+        //     &env::current_account_id(), NO_DEPOSIT, BASE_GAS)
+        // );
 
-    /// Obtener los servicios de determinado usuario.
-    ///
-    /// #Arguments
-    /// * `account_id`  - La cuenta de mainnet/testnet del usuario.
-    /// * `only_on_sale`  - Retornar solo los services activos.
-    pub fn get_user_services(&self, account_id: ValidAccountId, only_on_sale: bool) -> Vec<Service> {
-        let mut services: Vec<Service> = Vec::new();
-        let service_id = self.get_user_service_id(account_id.clone());
-        for i in 0 .. service_id.len() {
-            let service = expect_value_found(self.service_by_id.get(&service_id[i]), "Service id dont match".as_bytes());
-            if only_on_sale {
-                if service.on_sale {
-                    services.push( service ); 
-                }
-            }
-            else { services.push( service ); }
-        }
-        services
-    }
-
-    /// #Arguments
-    /// * `service_id`
-    pub fn get_service_by_id(&self, service_id: u64) -> Service {
-        return expect_value_found(self.service_by_id.get(&service_id.into()), "No users found. Register the user first".as_bytes());
-    }
-
-    /// Obtener los servicios y su metadata de un usuario
-    /// #Arguments
-    /// * `account_id`  - La cuenta de mainnet/testnet del usuario.
-    pub fn get_service_by_ids(&self, ids: HashSet<u64>) -> Vec<Service> {
-        if ids.len() > self.service_by_id.len() as usize {
-            env::panic(b"The amounts of ids supere the amount of services");
-        }
-        if ids.len() > 10 {
-            env::panic(b"Limited to get until 10 services at time");
-        }
-        let mut services: Vec<Service> = Vec::new();
-        for id in ids.iter() {
-            services.push(self.service_by_id.get(&id).expect("Service id dont match"));
-        }
-        return services
-    }
-
-    /// Obtener el total supply
-    pub fn get_total_services(&self) -> u64 {
-        self.total_services
-    }
-
-    pub fn get_services(&self, from_index: u64, limit: u64) -> Vec<Service>{
-        let values = self.service_by_id.values_as_vector();
-        return (from_index..std::cmp::min(from_index + limit, self.service_by_id.len()))
-            .map(|index| values.get(index).unwrap())
-            .collect();
     }
 
     /*******************************/
@@ -928,19 +780,9 @@ impl Marketplace {
         true
     }
     
-    pub fn validate_user_test(&self, account_id: AccountId) -> bool {
-        // let user_id = string_to_valid_account_id(&account_id);
-        // let user = self.get_user(user_id);
-
-        // if !user.roles.get(&UserRoles::Judge).is_some() {
-        //     env::panic(b"Is required have a Judge status to can vote");
-        // }
-        // if user.reputation < 3 {
-        //     env::panic(b"Your reputation isn't sufficient");
-        // }
-        
-        true
-    }
+    // pub fn validate_user_test(&self, _account_id: AccountId) -> bool {
+    //     true
+    // }
 
     /// Callback para retornar un servicio al creador.
     /// Ejecutable solo el contrator mediador una vez finalizada la disputa.
@@ -980,22 +822,9 @@ impl Marketplace {
         let mut user = self.get_user(user_id);
 
         user.banned = true;
-
         user
     }
 
-    /******************************/
-    /***** INTERNAL FUNCTIONS  ****/
-    /******************************/
-
-    #[private]
-    fn get_users(&self, from_index: u64, limit: u64) -> Vec<(AccountId, User)> {
-        let keys = self.users.keys_as_vector();
-        let values = self.users.values_as_vector();
-        (from_index..std::cmp::min(from_index + limit, self.users.len()))
-            .map(|index| (keys.get(index).unwrap(), values.get(index).unwrap()))
-            .collect()
-    }
 
     #[private]
     fn add_service(&mut self, service_id: &u64, account_id: &String) {
@@ -1014,78 +843,5 @@ impl Marketplace {
         self.services_by_account.insert(&account_id, &services_set);
     }
 
-
-    #[private]
-    fn measure_min_service_storage_cost(&mut self) {
-        let initial_storage_usage = env::storage_usage();
-        let tmp_account_id = "a".repeat(64);
-        let u = UnorderedSet::new(unique_prefix(&tmp_account_id));
-        self.services_by_account.insert(&tmp_account_id, &u);
-
-        let services_by_account_entry_in_bytes = env::storage_usage() - initial_storage_usage;
-        let owner_id_extra_cost_in_bytes = (tmp_account_id.len() - self.contract_owner.len()) as u64;
-
-        self.extra_storage_in_bytes_per_service =
-            services_by_account_entry_in_bytes + owner_id_extra_cost_in_bytes;
-
-        self.services_by_account.remove(&tmp_account_id);
-    }
-
-    #[private]
-    fn update_user_mints(&mut self, quantity: u16) -> User {
-        let sender = env::predecessor_account_id();
-        let mut user = expect_value_found(self.users.get(&sender), "Before mint a service, create an user".as_bytes());
-        
-        if user.mints + quantity > USER_MINT_LIMIT {
-            env::panic(format!("Exceeded user mint limit {}", USER_MINT_LIMIT).as_bytes());
-        }
-        user.mints += quantity;
-
-        self.users.insert(&sender, &user);
-
-        return user
-    }
-
-    /**************************/
-    /******** ASSERTS  ********/
-    /**************************/
-
-    /// Verificar que sea el admin.
-    #[private]
-    fn assert_admin(&self, account_id: &AccountId) {
-        if *account_id != self.contract_owner {
-            env::panic("Must be owner_id how call its function".as_bytes())
-        }
-    }
-
-    /// Verificar que el servicio exista.
-    #[private]
-    fn assert_service_exists(&self, service_id: &u64) {
-        if *service_id > self.total_services {
-            env::panic(b"The indicated service doesn't exist")
-        }
-    }
 }
 
-#[ext_contract(ext_token)]
-pub trait Token {
-    fn mint(receiver: ValidAccountId, quantity: U128);
-    fn transfer_tokens(to: AccountId, amount: Balance);
-}
-#[ext_contract(ext_mediator)]
-pub trait Mediator {
-    fn new_dispute(service_id: u64, applicant: AccountId, accused: AccountId, proves: String, price: u128);
-    fn pay_service(beneficiary: AccountId, amount: Balance) -> Balance;
-}
-#[ext_contract(ext_self)]
-pub trait ExtSelf {
-    fn on_new_dispute(service_id: u64);
-    fn on_transfer_tokens(service_id: u64);
-    fn on_buy_service(service_id: u64);
-    fn on_return_service(service_id: u64);
-}
-
-/// Internal function to Option values
-fn expect_value_found<T>(option: Option<T>, message: &[u8]) -> T {
-    option.unwrap_or_else(|| env::panic(message))
-}
