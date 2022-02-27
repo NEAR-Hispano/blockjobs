@@ -1,0 +1,12 @@
+[package]
+name = "sales"
+version = "0.1.0"
+authors = ["dariofs.near", "stolkerve.near"]
+edition = "2018"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+near-sdk = "3.1.0"
+# chrono = "0.4.19"

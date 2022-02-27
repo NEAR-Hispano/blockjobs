@@ -1,5 +1,6 @@
 {
-	"MARKETPLACE_CONTRACT": "dev-1643918563634-37875615677236",
-	"MEDIATOR_CONTRACT": "dev-1643918583412-56498224498967",
-	"FT_CONTRACT": "dev-1643918611271-22103014801420"
+	"MARKETPLACE_CONTRACT": "market.blockjobs.testnet",
+	"MEDIATOR_CONTRACT": "mediator.blockjobs.testnet",
+	"FT_CONTRACT": "ft.blockjobs.testnet",
+	"SALES_CONTRACT": "sales.blockjobs.testnet"
 }
