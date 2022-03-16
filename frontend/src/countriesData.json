@@ -1,0 +1,998 @@
+[
+  {
+      "value": "\u0627\u0641\u063a\u0627\u0646\u0633\u062a\u0627\u0646",
+      "label": "\u0627\u0641\u063a\u0627\u0646\u0633\u062a\u0627\u0646"
+  },
+  {
+      "value": "\u00c5land",
+      "label": "\u00c5land"
+  },
+  {
+      "value": "Shqip\u00ebria",
+      "label": "Shqip\u00ebria"
+  },
+  {
+      "value": "\u0627\u0644\u062c\u0632\u0627\u0626\u0631",
+      "label": "\u0627\u0644\u062c\u0632\u0627\u0626\u0631"
+  },
+  {
+      "value": "American Samoa",
+      "label": "American Samoa"
+  },
+  {
+      "value": "Andorra",
+      "label": "Andorra"
+  },
+  {
+      "value": "Angola",
+      "label": "Angola"
+  },
+  {
+      "value": "Anguilla",
+      "label": "Anguilla"
+  },
+  {
+      "value": "Antarctica",
+      "label": "Antarctica"
+  },
+  {
+      "value": "Antigua and Barbuda",
+      "label": "Antigua and Barbuda"
+  },
+  {
+      "value": "Argentina",
+      "label": "Argentina"
+  },
+  {
+      "value": "\u0540\u0561\u0575\u0561\u057d\u057f\u0561\u0576",
+      "label": "\u0540\u0561\u0575\u0561\u057d\u057f\u0561\u0576"
+  },
+  {
+      "value": "Aruba",
+      "label": "Aruba"
+  },
+  {
+      "value": "Australia",
+      "label": "Australia"
+  },
+  {
+      "value": "\u00d6sterreich",
+      "label": "\u00d6sterreich"
+  },
+  {
+      "value": "Az\u0259rbaycan",
+      "label": "Az\u0259rbaycan"
+  },
+  {
+      "value": "Bahamas",
+      "label": "Bahamas"
+  },
+  {
+      "value": "\u200f\u0627\u0644\u0628\u062d\u0631\u064a\u0646",
+      "label": "\u200f\u0627\u0644\u0628\u062d\u0631\u064a\u0646"
+  },
+  {
+      "value": "Bangladesh",
+      "label": "Bangladesh"
+  },
+  {
+      "value": "Barbados",
+      "label": "Barbados"
+  },
+  {
+      "value": "\u0411\u0435\u043b\u0430\u0440\u0443\u0301\u0441\u044c",
+      "label": "\u0411\u0435\u043b\u0430\u0440\u0443\u0301\u0441\u044c"
+  },
+  {
+      "value": "Belgi\u00eb",
+      "label": "Belgi\u00eb"
+  },
+  {
+      "value": "Belize",
+      "label": "Belize"
+  },
+  {
+      "value": "B\u00e9nin",
+      "label": "B\u00e9nin"
+  },
+  {
+      "value": "Bermuda",
+      "label": "Bermuda"
+  },
+  {
+      "value": "\u02bcbrug-yul",
+      "label": "\u02bcbrug-yul"
+  },
+  {
+      "value": "Bolivia",
+      "label": "Bolivia"
+  },
+  {
+      "value": "Bonaire",
+      "label": "Bonaire"
+  },
+  {
+      "value": "Bosna i Hercegovina",
+      "label": "Bosna i Hercegovina"
+  },
+  {
+      "value": "Botswana",
+      "label": "Botswana"
+  },
+  {
+      "value": "Bouvet\u00f8ya",
+      "label": "Bouvet\u00f8ya"
+  },
+  {
+      "value": "Brasil",
+      "label": "Brasil"
+  },
+  {
+      "value": "British Indian Ocean Territory",
+      "label": "British Indian Ocean Territory"
+  },
+  {
+      "value": "Negara Brunei Darussalam",
+      "label": "Negara Brunei Darussalam"
+  },
+  {
+      "value": "\u0411\u044a\u043b\u0433\u0430\u0440\u0438\u044f",
+      "label": "\u0411\u044a\u043b\u0433\u0430\u0440\u0438\u044f"
+  },
+  {
+      "value": "Burkina Faso",
+      "label": "Burkina Faso"
+  },
+  {
+      "value": "Burundi",
+      "label": "Burundi"
+  },
+  {
+      "value": "K\u00e2mp\u016dch\u00e9a",
+      "label": "K\u00e2mp\u016dch\u00e9a"
+  },
+  {
+      "value": "Cameroon",
+      "label": "Cameroon"
+  },
+  {
+      "value": "Canada",
+      "label": "Canada"
+  },
+  {
+      "value": "Cabo Verde",
+      "label": "Cabo Verde"
+  },
+  {
+      "value": "Cayman Islands",
+      "label": "Cayman Islands"
+  },
+  {
+      "value": "K\u00f6d\u00f6r\u00f6s\u00ease t\u00ee B\u00eaafr\u00eeka",
+      "label": "K\u00f6d\u00f6r\u00f6s\u00ease t\u00ee B\u00eaafr\u00eeka"
+  },
+  {
+      "value": "Tchad",
+      "label": "Tchad"
+  },
+  {
+      "value": "Chile",
+      "label": "Chile"
+  },
+  {
+      "value": "\u4e2d\u56fd",
+      "label": "\u4e2d\u56fd"
+  },
+  {
+      "value": "Christmas Island",
+      "label": "Christmas Island"
+  },
+  {
+      "value": "Cocos (Keeling) Islands",
+      "label": "Cocos (Keeling) Islands"
+  },
+  {
+      "value": "Colombia",
+      "label": "Colombia"
+  },
+  {
+      "value": "Komori",
+      "label": "Komori"
+  },
+  {
+      "value": "R\u00e9publique du Congo",
+      "label": "R\u00e9publique du Congo"
+  },
+  {
+      "value": "R\u00e9publique d\u00e9mocratique du Congo",
+      "label": "R\u00e9publique d\u00e9mocratique du Congo"
+  },
+  {
+      "value": "Cook Islands",
+      "label": "Cook Islands"
+  },
+  {
+      "value": "Costa Rica",
+      "label": "Costa Rica"
+  },
+  {
+      "value": "C\u00f4te d'Ivoire",
+      "label": "C\u00f4te d'Ivoire"
+  },
+  {
+      "value": "Hrvatska",
+      "label": "Hrvatska"
+  },
+  {
+      "value": "Cuba",
+      "label": "Cuba"
+  },
+  {
+      "value": "Cura\u00e7ao",
+      "label": "Cura\u00e7ao"
+  },
+  {
+      "value": "\u039a\u03cd\u03c0\u03c1\u03bf\u03c2",
+      "label": "\u039a\u03cd\u03c0\u03c1\u03bf\u03c2"
+  },
+  {
+      "value": "\u010cesk\u00e1 republika",
+      "label": "\u010cesk\u00e1 republika"
+  },
+  {
+      "value": "Danmark",
+      "label": "Danmark"
+  },
+  {
+      "value": "Djibouti",
+      "label": "Djibouti"
+  },
+  {
+      "value": "Dominica",
+      "label": "Dominica"
+  },
+  {
+      "value": "Rep\u00fablica Dominicana",
+      "label": "Rep\u00fablica Dominicana"
+  },
+  {
+      "value": "Ecuador",
+      "label": "Ecuador"
+  },
+  {
+      "value": "\u0645\u0635\u0631\u200e",
+      "label": "\u0645\u0635\u0631\u200e"
+  },
+  {
+      "value": "El Salvador",
+      "label": "El Salvador"
+  },
+  {
+      "value": "Guinea Ecuatorial",
+      "label": "Guinea Ecuatorial"
+  },
+  {
+      "value": "\u12a4\u122d\u1275\u122b",
+      "label": "\u12a4\u122d\u1275\u122b"
+  },
+  {
+      "value": "Eesti",
+      "label": "Eesti"
+  },
+  {
+      "value": "\u12a2\u1275\u12ee\u1335\u12eb",
+      "label": "\u12a2\u1275\u12ee\u1335\u12eb"
+  },
+  {
+      "value": "Falkland Islands",
+      "label": "Falkland Islands"
+  },
+  {
+      "value": "F\u00f8royar",
+      "label": "F\u00f8royar"
+  },
+  {
+      "value": "Fiji",
+      "label": "Fiji"
+  },
+  {
+      "value": "Suomi",
+      "label": "Suomi"
+  },
+  {
+      "value": "France",
+      "label": "France"
+  },
+  {
+      "value": "Guyane fran\u00e7aise",
+      "label": "Guyane fran\u00e7aise"
+  },
+  {
+      "value": "Polyn\u00e9sie fran\u00e7aise",
+      "label": "Polyn\u00e9sie fran\u00e7aise"
+  },
+  {
+      "value": "Territoire des Terres australes et antarctiques fr",
+      "label": "Territoire des Terres australes et antarctiques fr"
+  },
+  {
+      "value": "Gabon",
+      "label": "Gabon"
+  },
+  {
+      "value": "Gambia",
+      "label": "Gambia"
+  },
+  {
+      "value": "\u10e1\u10d0\u10e5\u10d0\u10e0\u10d7\u10d5\u10d4\u10da\u10dd",
+      "label": "\u10e1\u10d0\u10e5\u10d0\u10e0\u10d7\u10d5\u10d4\u10da\u10dd"
+  },
+  {
+      "value": "Deutschland",
+      "label": "Deutschland"
+  },
+  {
+      "value": "Ghana",
+      "label": "Ghana"
+  },
+  {
+      "value": "Gibraltar",
+      "label": "Gibraltar"
+  },
+  {
+      "value": "\u0395\u03bb\u03bb\u03ac\u03b4\u03b1",
+      "label": "\u0395\u03bb\u03bb\u03ac\u03b4\u03b1"
+  },
+  {
+      "value": "Kalaallit Nunaat",
+      "label": "Kalaallit Nunaat"
+  },
+  {
+      "value": "Grenada",
+      "label": "Grenada"
+  },
+  {
+      "value": "Guadeloupe",
+      "label": "Guadeloupe"
+  },
+  {
+      "value": "Guam",
+      "label": "Guam"
+  },
+  {
+      "value": "Guatemala",
+      "label": "Guatemala"
+  },
+  {
+      "value": "Guernsey",
+      "label": "Guernsey"
+  },
+  {
+      "value": "Guin\u00e9e",
+      "label": "Guin\u00e9e"
+  },
+  {
+      "value": "Guin\u00e9-Bissau",
+      "label": "Guin\u00e9-Bissau"
+  },
+  {
+      "value": "Guyana",
+      "label": "Guyana"
+  },
+  {
+      "value": "Ha\u00efti",
+      "label": "Ha\u00efti"
+  },
+  {
+      "value": "Heard Island and McDonald Islands",
+      "label": "Heard Island and McDonald Islands"
+  },
+  {
+      "value": "Vaticano",
+      "label": "Vaticano"
+  },
+  {
+      "value": "Honduras",
+      "label": "Honduras"
+  },
+  {
+      "value": "\u9999\u6e2f",
+      "label": "\u9999\u6e2f"
+  },
+  {
+      "value": "Magyarorsz\u00e1g",
+      "label": "Magyarorsz\u00e1g"
+  },
+  {
+      "value": "\u00cdsland",
+      "label": "\u00cdsland"
+  },
+  {
+      "value": "\u092d\u093e\u0930\u0924",
+      "label": "\u092d\u093e\u0930\u0924"
+  },
+  {
+      "value": "Indonesia",
+      "label": "Indonesia"
+  },
+  {
+      "value": "\u0627\u06cc\u0631\u0627\u0646",
+      "label": "\u0627\u06cc\u0631\u0627\u0646"
+  },
+  {
+      "value": "\u0627\u0644\u0639\u0631\u0627\u0642",
+      "label": "\u0627\u0644\u0639\u0631\u0627\u0642"
+  },
+  {
+      "value": "\u00c9ire",
+      "label": "\u00c9ire"
+  },
+  {
+      "value": "Isle of Man",
+      "label": "Isle of Man"
+  },
+  {
+      "value": "\u05d9\u05b4\u05e9\u05b0\u05c2\u05e8\u05b8\u05d0\u05b5\u05dc",
+      "label": "\u05d9\u05b4\u05e9\u05b0\u05c2\u05e8\u05b8\u05d0\u05b5\u05dc"
+  },
+  {
+      "value": "Italia",
+      "label": "Italia"
+  },
+  {
+      "value": "Jamaica",
+      "label": "Jamaica"
+  },
+  {
+      "value": "\u65e5\u672c",
+      "label": "\u65e5\u672c"
+  },
+  {
+      "value": "Jersey",
+      "label": "Jersey"
+  },
+  {
+      "value": "\u0627\u0644\u0623\u0631\u062f\u0646",
+      "label": "\u0627\u0644\u0623\u0631\u062f\u0646"
+  },
+  {
+      "value": "\u049a\u0430\u0437\u0430\u049b\u0441\u0442\u0430\u043d",
+      "label": "\u049a\u0430\u0437\u0430\u049b\u0441\u0442\u0430\u043d"
+  },
+  {
+      "value": "Kenya",
+      "label": "Kenya"
+  },
+  {
+      "value": "Kiribati",
+      "label": "Kiribati"
+  },
+  {
+      "value": "\ubd81\ud55c",
+      "label": "\ubd81\ud55c"
+  },
+  {
+      "value": "\ub300\ud55c\ubbfc\uad6d",
+      "label": "\ub300\ud55c\ubbfc\uad6d"
+  },
+  {
+      "value": "\u0627\u0644\u0643\u0648\u064a\u062a",
+      "label": "\u0627\u0644\u0643\u0648\u064a\u062a"
+  },
+  {
+      "value": "\u041a\u044b\u0440\u0433\u044b\u0437\u0441\u0442\u0430\u043d",
+      "label": "\u041a\u044b\u0440\u0433\u044b\u0437\u0441\u0442\u0430\u043d"
+  },
+  {
+      "value": "\u0eaa\u0e9b\u0e9b\u0ea5\u0eb2\u0ea7",
+      "label": "\u0eaa\u0e9b\u0e9b\u0ea5\u0eb2\u0ea7"
+  },
+  {
+      "value": "Latvija",
+      "label": "Latvija"
+  },
+  {
+      "value": "\u0644\u0628\u0646\u0627\u0646",
+      "label": "\u0644\u0628\u0646\u0627\u0646"
+  },
+  {
+      "value": "Lesotho",
+      "label": "Lesotho"
+  },
+  {
+      "value": "Liberia",
+      "label": "Liberia"
+  },
+  {
+      "value": "\u200f\u0644\u064a\u0628\u064a\u0627",
+      "label": "\u200f\u0644\u064a\u0628\u064a\u0627"
+  },
+  {
+      "value": "Liechtenstein",
+      "label": "Liechtenstein"
+  },
+  {
+      "value": "Lietuva",
+      "label": "Lietuva"
+  },
+  {
+      "value": "Luxembourg",
+      "label": "Luxembourg"
+  },
+  {
+      "value": "\u6fb3\u9580",
+      "label": "\u6fb3\u9580"
+  },
+  {
+      "value": "\u0421\u0435\u0432\u0435\u0440\u043d\u0430 \u041c\u0430\u043a\u0435\u0434\u043e\u043d\u0438\u0458\u0430",
+      "label": "\u0421\u0435\u0432\u0435\u0440\u043d\u0430 \u041c\u0430\u043a\u0435\u0434\u043e\u043d\u0438\u0458\u0430"
+  },
+  {
+      "value": "Madagasikara",
+      "label": "Madagasikara"
+  },
+  {
+      "value": "Malawi",
+      "label": "Malawi"
+  },
+  {
+      "value": "Malaysia",
+      "label": "Malaysia"
+  },
+  {
+      "value": "Maldives",
+      "label": "Maldives"
+  },
+  {
+      "value": "Mali",
+      "label": "Mali"
+  },
+  {
+      "value": "Malta",
+      "label": "Malta"
+  },
+  {
+      "value": "M\u0327aje\u013c",
+      "label": "M\u0327aje\u013c"
+  },
+  {
+      "value": "Martinique",
+      "label": "Martinique"
+  },
+  {
+      "value": "\u0645\u0648\u0631\u064a\u062a\u0627\u0646\u064a\u0627",
+      "label": "\u0645\u0648\u0631\u064a\u062a\u0627\u0646\u064a\u0627"
+  },
+  {
+      "value": "Maurice",
+      "label": "Maurice"
+  },
+  {
+      "value": "Mayotte",
+      "label": "Mayotte"
+  },
+  {
+      "value": "M\u00e9xico",
+      "label": "M\u00e9xico"
+  },
+  {
+      "value": "Micronesia",
+      "label": "Micronesia"
+  },
+  {
+      "value": "Moldova",
+      "label": "Moldova"
+  },
+  {
+      "value": "Monaco",
+      "label": "Monaco"
+  },
+  {
+      "value": "\u041c\u043e\u043d\u0433\u043e\u043b \u0443\u043b\u0441",
+      "label": "\u041c\u043e\u043d\u0433\u043e\u043b \u0443\u043b\u0441"
+  },
+  {
+      "value": "\u0426\u0440\u043d\u0430 \u0413\u043e\u0440\u0430",
+      "label": "\u0426\u0440\u043d\u0430 \u0413\u043e\u0440\u0430"
+  },
+  {
+      "value": "Montserrat",
+      "label": "Montserrat"
+  },
+  {
+      "value": "\u0627\u0644\u0645\u063a\u0631\u0628",
+      "label": "\u0627\u0644\u0645\u063a\u0631\u0628"
+  },
+  {
+      "value": "Mo\u00e7ambique",
+      "label": "Mo\u00e7ambique"
+  },
+  {
+      "value": "\u1019\u103c\u1014\u103a\u1019\u102c",
+      "label": "\u1019\u103c\u1014\u103a\u1019\u102c"
+  },
+  {
+      "value": "Namibia",
+      "label": "Namibia"
+  },
+  {
+      "value": "Nauru",
+      "label": "Nauru"
+  },
+  {
+      "value": "\u0928\u092a\u0932",
+      "label": "\u0928\u092a\u0932"
+  },
+  {
+      "value": "Nederland",
+      "label": "Nederland"
+  },
+  {
+      "value": "Nouvelle-Cal\u00e9donie",
+      "label": "Nouvelle-Cal\u00e9donie"
+  },
+  {
+      "value": "New Zealand",
+      "label": "New Zealand"
+  },
+  {
+      "value": "Nicaragua",
+      "label": "Nicaragua"
+  },
+  {
+      "value": "Niger",
+      "label": "Niger"
+  },
+  {
+      "value": "Nigeria",
+      "label": "Nigeria"
+  },
+  {
+      "value": "Niu\u0113",
+      "label": "Niu\u0113"
+  },
+  {
+      "value": "Norfolk Island",
+      "label": "Norfolk Island"
+  },
+  {
+      "value": "Northern Mariana Islands",
+      "label": "Northern Mariana Islands"
+  },
+  {
+      "value": "Norge",
+      "label": "Norge"
+  },
+  {
+      "value": "\u0639\u0645\u0627\u0646",
+      "label": "\u0639\u0645\u0627\u0646"
+  },
+  {
+      "value": "Pakistan",
+      "label": "Pakistan"
+  },
+  {
+      "value": "Palau",
+      "label": "Palau"
+  },
+  {
+      "value": "\u0641\u0644\u0633\u0637\u064a\u0646",
+      "label": "\u0641\u0644\u0633\u0637\u064a\u0646"
+  },
+  {
+      "value": "Panam\u00e1",
+      "label": "Panam\u00e1"
+  },
+  {
+      "value": "Papua Niugini",
+      "label": "Papua Niugini"
+  },
+  {
+      "value": "Paraguay",
+      "label": "Paraguay"
+  },
+  {
+      "value": "Per\u00fa",
+      "label": "Per\u00fa"
+  },
+  {
+      "value": "Pilipinas",
+      "label": "Pilipinas"
+  },
+  {
+      "value": "Pitcairn Islands",
+      "label": "Pitcairn Islands"
+  },
+  {
+      "value": "Polska",
+      "label": "Polska"
+  },
+  {
+      "value": "Portugal",
+      "label": "Portugal"
+  },
+  {
+      "value": "Puerto Rico",
+      "label": "Puerto Rico"
+  },
+  {
+      "value": "\u0642\u0637\u0631",
+      "label": "\u0642\u0637\u0631"
+  },
+  {
+      "value": "La R\u00e9union",
+      "label": "La R\u00e9union"
+  },
+  {
+      "value": "Rom\u00e2nia",
+      "label": "Rom\u00e2nia"
+  },
+  {
+      "value": "\u0420\u043e\u0441\u0441\u0438\u044f",
+      "label": "\u0420\u043e\u0441\u0441\u0438\u044f"
+  },
+  {
+      "value": "Rwanda",
+      "label": "Rwanda"
+  },
+  {
+      "value": "Saint-Barth\u00e9lemy",
+      "label": "Saint-Barth\u00e9lemy"
+  },
+  {
+      "value": "Saint Helena",
+      "label": "Saint Helena"
+  },
+  {
+      "value": "Saint Kitts and Nevis",
+      "label": "Saint Kitts and Nevis"
+  },
+  {
+      "value": "Saint Lucia",
+      "label": "Saint Lucia"
+  },
+  {
+      "value": "Saint-Martin",
+      "label": "Saint-Martin"
+  },
+  {
+      "value": "Saint-Pierre-et-Miquelon",
+      "label": "Saint-Pierre-et-Miquelon"
+  },
+  {
+      "value": "Saint Vincent and the Grenadines",
+      "label": "Saint Vincent and the Grenadines"
+  },
+  {
+      "value": "Samoa",
+      "label": "Samoa"
+  },
+  {
+      "value": "San Marino",
+      "label": "San Marino"
+  },
+  {
+      "value": "S\u00e3o Tom\u00e9 e Pr\u00edncipe",
+      "label": "S\u00e3o Tom\u00e9 e Pr\u00edncipe"
+  },
+  {
+      "value": "\u0627\u0644\u0639\u0631\u0628\u064a\u0629 \u0627\u0644\u0633\u0639\u0648\u062f\u064a\u0629",
+      "label": "\u0627\u0644\u0639\u0631\u0628\u064a\u0629 \u0627\u0644\u0633\u0639\u0648\u062f\u064a\u0629"
+  },
+  {
+      "value": "S\u00e9n\u00e9gal",
+      "label": "S\u00e9n\u00e9gal"
+  },
+  {
+      "value": "\u0421\u0440\u0431\u0438\u0458\u0430",
+      "label": "\u0421\u0440\u0431\u0438\u0458\u0430"
+  },
+  {
+      "value": "Seychelles",
+      "label": "Seychelles"
+  },
+  {
+      "value": "Sierra Leone",
+      "label": "Sierra Leone"
+  },
+  {
+      "value": "Singapore",
+      "label": "Singapore"
+  },
+  {
+      "value": "Sint Maarten",
+      "label": "Sint Maarten"
+  },
+  {
+      "value": "Slovensko",
+      "label": "Slovensko"
+  },
+  {
+      "value": "Slovenija",
+      "label": "Slovenija"
+  },
+  {
+      "value": "Solomon Islands",
+      "label": "Solomon Islands"
+  },
+  {
+      "value": "Soomaaliya",
+      "label": "Soomaaliya"
+  },
+  {
+      "value": "South Africa",
+      "label": "South Africa"
+  },
+  {
+      "value": "South Georgia",
+      "label": "South Georgia"
+  },
+  {
+      "value": "South Sudan",
+      "label": "South Sudan"
+  },
+  {
+      "value": "Espa\u00f1a",
+      "label": "Espa\u00f1a"
+  },
+  {
+      "value": "\u015br\u012b la\u1e43k\u0101va",
+      "label": "\u015br\u012b la\u1e43k\u0101va"
+  },
+  {
+      "value": "\u0627\u0644\u0633\u0648\u062f\u0627\u0646",
+      "label": "\u0627\u0644\u0633\u0648\u062f\u0627\u0646"
+  },
+  {
+      "value": "Suriname",
+      "label": "Suriname"
+  },
+  {
+      "value": "Svalbard og Jan Mayen",
+      "label": "Svalbard og Jan Mayen"
+  },
+  {
+      "value": "Swaziland",
+      "label": "Swaziland"
+  },
+  {
+      "value": "Sverige",
+      "label": "Sverige"
+  },
+  {
+      "value": "Schweiz",
+      "label": "Schweiz"
+  },
+  {
+      "value": "\u0633\u0648\u0631\u064a\u0627",
+      "label": "\u0633\u0648\u0631\u064a\u0627"
+  },
+  {
+      "value": "\u81fa\u7063",
+      "label": "\u81fa\u7063"
+  },
+  {
+      "value": "\u0422\u043e\u04b7\u0438\u043a\u0438\u0441\u0442\u043e\u043d",
+      "label": "\u0422\u043e\u04b7\u0438\u043a\u0438\u0441\u0442\u043e\u043d"
+  },
+  {
+      "value": "Tanzania",
+      "label": "Tanzania"
+  },
+  {
+      "value": "\u0e1b\u0e23\u0e30\u0e40\u0e17\u0e28\u0e44\u0e17\u0e22",
+      "label": "\u0e1b\u0e23\u0e30\u0e40\u0e17\u0e28\u0e44\u0e17\u0e22"
+  },
+  {
+      "value": "Timor-Leste",
+      "label": "Timor-Leste"
+  },
+  {
+      "value": "Togo",
+      "label": "Togo"
+  },
+  {
+      "value": "Tokelau",
+      "label": "Tokelau"
+  },
+  {
+      "value": "Tonga",
+      "label": "Tonga"
+  },
+  {
+      "value": "Trinidad and Tobago",
+      "label": "Trinidad and Tobago"
+  },
+  {
+      "value": "\u062a\u0648\u0646\u0633",
+      "label": "\u062a\u0648\u0646\u0633"
+  },
+  {
+      "value": "T\u00fcrkiye",
+      "label": "T\u00fcrkiye"
+  },
+  {
+      "value": "T\u00fcrkmenistan",
+      "label": "T\u00fcrkmenistan"
+  },
+  {
+      "value": "Turks and Caicos Islands",
+      "label": "Turks and Caicos Islands"
+  },
+  {
+      "value": "Tuvalu",
+      "label": "Tuvalu"
+  },
+  {
+      "value": "Uganda",
+      "label": "Uganda"
+  },
+  {
+      "value": "\u0423\u043a\u0440\u0430\u0457\u043d\u0430",
+      "label": "\u0423\u043a\u0440\u0430\u0457\u043d\u0430"
+  },
+  {
+      "value": "\u062f\u0648\u0644\u0629 \u0627\u0644\u0625\u0645\u0627\u0631\u0627\u062a \u0627\u0644\u0639\u0631\u0628\u064a\u0629 \u0627\u0644\u0645\u062a\u062d\u062f\u0629",
+      "label": "\u062f\u0648\u0644\u0629 \u0627\u0644\u0625\u0645\u0627\u0631\u0627\u062a \u0627\u0644\u0639\u0631\u0628\u064a\u0629 \u0627\u0644\u0645\u062a\u062d\u062f\u0629"
+  },
+  {
+      "value": "United Kingdom",
+      "label": "United Kingdom"
+  },
+  {
+      "value": "United States",
+      "label": "United States"
+  },
+  {
+      "value": "United States Minor Outlying Islands",
+      "label": "United States Minor Outlying Islands"
+  },
+  {
+      "value": "Uruguay",
+      "label": "Uruguay"
+  },
+  {
+      "value": "O\u2018zbekiston",
+      "label": "O\u2018zbekiston"
+  },
+  {
+      "value": "Vanuatu",
+      "label": "Vanuatu"
+  },
+  {
+      "value": "Venezuela",
+      "label": "Venezuela"
+  },
+  {
+      "value": "Vi\u1ec7t Nam",
+      "label": "Vi\u1ec7t Nam"
+  },
+  {
+      "value": "British Virgin Islands",
+      "label": "British Virgin Islands"
+  },
+  {
+      "value": "United States Virgin Islands",
+      "label": "United States Virgin Islands"
+  },
+  {
+      "value": "Wallis et Futuna",
+      "label": "Wallis et Futuna"
+  },
+  {
+      "value": "\u0627\u0644\u0635\u062d\u0631\u0627\u0621 \u0627\u0644\u063a\u0631\u0628\u064a\u0629",
+      "label": "\u0627\u0644\u0635\u062d\u0631\u0627\u0621 \u0627\u0644\u063a\u0631\u0628\u064a\u0629"
+  },
+  {
+      "value": "\u0627\u0644\u064a\u064e\u0645\u064e\u0646",
+      "label": "\u0627\u0644\u064a\u064e\u0645\u064e\u0646"
+  },
+  {
+      "value": "Zambia",
+      "label": "Zambia"
+  },
+  {
+      "value": "Zimbabwe",
+      "label": "Zimbabwe"
+  }
+]

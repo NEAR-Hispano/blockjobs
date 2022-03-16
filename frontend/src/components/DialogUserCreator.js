@@ -5,8 +5,8 @@ import { Transition, Dialog } from "@headlessui/react";
 
 import { AiOutlinePlus, AiOutlineMinus } from "react-icons/ai";
 
-import countriesList from "../../assets/countriesData.json";
-import idiomsData from "../../assets/idiomsData.json";
+import countriesList from "../assets/countriesData.json";
+import idiomsData from "../assets/idiomsData.json";
 import { addUser, updateUserData } from "../utils";
 
 const idiomLevelList = [

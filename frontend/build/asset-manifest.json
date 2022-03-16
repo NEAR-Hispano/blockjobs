@@ -1,0 +1,32 @@
+{
+  "files": {
+    "main.css": "/static/css/main.468d277d.chunk.css",
+    "main.js": "/static/js/main.a444b1d1.chunk.js",
+    "main.js.map": "/static/js/main.a444b1d1.chunk.js.map",
+    "runtime-main.js": "/static/js/runtime-main.94da8630.js",
+    "runtime-main.js.map": "/static/js/runtime-main.94da8630.js.map",
+    "static/css/2.f4c56af9.chunk.css": "/static/css/2.f4c56af9.chunk.css",
+    "static/js/2.f67d7cea.chunk.js": "/static/js/2.f67d7cea.chunk.js",
+    "static/js/2.f67d7cea.chunk.js.map": "/static/js/2.f67d7cea.chunk.js.map",
+    "index.html": "/index.html",
+    "static/css/2.f4c56af9.chunk.css.map": "/static/css/2.f4c56af9.chunk.css.map",
+    "static/css/main.468d277d.chunk.css.map": "/static/css/main.468d277d.chunk.css.map",
+    "static/js/2.f67d7cea.chunk.js.LICENSE.txt": "/static/js/2.f67d7cea.chunk.js.LICENSE.txt",
+    "static/media/JobsCoinIcon.e2079029.svg": "/static/media/JobsCoinIcon.e2079029.svg",
+    "static/media/create_a_service.5524ba39.svg": "/static/media/create_a_service.5524ba39.svg",
+    "static/media/freelancer.3e2b538f.svg": "/static/media/freelancer.3e2b538f.svg",
+    "static/media/get_hired.5524ba39.svg": "/static/media/get_hired.5524ba39.svg",
+    "static/media/iphone-12.67aa6f9e.svg": "/static/media/iphone-12.67aa6f9e.svg",
+    "static/media/logo-black.47b91dd0.svg": "/static/media/logo-black.47b91dd0.svg",
+    "static/media/no-results.png": "/static/media/no-results.3cc147a6.png",
+    "static/media/roadmap.f9acc1f5.svg": "/static/media/roadmap.f9acc1f5.svg",
+    "static/media/usd-coin-usdc-logo.f08e02b1.svg": "/static/media/usd-coin-usdc-logo.f08e02b1.svg"
+  },
+  "entrypoints": [
+    "static/js/runtime-main.94da8630.js",
+    "static/css/2.f4c56af9.chunk.css",
+    "static/js/2.f67d7cea.chunk.js",
+    "static/css/main.468d277d.chunk.css",
+    "static/js/main.a444b1d1.chunk.js"
+  ]
+}

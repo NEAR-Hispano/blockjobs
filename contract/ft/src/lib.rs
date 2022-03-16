@@ -27,10 +27,10 @@ pub struct Token {
     token: FungibleToken,
     metadata: LazyOption<FungibleTokenMetadata>,
     pub owner: ValidAccountId,
-    // Determina quien puede mintear los tokens pendientes y modificar la allowance.
+    // Determina quien puede mintear los tokens pendientes y modificar la locked_tokens.
     pub minter: AccountId,
     // Tokens a poder retirar por parte de cada jurado.
-    allowance: LookupMap<AccountId, Balance>,
+    locked_tokens: LookupMap<AccountId, Balance>,
     // Total de tokens pendiente a mintear.
     pub pending_to_mint: Balance,
     // Cantidad de tokens bloqueados minima para poder ser miembro del jurado.
@@ -77,7 +77,7 @@ impl Token {
             metadata: LazyOption::new(b"m".to_vec(), Some(&metadata)),
             minter: env::predecessor_account_id(),
             owner: owner_id.clone(),
-            allowance: LookupMap::new(b"a".to_vec()),
+            locked_tokens: LookupMap::new(b"a".to_vec()),
             pending_to_mint: 0,
             min_blocked_amount: 10_000,
             sales_contract: sales_contract
@@ -149,31 +149,31 @@ impl Token {
         let contract = self.owner.clone();
         self.ft_transfer(contract, (amount*DECIMALS).into() , None);
 
-        // Modificar allowance sumando lo bloqueado
-        self.allowance.insert(&sender, &(amount*DECIMALS + self.allowance.get(&sender).unwrap_or(0)));
+        // Modificar locked_tokens sumando lo bloqueado
+        self.locked_tokens.insert(&sender, &(amount*DECIMALS + self.locked_tokens.get(&sender).unwrap_or(0)));
 
-        // Retornar allowance
-        self.allowance.get(&sender).unwrap_or(0)
+        // Retornar locked_tokens
+        self.locked_tokens.get(&sender).unwrap_or(0)
     }
 
-    /// Redimir tokens segun la allowance actual.
+    /// Redimir tokens segun la cantidad bloqueada actual.
     /// Solo ejecutable por quien los bloqueo inicialmente.
-    /// 
     #[payable]
     pub fn withdraw_tokens(&mut self, amount: Balance) -> Balance {
         let sender = env::signer_account_id();
         let contract = self.owner.clone().into();
 
-        if self.allowance.get(&sender) >= Some(amount*DECIMALS) {
-            self.token.internal_transfer(&contract, &sender, amount*DECIMALS, None);
-        };
-
-        let new_allowance = self.allowance.get(&sender).unwrap_or(0) - amount*DECIMALS;
-        // Modificar allowance restando lo que se retira
-        self.allowance.insert(&sender, &new_allowance);
+        assert!(self.locked_tokens.get(&sender) >= Some(amount*DECIMALS), "Insufficient balance");
         
-        // Retornar la allowance actualizada
-        self.allowance.get(&sender).unwrap_or(0)
+        self.token.internal_transfer(&contract, &sender, amount*DECIMALS, None);
+        
+        let new_locked_tokens = self.locked_tokens.get(&sender).unwrap_or(0) - amount*DECIMALS;
+        
+        // Modificar locked_tokens restando lo que se retira
+        self.locked_tokens.insert(&sender, &new_locked_tokens);
+        
+        // Retornar la locked_tokens actualizada
+        self.locked_tokens.get(&sender).unwrap_or(0)
     }
 
 
@@ -186,17 +186,17 @@ impl Token {
 
         for i in votes.iter() {
             if i.vote {
-                self.pending_to_mint += self.allowance.get(&i.account)
-                .unwrap_or(0) * 103 / 100 - self.allowance.get(&i.account).unwrap_or(0);
+                self.pending_to_mint += self.locked_tokens.get(&i.account)
+                .unwrap_or(0) * 103 / 100 - self.locked_tokens.get(&i.account).unwrap_or(0);
 
-                // Modificar allowance aumentando en 3%
-                let new_allowance = self.allowance.get(&i.account).unwrap_or(0) * 103 / 100 ;
-                self.allowance.insert(&i.account, &new_allowance);
+                // Modificar locked_tokens aumentando en 3%
+                let new_locked_tokens = self.locked_tokens.get(&i.account).unwrap_or(0) * 103 / 100 ;
+                self.locked_tokens.insert(&i.account, &new_locked_tokens);
             }
             else {
-            // Modificar allowance disminuyendo en 3%
-            let new_allowance = self.allowance.get(&i.account).unwrap_or(0) * 100 / 103;
-            self.allowance.insert(&i.account, &new_allowance);
+            // Modificar locked_tokens disminuyendo en 3%
+            let new_locked_tokens = self.locked_tokens.get(&i.account).unwrap_or(0) * 100 / 103;
+            self.locked_tokens.insert(&i.account, &new_locked_tokens);
             }
         }
     }
@@ -210,17 +210,17 @@ impl Token {
 
         for i in votes.iter() {
             if !i.vote {
-                self.pending_to_mint += self.allowance.get(&i.account)
-                .unwrap_or(0) * 103 / 100 - self.allowance.get(&i.account).unwrap_or(0);
+                self.pending_to_mint += self.locked_tokens.get(&i.account)
+                .unwrap_or(0) * 103 / 100 - self.locked_tokens.get(&i.account).unwrap_or(0);
 
-                // Modificar allowance aumentando en 3%
-                let new_allowance = self.allowance.get(&i.account).unwrap_or(0) * 103 / 100 ;
-                self.allowance.insert(&i.account, &new_allowance);
+                // Modificar locked_tokens aumentando en 3%
+                let new_locked_tokens = self.locked_tokens.get(&i.account).unwrap_or(0) * 103 / 100 ;
+                self.locked_tokens.insert(&i.account, &new_locked_tokens);
             }
             else {
-            // Modificar allowance disminuyendo en 3%
-            let new_allowance = self.allowance.get(&i.account).unwrap_or(0) * 100 / 103;
-            self.allowance.insert(&i.account, &new_allowance);
+            // Modificar locked_tokens disminuyendo en 3%
+            let new_locked_tokens = self.locked_tokens.get(&i.account).unwrap_or(0) * 100 / 103;
+            self.locked_tokens.insert(&i.account, &new_locked_tokens);
             }
         }
     }
@@ -261,13 +261,20 @@ impl Token {
     /// Solo ejecutable por y desde desde Mediator.
     /// 
     pub fn validate_tokens(&self, account_id: AccountId) -> bool {
-        let balance = self.get_allowance_of(&account_id);
+        let balance = self.get_locked_tokens_of(&account_id);
         
         if balance < self.min_blocked_amount {
             env::panic(b"Insufficient balance");
         } else {
             return true;
         }
+    }
+
+    /// Modificar el contrato de ventas
+    /// near call $FT change_sales_contract '{"new_account_id": "sales.blockjobs.testnet"}' --accountId $FT
+    pub fn change_sales_contract(&mut self, new_account_id: AccountId) {
+        self.assert_owner();
+        self.sales_contract = new_account_id;
     }
 
     // /// Verificar que el ususario tenga el suficiente balance bloqueado para poder ser jurado.
@@ -308,15 +315,15 @@ impl Token {
         self.pending_to_mint.clone()
     }
 
-    pub fn get_allowance_of(&self, account: &AccountId) -> Balance {
-        self.allowance.get(&account).unwrap_or(0)
+    pub fn get_locked_tokens_of(&self, account: &AccountId) -> Balance {
+        self.locked_tokens.get(&account).unwrap_or(0)
     }
 
     /// Verificar que la cantidad bloqueada de un usuario cumpla con el 
     /// minimo para ser miembro del jurado.
     /// 
     pub fn verify_blocked_amount(&self, account: &AccountId) -> bool {
-        if self.get_allowance_of(account) >= self.min_blocked_amount {
+        if self.get_locked_tokens_of(account) >= self.min_blocked_amount {
             return true;
         }
         else { return false; }

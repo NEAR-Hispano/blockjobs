@@ -28,6 +28,7 @@ pub struct Sale {
     is_finished: bool,
     admin: AccountId,
     whitelist: Vec<AccountId>,
+    average_block_time: u64
 }
 
 #[near_bindgen]
@@ -45,6 +46,8 @@ impl Sale {
             pending_tokens: TOKENS_FOR_SALE,
             is_finished: false,
             admin: admin_id,
+            whitelist: Vec::new(),
+            average_block_time: 12200
         }
     }
 
@@ -92,7 +95,9 @@ impl Sale {
     /// Retirar los NEARs obtenidos de la preventa una vez finalizada.
     /// 
     pub fn airdrop(&self, beneficiary: AccountId) -> Balance {
-        assert!(env::block_timestamp > self.deploy_time+ONE_DAY*30, "The whitelist isn't finished");
+        let time = self.deploy_time + ONE_DAY*30 * self.average_block_time/10000;
+        let actual_time = env::block_timestamp();
+        assert!(actual_time >= time, "The whitelist isn't finished");
         assert!(env::signer_account_id() == env::current_account_id(), "You haven't permission to withdraw");
 
         Promise::new(beneficiary).transfer(env::account_balance());
@@ -121,7 +126,7 @@ impl Sale {
         env::account_balance()
     }
 
-}
+} 
 
 #[ext_contract(ext_ft)]
 trait FungibleToken {

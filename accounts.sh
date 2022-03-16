@@ -17,6 +17,11 @@ echo "Exportanto la cuenta del contrato mediador en FT"
 source neardev/dev-account.env
 export FT=$CONTRACT_NAME
 
+cd ../sales
+echo "Exportanto la cuenta del contrato de ventas en SA"
+source neardev/dev-account.env
+export SA=$CONTRACT_NAME
+
 cd ../../
 echo "Exportando dariofs.testnet a la variable ID"
 ID=dariofs.testnet

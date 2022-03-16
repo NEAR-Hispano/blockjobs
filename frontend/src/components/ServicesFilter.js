@@ -3,8 +3,8 @@ import React, { useState } from "react";
 import Select from "react-select";
 import AsyncSelect from "react-select/async";
 
-import tokensData from "../../assets/tokensData.json";
-import categoriesData from "../../assets/categoriesData.json";
+import tokensData from "../assets/tokensData.json";
+import categoriesData from "../assets/categoriesData.json";
 
 export default function ServicesFilter({ mains, setServices }) {
   const [categoriesService, setCategoriesService] = useState(null);

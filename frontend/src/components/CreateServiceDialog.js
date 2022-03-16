@@ -5,8 +5,8 @@ import AsyncSelect from "react-select/async";
 import Select from "react-select";
 import { toast } from "react-toastify";
 
-import categoriesData from "../../assets/categoriesData.json";
-import tokensData from "../../assets/tokensData.json";
+import categoriesData from "../categoriesData.json";
+import tokensData from "../tokensData.json";
 
 // import makeAnimated from 'react-select/animated';
 
@@ -26,7 +26,11 @@ export default function CreateServiceDialog({
     service ? service.metadata.description : ""
   );
   const [categoriesService, setCategoriesService] = useState(
-    service ? JSON.parse(service.metadata.categories) : null
+    service
+      ? JSON.parse(service.metadata.categories).map((v) => {
+          return { value: v, label: v };
+        })
+      : []
   );
   const [iconServiceFile, setIconServiceFile] = useState(null);
   const [priceService, setPriceService] = useState(
@@ -36,10 +40,16 @@ export default function CreateServiceDialog({
     service ? service.duration : 0
   );
   const [amountOfServices, setAmountOfServicesService] = useState(0);
-  const [paidmentMethod, setPaidmentMethod] = useState({
-    value: "",
-    label: "",
-  });
+  const [paidmentMethod, setPaidmentMethod] = useState(
+    service
+      ? tokensData.find((v) => {
+          return v.value === service.metadata.token
+        })
+      : {
+          value: "",
+          label: "",
+        }
+  );
 
   const filterCategories = (inputValue) => {
     return categoriesData.filter((i) =>
@@ -81,7 +91,6 @@ export default function CreateServiceDialog({
     }
 
     v = v + 1 * mul;
-    console.log(v);
     setterHook(v);
   };
 
@@ -243,14 +252,14 @@ export default function CreateServiceDialog({
                           value: amountOfServices,
                           setter: setAmountOfServicesService,
                         },
-                        // {
-                        //   title: `Precio (${paidmentMethod.value})`,
-                        //   value: priceService,
-                        //   action: handleOnChangePrice,
-                        //   counter: handleCounter,
-                        //   value: priceService,
-                        //   setter: setPriceService,
-                        // },
+                        {
+                          title: `Precio (${paidmentMethod.value})`,
+                          value: priceService,
+                          action: handleOnChangePrice,
+                          counter: handleCounter,
+                          value: priceService,
+                          setter: setPriceService,
+                        },
                       ].map((v, i) => {
                         return (
                           <div className="h-auto w-32 mr-4" key={i}>
@@ -304,6 +313,14 @@ export default function CreateServiceDialog({
                           value: priceService,
                           setter: setPriceService,
                         },
+                        // {
+                        //   title: `Precio (${paidmentMethod.value})`,
+                        //   value: priceService,
+                        //   action: handleOnChangePrice,
+                        //   counter: handleCounter,
+                        //   value: priceService,
+                        //   setter: setPriceService,
+                        // }
                       ].map((v, i) => {
                         return (
                           <div className="h-auto w-32 mr-4" key={i}>
@@ -340,7 +357,7 @@ export default function CreateServiceDialog({
                           </div>
                         );
                       })}
-                  <div className="h-auto w-auto mr-4">
+                  {/* <div className="h-auto w-auto mr-4">
                     <label className="w-full text-gray-700 text-sm font-semibold">
                       {`Precio (${paidmentMethod.value})`}
                     </label>
@@ -353,7 +370,7 @@ export default function CreateServiceDialog({
                         <span className="m-auto text-2xl font-thin"> </span>
                       </div>
                     </div>
-                  </div>
+                  </div> */}
                 </div>
 
                 <div className="mt-4">
@@ -369,16 +386,28 @@ export default function CreateServiceDialog({
                       const validateInputs = !service
                         ? [
                             {
-                              ok: titleService.length > 0,
-                              msg: "Falta el titulo",
+                              ok: titleService.length > 10,
+                              msg: "Titulo minimo 10 caracteres",
                             },
                             {
-                              ok: descriptionService.length > 0,
-                              msg: "Falta la descripcion",
+                              ok: titleService.length < 58,
+                              msg: "Titulo maximo de 58 caracteres",
+                            },
+                            {
+                              ok: descriptionService.length > 10,
+                              msg: "Descripcion minimo 10 caracteres",
+                            },
+                            {
+                              ok: descriptionService.length < 180,
+                              msg: "Descripcion maximo de 180",
                             },
                             {
                               ok: categoriesService.length > 0,
-                              msg: "Falta categorias",
+                              msg: "Categorias minimo 1",
+                            },
+                            {
+                              ok: categoriesService.length < 15,
+                              msg: "Categorias maximo 10",
                             },
                             {
                               ok: iconServiceFile != null,
@@ -399,12 +428,20 @@ export default function CreateServiceDialog({
                           ]
                         : [
                             {
-                              ok: titleService.length > 0,
-                              msg: "Falta el titulo",
+                              ok: titleService.length > 10,
+                              msg: "El titulo minimo 10 caracteres",
                             },
                             {
-                              ok: descriptionService.length > 0,
-                              msg: "Falta la descripcion",
+                              ok: titleService.length < 58,
+                              msg: "El titulo maximo de 58 caracteres",
+                            },
+                            {
+                              ok: descriptionService.length > 10,
+                              msg: "Descripcion minimo 10 caracteres",
+                            },
+                            {
+                              ok: descriptionService.length < 180,
+                              msg: "Descripcion maximo de 180",
                             },
                             {
                               ok: paidmentMethod.value.length > 0,
@@ -432,12 +469,12 @@ export default function CreateServiceDialog({
                         token: paidmentMethod.value.toLowerCase(),
                       };
                       try {
-                        let finalValidatorMsg = "";
+                        let finalValidatorMsg = [];
                         let finalOk = true;
                         validateInputs.forEach((v) => {
                           finalOk &= v.ok;
                           if (!v.ok) {
-                            finalValidatorMsg += v.msg + ". ";
+                            finalValidatorMsg.push(v.msg);
                           }
                         });
 
@@ -480,7 +517,9 @@ export default function CreateServiceDialog({
                             );
                           }
                         } else {
-                          toast.error(finalValidatorMsg);
+                          finalValidatorMsg.forEach((v) => {
+                            toast.error(v);
+                          })
                         }
                       } catch (e) {
                         console.log(e.error);

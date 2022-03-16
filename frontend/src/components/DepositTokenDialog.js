@@ -1,13 +1,12 @@
 import React, { Fragment, useState } from "react";
 import { Transition, Dialog } from "@headlessui/react";
 import { buyFT, ftTransferCallJOBS, ftTransferCallUSDC, withdrawFT } from "../utils";
-import tokensData from "../../assets/tokensData.json"
+import tokensData from "../assets/tokensData.json"
 
 export default function DepositTokenDialog({ isOpen, closeModal, openModal, token, withdraw }) {
   const [amountOfTokens, setAmountOfTokens] = useState("0.0");
 
   const handleNumber = (e) => {
-    console.log(e.target.value.length)
     let input = e.target.value.length > 10 ? amountOfTokens : e.target.value;
 
     if (input.match(/^[0-9]*\.[0-9]+([eE][0-9]+)?$/)) {
@@ -79,7 +78,6 @@ export default function DepositTokenDialog({ isOpen, closeModal, openModal, toke
                   onClick={async () => {
                     // let address = tokensData.find((v) => {v.label == token});
                     let amount = parseFloat(amountOfTokens);
-                    console.log(amount * (10**18));
                     
                     if (token == "JOBS") {
                       if (!withdraw) {

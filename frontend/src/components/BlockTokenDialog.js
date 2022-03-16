@@ -1,12 +1,11 @@
 import React, { Fragment, useState } from "react";
 import { Transition, Dialog } from "@headlessui/react";
-import { blockTokens } from "../utils";
+import { blockTokens, withdrawTokens } from "../utils";
 
-export default function BlockTokenDialog({ isOpen, closeModal, openModal }) {
+export default function BlockTokenDialog({ isOpen, closeModal, openModal, withdraw }) {
   const [amountOfTokens, setAmountOfTokens] = useState("0.0");
 
   const handleNumber = (e) => {
-    console.log(e.target.value.length)
     let input = e.target.value.length > 10 ? amountOfTokens : e.target.value;
 
     if (input.match(/^[0-9]*\.[0-9]+([eE][0-9]+)?$/)) {
@@ -55,7 +54,7 @@ export default function BlockTokenDialog({ isOpen, closeModal, openModal }) {
                 as="h3"
                 className="text-lg font-semibold leading-6 text-gray-900 text-center"
               >
-                Bloquear JOBS
+                {withdraw ? "Retirar JOBS bloqueados" : "Bloquear JOBS"}
               </Dialog.Title>
               <div className="mt-2">
                 <div className="h-auto w-32 mr-4">
@@ -76,7 +75,12 @@ export default function BlockTokenDialog({ isOpen, closeModal, openModal }) {
                   type="button"
                   className="inline-flex justify-center items-center px-4 py-2 mr-4 text-white bg-[#27C0EF] border border-transparent rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 font-bold"
                   onClick={async () => {
-                    await blockTokens(amountOfTokens)
+                    if (withdraw) {
+                      await withdrawTokens(amountOfTokens)
+                    }
+                    else {
+                      await blockTokens(amountOfTokens)
+                    }
                   }}
                 >
                   Bloquear!

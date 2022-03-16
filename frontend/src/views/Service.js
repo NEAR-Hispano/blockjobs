@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
+import { ImCross, ImCheckmark } from "react-icons/im";
 import { utils } from "near-api-js";
-import { toast } from "react-toastify";
 
 import {
   buyService,
@@ -11,64 +11,84 @@ import {
   reclaimService,
   reclaimServiceTest,
 } from "../utils";
+
 import CreateServiceDialog from "../components/CreateServiceDialog";
 import CreateDisputeDialog from "../components/CreateDisputeDialog";
-import ServicesCard from "../components/ServicesCard";
 import UserProfile from "../components/UserProfile";
 import SkeletonLoaderService from "../components/SkeletonLoaderService";
 import SkeletonLoaderProfile from "../components/SkeletonLoaderProfile";
 
-import { ImCross, ImCheckmark } from "react-icons/im";
-
 import { useGlobalState } from "../state";
+
+import { TokenIcons } from "../components/TokenIcons";
+import Chat from "../components/Chat";
 
 export default function Service() {
   const [isUserCreated] = useGlobalState("isUserCreated");
-  let [service, setService] = useState();
-  let [user, setUser] = useState();
-  let [loading, setLoading] = useState(true);
-  let [loadingReclaimService, setLoadingReclaimService] = useState(false);
-  let [isOpen, setIsOpen] = useState(false);
+  const [service, setService] = useState();
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [loadingReclaimService, setLoadingReclaimService] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
+  const [loadingBuyService, setLoadingBuyService] = useState(false);
+
   const params = useParams();
   const navigate = useNavigate();
-  useEffect(async () => {
-    let loadingService = true;
-    let loadingUser = true;
 
-    let s = await getServiceById(Number(params.id));
+  useEffect(() => {
+    const foo = async () => {
+      let loadingService = true;
+      let loadingUser = true;
 
-    if (s) {
-      setService(s);
-      loadingService = false;
-    }
+      let s = await getServiceById(Number(params.id));
 
-    let user = await getUser(s.creator_id);
-    if (user) {
-      user.personal_data = JSON.parse(user.personal_data);
-      console.log(user);
-      setUser(user);
-      loadingUser = false;
-    }
-    if (!loadingService && !loadingUser) {
-      setLoading(false);
-    }
+      if (s) {
+        setService(s);
+        loadingService = false;
+      }
+
+      let user = await getUser(s.creator_id);
+      if (user) {
+        try {
+          user.personal_data = JSON.parse(user.personal_data);
+        } catch (e) {}
+        setUser(user);
+        loadingUser = false;
+      }
+      if (!loadingService && !loadingUser) {
+        setLoading(false);
+      }
+    };
+    foo();
   }, []);
 
-  const handleBuyService = async () => {
-    const userBalance = utils.format.formatNearAmount(
-      (await window.walletConnection.account().getAccountBalance()).available
-    );
+  const showChat = () => {
+    if (
+      (window.accountId == service.creator_id ||
+        window.accountId == service.actual_owner) &&
+      service.creator_id != service.actual_owner
+    ) {
+      return true;
+    }
 
-    if (service.metadata.price < userBalance) {
+    return false;
+  };
+
+  const handleBuyService = async () => {
+    setLoadingBuyService(true);
+    if (service.metadata.token != "near") {
+      await buyService(service.id, service.metadata.price);
+    } else {
       const amount = utils.format.parseNearAmount(
         String(service.metadata.price)
       );
-      console.log(amount);
       await buyService(service.id, amount);
-      return;
     }
 
-    toast.error("No tienes suficientes fondos para adquirir este servicio");
+    setLoadingBuyService(false);
+    return;
+
+    // toast.error("No tienes suficientes fondos para adquirir este servicio");
   };
 
   const closeModal = () => {
@@ -82,12 +102,7 @@ export default function Service() {
   const dateToString = (date) => {
     let d = new Date(Math.round(date / 1000000));
     return (
-      d.toLocaleDateString() +
-      "  (" +
-      d.getHours() +
-      "h " +
-      d.getMinutes() +
-      "m )"
+      d.toLocaleDateString() + "  (" + d.getHours() + ":" + d.getMinutes() + ")"
     );
   };
 
@@ -103,9 +118,9 @@ export default function Service() {
       s.getFullYear() +
       "  (" +
       s.getHours() +
-      "h " +
+      ":" +
       s.getMinutes() +
-      "m )"
+      ")"
     );
   };
 
@@ -113,9 +128,9 @@ export default function Service() {
     let now = new Date().getTime();
     setLoadingReclaimService(true);
     if (now >= getReclaimDate()) {
-      // await reclaimService(service.id)
+      await reclaimService(service.id);
       // location.reload();
-      console.log("Hora correcta");
+      console.log(service.id, "Hora correcta");
     } else {
       await reclaimService(service.id);
       location.reload();
@@ -177,7 +192,7 @@ export default function Service() {
             {!window.walletConnection.isSignedIn() ? (
               <button
                 onClick={login}
-                className="uppercase py-2 px-4 rounded-lg bg-[#04AADD] border-transparent text-white text-md mr-4"
+                className="uppercase py-2 px-4 rounded-lg bg-[#04AADD] border-transparent text-white text-md mr-4 transition ease-in-out hover:scale-105 hover:-translate-y-0.5 duration-300 shadow-lg"
               >
                 Login
               </button>
@@ -187,9 +202,26 @@ export default function Service() {
               isUserCreated ? (
               <button
                 onClick={handleBuyService}
-                className="uppercase py-2 px-4 rounded-lg bg-green-500 border-transparent text-white text-md mr-4"
+                className="uppercase py-2 px-4 rounded-lg flex items-center bg-green-500 border-transparent text-white text-lg mr-4 transition ease-in-out hover:scale-105 hover:-translate-y-0.5 duration-300 shadow-lg"
+                disabled={loadingBuyService}
               >
-                Comprar servicio
+                Comprar servicio{" "}
+                {loadingBuyService ? (
+                  <div className="ml-2">
+                    <svg className="spinner-normal" viewBox="0 0 50 50">
+                      <circle
+                        className="path !stroke-white"
+                        cx="25"
+                        cy="25"
+                        r="20"
+                        fill="none"
+                        strokeWidth="5"
+                      ></circle>
+                    </svg>
+                  </div>
+                ) : (
+                  <></>
+                )}
               </button>
             ) : service.actual_owner == window.accountId &&
               service.creator_id == window.accountId &&
@@ -199,13 +231,13 @@ export default function Service() {
                 <div className="flex">
                   <button
                     onClick={openModal}
-                    className="uppercase py-2 px-4 rounded-lg bg-[#04AADD] border-transparent text-white text-md mr-4"
+                    className="uppercase py-2 px-4 rounded-lg bg-[#04AADD] border-transparent text-white text-md mr-4 transition ease-in-out hover:scale-105 hover:-translate-y-0.5 duration-300 shadow-lg"
                   >
                     Editar servicio
                   </button>
-                  <button className="uppercase py-2 px-4 rounded-lg bg-red-400 border-transparent text-white text-md mr-4">
+                  {/* <button className="uppercase py-2 px-4 rounded-lg bg-red-400 border-transparent text-white text-md mr-4">
                     Eliminar servicio
-                  </button>
+                  </button> */}
                 </div>
               </div>
             ) : service.actual_owner == window.accountId &&
@@ -216,9 +248,9 @@ export default function Service() {
               <div className="flex justify-end">
                 <button
                   onClick={openModal}
-                  className="uppercase py-2 px-4 rounded-lg bg-red-400 border-transparent text-white text-md mr-4"
+                  className="uppercase py-2 px-4 rounded-lg bg-red-400 border-transparent text-white text-md mr-4 transition ease-in-out hover:scale-105 hover:-translate-y-0.5 duration-300 shadow-lg"
                 >
-                  Reclamar!
+                  Crear disputa!
                 </button>
               </div>
             ) : service.actual_owner != window.accountId &&
@@ -230,7 +262,7 @@ export default function Service() {
                 <button
                   onClick={handleReclainService}
                   disabled={loadingReclaimService}
-                  className="uppercase py-2 px-4 rounded-lg bg-green-600 border-transparent text-white text-md mr-4"
+                  className="uppercase py-2 px-4 rounded-lg bg-green-600 border-transparent text-white text-md mr-4 transition ease-in-out hover:scale-105 hover:-translate-y-0.5 duration-300 shadow-lg"
                 >
                   Reclamar Pago!
                 </button>
@@ -239,11 +271,14 @@ export default function Service() {
               <></>
             )}
             <div className="border-2 rounded-lg px-6 py-4 shadow-md mt-4">
+              <div className="text-2xl text-center font-bold text-gray-800 mb-4">
+                Servicio
+              </div>
               <div className="">
                 <div className="flex self-baseline">
                   {service.metadata.icon ? (
                     <img
-                      className="w-32 h-32 rounded-full mr-4 object-cover"
+                      className="w-32 h-32 md:w-48 md:max-h-52 md:rounded md:rounded-bl-xl md:rounded-tl-xl rounded-full mr-4 object-contain "
                       src={service.metadata.icon}
                     />
                   ) : (
@@ -290,8 +325,12 @@ export default function Service() {
                   <span className="font-semibold">Price</span>:{" "}
                   {service.metadata.price}
                   <img
-                    className="w-[26px]"
-                    src={require("../../assets/logo-black.svg")}
+                    className="w-[26px] ml-1"
+                    src={
+                      TokenIcons.find((v) => {
+                        return v.value === service.metadata.token;
+                      }).path
+                    }
                   ></img>
                 </div>
 
@@ -346,11 +385,23 @@ export default function Service() {
                 </div>
               )}
             </div>
-            <div className="border-2 rounded-lg shadow-md px-6 py-4 mt-4">
-              <div className="text-2xl font-bold text-gray-800 mb-4">
-                Perfil del usuario
+
+            {showChat() ? (
+              <div className=" border-2 rounded-lg shadow-md px-6 py-4 mt-8 ">
+                <div className="text-2xl text-center font-bold text-gray-800 mb-4">
+                  Chat
+                </div>
+                <Chat service={service}/>
               </div>
-              <UserProfile user={user} />
+            ) : (
+              <></>
+            )}
+
+            <div className="border-2 rounded-lg shadow-md px-6 py-4 mt-8">
+              <div className="text-2xl text-center font-bold text-gray-800 mb-4">
+                Perfil del creador
+              </div>
+              {user ? <UserProfile user={user} /> : <SkeletonLoaderProfile />}
             </div>
           </div>
         )}

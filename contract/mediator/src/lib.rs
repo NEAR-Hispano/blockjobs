@@ -287,7 +287,18 @@ impl Mediator {
         ));
     }
 
+    pub fn vote_test(&mut self, dispute_id: DisputeId, vote: bool) {
+        let sender = env::predecessor_account_id();
+        Event::log_dispute_vote( dispute_id.clone(), sender.clone().to_string(), vote.clone() );
+        let _res = ext_ft::validate_tokens(
+            sender.clone(), &self.token_contract, NO_DEPOSIT, BASE_GAS,
+        ).then(ext_self::on_vote(
+            dispute_id, sender, vote,
+            &env::current_account_id(), NO_DEPOSIT, BASE_GAS,
+        ));
+    }
 
+    
     /// Adicion del miembro del jurado en caso de cumplirse la verificacion desde Marketplace.
     /// 
     pub fn on_vote(&mut self, dispute_id: u64, user_id: AccountId, vote: bool) -> Dispute {
@@ -489,7 +500,7 @@ impl Mediator {
         quantity
     }
 
-    /// Modificar contrato de Marketpla
+    /// Modificar contrato de Marketplace.
     ///
     pub fn update_marketplace_contract(&mut self, marketplace_contract: AccountId) -> AccountId{
         self.assert_owner(&env::signer_account_id());
@@ -586,7 +597,7 @@ impl Mediator {
 
     /// Callback para incrementar en 3% los tokens de quien voto correctamente.
     /// 
-    pub fn on_increase_allowance() {
+    pub fn on_increase_locked_tokens() {
         if env::predecessor_account_id() != env::current_account_id() {
             env::panic(b"only the contract can call its function")
         }
@@ -596,7 +607,7 @@ impl Mediator {
         );
         match env::promise_result(0) {
             PromiseResult::Successful(_data) => {
-                env::log(b"Allowance increase");
+                env::log(b"Locked tokens increase");
             },
             PromiseResult::Failed => env::panic(b"Callback faild"),
             PromiseResult::NotReady => env::panic(b"Callback faild"),
@@ -605,7 +616,7 @@ impl Mediator {
 
     /// Callback para decrementar en 3% los tokens de quien voto incorrectamente.
     /// 
-    pub fn on_decrease_allowance() {
+    pub fn on_decrease_locked_tokens() {
         if env::predecessor_account_id() != env::current_account_id() {
             env::panic(b"only the contract can call its function")
         }
@@ -615,7 +626,7 @@ impl Mediator {
         );
         match env::promise_result(0) {
             PromiseResult::Successful(_data) => {
-                env::log(b"Allowance decreased");
+                env::log(b"Locked tokens decreased");
             },
             PromiseResult::Failed => env::panic(b"Callback faild"),
             PromiseResult::NotReady => env::panic(b"Callback faild"),

@@ -6,6 +6,7 @@ import {
   utils,
 } from "near-api-js";
 import { toast } from "react-toastify";
+
 import getConfig from "./config";
 import { NFTStorage } from "nft.storage";
 import contractsAccounts from "./contractsAccounts.json";
@@ -107,10 +108,15 @@ export async function initContract() {
         "ft_balance_of",
         "get_minter",
         "get_pending_to_mint",
-        "get_allowance_of",
+        "get_locked_tokens_of",
         "verify_blocked_amount",
       ],
-      changeMethods: ["ft_transfer_call", "transfer_ft", "block_tokens"],
+      changeMethods: [
+        "ft_transfer_call",
+        "transfer_ft",
+        "block_tokens",
+        "withdraw_tokens",
+      ],
       sender: ftConfig.contractName,
     }
   );
@@ -139,7 +145,7 @@ export async function initContract() {
 
   // nft storage
   window.nftStorageClient = new NFTStorage({
-    token: String(process.env.NFT_STORAGE_API_KEY),
+    token: String(process.env.REACT_APP_NFT_STORAGE_API_KEY),
   });
 }
 
@@ -158,9 +164,14 @@ export function login() {
 }
 
 function getErrMsg(e) {
-  let finalErrorMsg = String(e.message.match('".*"'));
-  finalErrorMsg.substring(1, finalErrorMsg.length - 1);
-  return finalErrorMsg.replace(/["']/g, "");
+  let finalErrorMsg = ""
+  try {
+    let finalErrorMsg = JSON.parse(e.message.substring(e.message.indexOf("{"))).kind.ExecutionError
+  }
+  catch(e) {
+    
+  }
+  return finalErrorMsg
 }
 
 /* Services relate */
@@ -190,16 +201,21 @@ export async function mintService(
 }
 // {"amount":1000000000000000000,"token":"jobs"}
 export async function withdrawFT(amount, token) {
-  console.log(JSON.stringify({
-    amount: String(amount),
-    token: token,
-  }))
-  // return;
-  try {
-    await window.marketplaceContract.withdraw_ft({
+  console.log(
+    JSON.stringify({
       amount: String(amount),
       token: token,
-    }, "300000000000000");
+    })
+  );
+  // return;
+  try {
+    await window.marketplaceContract.withdraw_ft(
+      {
+        amount: String(amount),
+        token: token,
+      },
+      "300000000000000"
+    );
     return true;
   } catch (e) {
     let finalErrorMsg = getErrMsg(e);
@@ -218,7 +234,7 @@ export async function buyService(serviceId, deposit) {
     );
     return true;
   } catch (e) {
-    let finalErrorMsg = getErrMsg(e);
+    let finalErrorMsg = JSON.parse(e.message).kind.ExecutionError
     toast.error(finalErrorMsg);
     console.log(e);
     return false;
@@ -250,7 +266,7 @@ export async function updateService(
   }
 }
 
-export async function reclaimService() {
+export async function reclaimService(serviceId) {
   // let fee = utils.format.parseNearAmount("0.1");
   try {
     await window.marketplaceContract.reclaim_service(
@@ -263,6 +279,17 @@ export async function reclaimService() {
     toast.error(finalErrorMsg);
     console.log(e);
     return false;
+  }
+}
+
+export async function getTotalServices() {
+  try {
+    return await window.marketplaceContract.get_total_services();
+  } catch (e) {
+    let finalErrorMsg = getErrMsg(e);
+    toast.error(finalErrorMsg);
+    console.log(e);
+    return null;
   }
 }
 
@@ -386,7 +413,7 @@ export async function updateDisputeStatus(disputeId) {
   try {
     return await window.mediatorContract.update_dispute_status(
       { dispute_id: disputeId },
-      "300000000000000"
+      "300000000000000",
     );
   } catch (e) {
     let finalErrorMsg = getErrMsg(e);
@@ -460,6 +487,17 @@ export async function getMaxJurors() {
   }
 }
 
+export async function getTotalDisputes() {
+  try {
+    return await window.mediatorContract.get_total_disputes();
+  } catch (e) {
+    let finalErrorMsg = getErrMsg(e);
+    toast.error(finalErrorMsg);
+    console.log(e);
+    return null;
+  }
+}
+
 export async function getJOBSBalanceFromNearWallet(account) {
   try {
     return await window.ftContract.ft_balance_of({ account_id: account });
@@ -473,7 +511,29 @@ export async function getJOBSBalanceFromNearWallet(account) {
 
 export async function blockTokens(amount) {
   try {
-    return await window.ftContract.block_tokens({ amount: amount });
+    return await window.ftContract.block_tokens({ amount: Number(amount) }, "300000000000000", "1");
+  } catch (e) {
+    let finalErrorMsg = getErrMsg(e);
+    toast.error(finalErrorMsg);
+    console.log(e);
+    return null;
+  }
+}
+
+export async function getLockedTokensOf(account) {
+  try {
+    return await window.ftContract.get_locked_tokens_of({ account: account });
+  } catch (e) {
+    let finalErrorMsg = getErrMsg(e);
+    toast.error(finalErrorMsg);
+    console.log(e);
+    return null;
+  }
+}
+
+export async function withdrawTokens(amount) {
+  try {
+    return await window.ftContract.withdraw_tokens({ amount: Number(amount) }, "300000000000000", "1");
   } catch (e) {
     let finalErrorMsg = getErrMsg(e);
     toast.error(finalErrorMsg);
@@ -486,7 +546,7 @@ export async function ftTransferCallJOBS(amount) {
   try {
     return await window.ftContract.ft_transfer_call(
       {
-        receiver_id: marketplaceContract.contractName,
+        receiver_id: window.marketplaceContract.contractId,
         amount: amount,
         msg: "empty",
       },
@@ -527,11 +587,13 @@ export async function getFTBalanceOf(user, token) {
 }
 
 export async function ftTransferCallUSDC(amount) {
-  console.log(JSON.stringify({
-    receiver_id: marketplaceConfig.contractName,
-    amount: amount,
-    msg: "empty"
-  }));
+  console.log(
+    JSON.stringify({
+      receiver_id: marketplaceConfig.contractName,
+      amount: amount,
+      msg: "empty",
+    })
+  );
   try {
     return await window.USDCConstract.ft_transfer_call(
       {

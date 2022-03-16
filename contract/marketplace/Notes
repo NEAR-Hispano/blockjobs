@@ -5,6 +5,7 @@ near call $MA new '{"owner_id": "'$MA'", "mediator": "'$ME'", "ft": "'$FT'"}' --
 near call $MA add_user '{"roles": ["Professional"], "personal_data": {"legal_name": "Pepe Ramos", "education": "I am a smart contract, I dont need school", "links": [], "bio": "I live inside of a smart contract in the NEAR protocol", "picture": "foto.jpg", "country": "NEARland"}}}' --accountId $ID --amount 0.03
 near call $MA add_user '{"roles": ["Employeer"], "personal_data": {"legal_name": "Pepe Ramos2", "education": "I am a smart contract, I dont need school", "links": [], "bio": "I live inside of a smart contract in the NEAR protocol", "picture": "foto.jpg", "country": "NEARland"}}}' --accountId $ID2 --amount 0.03
 near call $MA add_user '{"roles": ["Employeer"]}' --accountId $ID2 --amount 0.03
+near call dev-1646417825405-91256605751109 add_user '{"roles": ["Employee"]}' --accountId dariofs.testnet --amount 0.03
 
 near call $MA update_user_data '{"account_id": "'$ID'", "data": "{"education": "I am not a smart contract, I need school", "links": [], "bio": "I live inside of a smart contract in the NEAR protocol", "picture": "foto.jpg"}"}' --accountId $MA
 
@@ -14,6 +15,9 @@ near call $MA set_user_role '{"account_id": "'$ID'", "role": "Employeer", "remov
 near call $MA set_user_role '{"account_id": "'$ID'", "role": "Admin", "remove": false}' --accountId $ID
 
 near call $MA mint_service '{"metadata": {"title": "Near Apps", "description": "Trabajo part-time con Rust", "icon": "foto.png", "price": 2000000000000000000, "categories": "none", "token": "'$FT'"}, "quantity": 1, "duration": 20}' --accountId $ID --amount 0.029
+near call dev-1646417825405-91256605751109 mint_service '{"metadata": {"title": "Near Apps", "description": "Trabajo part-time con Rust", "icon": "foto.png", "price": 2000000000000000000, "categories": "none", "token": "'$FT'"}, "quantity": 2, "duration": 20}' --accountId $ID --amount 0.029
+
+
 near call $MA buy_service '{"service_id": 0}' --accountId $ID2 --amount 1 --gas 300000000000000
 near call $MA buy_service '{"service_id": 0}' --accountId $ID2 --depositYocto 1 --gas 300000000000000
 

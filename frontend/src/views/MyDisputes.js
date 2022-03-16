@@ -9,13 +9,16 @@ export default function MyDisputes() {
   let [maxJurors, setMaxJurors] = useState(0);
   let [disputes, setDisputes] = useState();
 
-  useEffect(async () => {
-    const d = await getDisputes(0, 10);
+  useEffect(() => {
+    const foo = async () => {
+      const d = await getDisputes(0, 10);
 
-    console.log(d);
-    setDisputes(d);
-    setMaxJurors(await getMaxJurors());
-    setLoading(false);
+      setDisputes(d);
+      setMaxJurors(await getMaxJurors());
+      setLoading(false);
+    };
+
+    foo()
   }, []);
 
   return (
@@ -126,7 +129,9 @@ export default function MyDisputes() {
             </div>
 
             <div className="shadow-md border-2 rounded-lg px-6 py-4 w-full mt-4">
-              <div className="text-xl font-bold text-center text-gray-800 mb-2">Juez</div>
+              <div className="text-xl font-bold text-center text-gray-800 mb-2">
+                Juez
+              </div>
               {/* {disputes
                 .filter((v) =>
                   v.jury_members.find((v) => v === window.accountId)

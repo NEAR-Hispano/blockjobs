@@ -111,6 +111,13 @@ impl Marketplace {
                 service.sold = false;
                 self.service_by_id.insert(&service_id, &service);
 
+                // Increase the rep
+                let mut creator: User = self.users.get(&service.creator_id).unwrap();
+                creator.reputation += 4;
+                // creator.roles.insert(UserRoles::Judge);
+
+                self.users.insert(&service.creator_id, &creator);
+
                 return service;
             }
             PromiseResult::Failed => env::panic(b"Callback faild"),

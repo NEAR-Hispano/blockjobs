@@ -114,7 +114,6 @@ export default function CreateDisputeDialog({
                         setSendinigProves(true);
                         await reclaimDispute(serviceId, proveInput);
                         setSendinigProves(false);
-                        console.log("a");
                       } else {
                         await addAccusedProves(disputeId, proveInput);
                       }

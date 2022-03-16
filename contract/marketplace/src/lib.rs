@@ -20,7 +20,7 @@ near_sdk::setup_alloc!();
 const NO_DEPOSIT: Balance = 0;
 const BASE_GAS: Gas = 30_000_000_000_000;
 const GAS_FT_TRANSFER: Gas = 14_000_000_000_000;
-const USER_MINT_LIMIT: u16 = 100;
+const USER_MINT_LIMIT: u16 = 20;
 const ONE_DAY: u64 = 86400000000000;
 const ONE_YOCTO: Balance = 1;
 
@@ -126,13 +126,6 @@ impl Marketplace {
         this
     }
 
-    /// Agregar nuevo token soportado.
-    pub fn add_token(&mut self, token: ValidAccountId) -> ValidAccountId {
-        self.assert_admin();
-        self.tokens.insert(token.as_ref());
-        token
-    }
-    
 
     /*******************************/
     /****** SERVICES FUNCTIONS *****/
@@ -148,17 +141,41 @@ impl Marketplace {
     #[payable]
     pub fn mint_service(&mut self, metadata: ServiceMetadata, quantity: u16, duration: u16) -> Service {
         let sender = env::predecessor_account_id();
+
+        if metadata.title.len() > 58 {
+            env::panic(b"Title max 58 characters");
+        }
+        else if metadata.title.len() < 10 {
+            env::panic(b"Title min 10 characters");
+        }
+
+        if metadata.description.len() > 180 {
+            env::panic(b"Description max 180 characters");
+        }
+        else if metadata.description.len() > 180 {
+            env::panic(b"Description min 10 characters");
+        }
+
+        let categories: Vec<String> = serde_json::from_str(&metadata.categories).unwrap();
+        if categories.len() > 15 {
+            env::panic(b"Max 15 categories");
+        }
+        else if categories.len() < 1 {
+            env::panic(b"Min 1 categories");
+        }
+
+        let initial_storage_usage = env::storage_usage();
+
         let user = self.update_user_mints(quantity); // Cantidad de servicios
 
         //Verificar que sea un profesional
         if !user.roles.get(&UserRoles::Professional).is_some() {
             env::panic(b"Only professionals can mint a service");
         }
-        let initial_storage_usage = env::storage_usage();
         // env::log(format!("initial store usage: {}", initial_storage_usage).as_bytes());
 
         let mut service = Service {
-            id: self.total_services,
+            id: self.total_services.clone(),
             creator_id: sender.clone(),
             metadata: metadata,
             employers_account_ids: Default::default(),
@@ -176,15 +193,17 @@ impl Marketplace {
             .unwrap_or_else(|| UnorderedSet::new(unique_prefix(&sender)));
 
         for _i in 0 .. quantity {
-            service.on_sale = true;
+            self.total_services += 1;
 
-            if self.service_by_id.insert(&self.total_services, &service).is_some() {
+            service.id = self.total_services.clone();
+            service.on_sale = true;
+            
+            if self.service_by_id.insert(&self.total_services.clone(), &service).is_some() {
                 env::panic(b"Service already exists");
             }
             
-            self.total_services += 1;
-            service.id = self.total_services;
-            services_set.insert(&self.total_services);
+            services_set.insert(&self.total_services.clone());
+
             
             NearEvent::log_service_mint(
                 service.id.clone(),
@@ -238,6 +257,10 @@ impl Marketplace {
         let token = &service.metadata.token;
         // Realizar el pago en NEARs.
         if token == "near" {
+            if env::attached_deposit() < service.metadata.price {
+                env::panic(b"Insufficient NEARs balance");
+            }
+
             Promise::new(self.contract_me.clone()).transfer(service.metadata.price);
 
             // Establecer como servicio vendido y no en venta.
@@ -258,11 +281,11 @@ impl Marketplace {
 
             if token == "usdc.fakes.testnet".to_string() {
                 let buyer_balance = self.usdc_balances.get(&buyer.account_id).unwrap_or(0);
-                assert!(buyer_balance >= service.metadata.price, "Insufficient balance");
+                assert!(buyer_balance >= service.metadata.price, "Insufficient USDC balance");
             }
             else if token == "ft.blockjobs.testnet".to_string() {
                 let buyer_balance = self.jobs_balances.get(&buyer.account_id).unwrap_or(0);
-                assert!(buyer_balance >= service.metadata.price, "Insufficient balance");
+                assert!(buyer_balance >= service.metadata.price, "Insufficient JOBS balance");
             } 
             else {
                 env::panic(b"Token not soported");
@@ -374,7 +397,8 @@ impl Marketplace {
         let service = self.get_service_by_id(service_id.clone());
 
         // Verificar que haya pasado el tiempo establecido para poder hacer el reclamo.
-        if env::block_timestamp() < service.buy_moment + ONE_DAY * (service.duration as u64 + 2) {
+        env::log(format!("Tiempo de liberacion {}", service.buy_moment + ONE_DAY * (service.duration as u64)).as_bytes());
+        if env::block_timestamp() < service.buy_moment + ONE_DAY * (service.duration as u64) {
             env::panic("Insuficient time to reclame the service".as_bytes());
         }
 
@@ -409,6 +433,7 @@ impl Marketplace {
             sender_id.clone().to_string()
         );
     }
+
 
     // #[payable]
     // pub fn reclaim_service_test(&mut self, service_id: u64) {
@@ -463,6 +488,28 @@ impl Marketplace {
     ///
     #[payable]
     pub fn update_service(&mut self, service_id: u64, metadata: ServiceMetadata, duration: u16) -> Service {
+        if metadata.title.len() > 58 {
+            env::panic(b"Title max 58 characters");
+        }
+        else if metadata.title.len() < 10 {
+            env::panic(b"Title min 10 characters");
+        }
+
+        if metadata.description.len() > 180 {
+            env::panic(b"Description max 180 characters");
+        }
+        else if metadata.description.len() > 180 {
+            env::panic(b"Description min 10 characters");
+        }
+
+        let categories: Vec<String> = serde_json::from_str(&metadata.categories).unwrap();
+        if categories.len() > 15 {
+            env::panic(b"Max 15 categories");
+        }
+        else if categories.len() < 1 {
+            env::panic(b"Min 1 categories");
+        }
+
         let initial_storage_usage = env::storage_usage();
         env::log(format!("initial store usage: {}", initial_storage_usage).as_bytes());
 
@@ -566,7 +613,28 @@ impl Marketplace {
 
         if personal_data.is_some() {
             // Solo vereficar los nombre del json.
-            let _p: PersonalData = serde_json::from_str(personal_data.as_ref().unwrap()).unwrap();
+            let p: PersonalData = serde_json::from_str(personal_data.as_ref().unwrap()).unwrap();
+            if p.legal_name.len() > 60 {
+                env::panic(b"Legal name max 60 characters");
+            }
+            if p.education.len() > 60 {
+                env::panic(b"Education max 60 characters");
+            }
+            if p.country.len() > 60 {
+                env::panic(b"Country max 60 characters");
+            }
+            if p.email.len() > 255 {
+                env::panic(b"Email max 255 characters");
+            }
+            if p.bio.len() > 400 {
+                env::panic(b"Bio max 400 characters");
+            }
+            if p.idioms.len() > 15 {
+                env::panic(b"Max 15 idioms");
+            }
+            if p.links.len() > 10 {
+                env::panic(b"Max 10 links");
+            }
         }
         
         let services_set = UnorderedSet::new(unique_prefix(&account_id));
@@ -737,7 +805,8 @@ impl Marketplace {
                 &token, ONE_YOCTO, GAS_FT_TRANSFER
             );
             return new_balance;
-        } else {
+        }
+        else if token == "ft.blockjobs.testnet".to_string() {
             let actual_balance = self.jobs_balances.get(&sender).unwrap_or(0);
             assert!(actual_balance >= amount.into(), "Insufficient balance");
 
@@ -752,12 +821,46 @@ impl Marketplace {
             );
             return new_balance;
         }
+        else {
+            env::panic(b"Token not soported");
+        }
 
         // .then(ext_self::on_withdraw_ft(
         //     amount,
         //     &env::current_account_id(), NO_DEPOSIT, BASE_GAS)
         // );
 
+    }
+
+
+    /*******************************/
+    /****** ADMIN'S FUNCTIONS *****/
+    /*******************************/
+
+    /// Agregar nuevo token soportado.
+    /// 
+    pub fn add_token(&mut self, token: ValidAccountId) -> ValidAccountId {
+        self.assert_admin();
+        if self.tokens.contains(&token.to_string()) {
+            env::panic(b"Token already added");
+        }
+        self.tokens.insert(token.as_ref());
+        token
+    }
+    
+    /// Modificar las address de los contratos
+    /// 
+    pub fn change_address(&mut self, contract_name: String, new_address: AccountId) {
+        self.assert_admin();
+        if contract_name == "marketplace".to_string() {
+            self.contract_owner = new_address;
+        } else if contract_name == "mediator".to_string() {
+            self.contract_me = new_address;
+        } else if contract_name == "ft".to_string() {
+            self.contract_ft = new_address;
+        } else {
+            env::panic(b"Incorrect contract name");
+        }
     }
 
     /*******************************/

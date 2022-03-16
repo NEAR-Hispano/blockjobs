@@ -17,24 +17,31 @@ import Footer from "./components/Footer";
 import Services from "./views/Services";
 import Service from "./views/Service";
 
-import { useGlobalState, setIsUserCreated } from "./state";
+import { useGlobalState, setIsUserCreated, setUserProfile } from "./state";
 import { getUser } from "./utils";
 import Disputes from "./views/Disputes";
 import Dispute from "./views/Dispute";
+import NotFoundPage from "./views/NotFoundPage";
+import ConnectionError from "./views/ConnectionError";
 
 export default function App() {
   const [isUserCreated] = useGlobalState("isUserCreated");
   const [loading, setLoading] = useState(false);
 
   useEffect(async () => {
-    if (window.walletConnection.isSignedIn()) {
-      if (await getUser(window.accountId)) {
-        setIsUserCreated(true);
-      } else {
-        setIsUserCreated(false);
+    const foo = async () => {
+      if (window.walletConnection.isSignedIn()) {
+        let user = await getUser(window.accountId);
+        if (user) {
+          user.personal_data = JSON.parse(user.personal_data);
+          setUserProfile(user);
+          setIsUserCreated(true);
+        } else {
+          setIsUserCreated(false);
+        }
       }
-    }
-    console.log("Is user created", isUserCreated);
+    };
+    await foo();
     setLoading(true);
   }, []);
 
@@ -64,6 +71,8 @@ export default function App() {
 
             <Route path="disputes" element={<Disputes />} />
             <Route path="dispute/:id" element={<Dispute />} />
+            <Route path="/error" element={<ConnectionError />} />
+            <Route path="*" element={<NotFoundPage />} />
           </Routes>
           <Footer />
           <ToastContainer

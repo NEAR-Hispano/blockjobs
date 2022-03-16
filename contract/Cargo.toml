@@ -12,4 +12,5 @@ members = [
   "marketplace",
   "mediator",
   "ft",
+  "sales"
 ]

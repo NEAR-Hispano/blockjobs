@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 
 import ServicesCard from "../components/ServicesCard";
 import CreateServiceDialog from "../components/CreateServiceDialog";
@@ -12,29 +11,32 @@ export default function MyServices() {
   let [services, setServices] = useState([]);
   let [loading, setLoading] = useState(true);
   let [isOpen, setIsOpen] = useState(false);
-  const navigate = useNavigate();
 
-  useEffect(async () => {
-    const _services = await getUserServices();
-    let finalServices = [];
-    for (let i = 0; i < _services.length; i++) {
-      try {
-        _services[i].metadata.categories = JSON.parse(
-          _services[i].metadata.categories
-        );
-        finalServices.push(_services[i]);
-      } catch (e) {
-        console.log(
-          "La categoria",
-          _services[i].id,
-          "no tiene el formato correcto"
-        );
+  useEffect(() => {
+    const foo = async () => {
+      const _services = await getUserServices();
+      let finalServices = [];
+      for (let i = 0; i < _services.length; i++) {
+        try {
+          _services[i].metadata.categories = JSON.parse(
+            _services[i].metadata.categories
+          );
+          finalServices.push(_services[i]);
+        } catch (e) {
+          console.log(
+            "La categoria",
+            _services[i].id,
+            "no tiene el formato correcto"
+          );
+        }
       }
-    }
-    console.log(finalServices);
-    setServices(finalServices);
 
-    setLoading(false);
+      setServices(finalServices);
+
+      setLoading(false);
+    };
+
+    foo()
   }, []);
 
   function closeModal() {
@@ -94,7 +96,7 @@ export default function MyServices() {
             openModal={openModal}
             service={null}
           />
-          <div className="relative h-screen">
+          <div className="relative">
             <div className="flex justify-center">
               <button
                 className="uppercase shadow-md transition ease-in-out hover:scale-105 hover:-translate-y-0.5 duration-300 shadow-[#27C0EF]/80 py-2 px-4 rounded-lg border-transparent font-semibold text-white text-md mr-4 bg-[#27C0EF]"

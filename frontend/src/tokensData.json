@@ -1,0 +1,14 @@
+[
+    {
+        "value": "near",
+        "label": "NEAR"
+    },
+    {
+        "value": "usdc.fakes.testnet",
+        "label": "USDC"
+    },
+    {
+        "value": "ft.blockjobs.testnet",
+        "label": "JOBS"
+    }
+]

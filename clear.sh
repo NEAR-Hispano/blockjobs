@@ -9,5 +9,6 @@ rm -rf ./contract/build
 # rm -rf ./contract/ft/neardev
 rm -rf ./contract/mediator/neardev
 rm -rf ./contract/marketplace/neardev
+rm -rf ./contract/sales/neardev
 
 echo "Archivos eliminados"

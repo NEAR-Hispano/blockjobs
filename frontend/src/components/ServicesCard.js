@@ -3,20 +3,7 @@ import React from "react";
 import { ImCross, ImCheckmark } from "react-icons/im";
 import { useNavigate } from "react-router-dom";
 
-const tokenIcons = [
-  {
-    value: "near",
-    path: require("../../assets/logo-black.svg"),
-  },
-  {
-    value: "usdc",
-    path: require("../../assets/usd-coin-usdc-logo.svg"),
-  },
-  {
-    value: "jobs",
-    path: require("../../assets/JobsCoinIcon.svg"),
-  },
-];
+import {TokenIcons} from "./TokenIcons";
 
 export default function ServicesCard({ service }) {
   const navigate = useNavigate();
@@ -25,23 +12,23 @@ export default function ServicesCard({ service }) {
       onClick={() => {
         navigate(`/service/${service.id}`);
       }}
-      className="hover:cursor-pointer rounded-md border-2 shadow-md border-[#27C0EF] p-4 bg-[#F8F7FF] font-semibold text-[#74787B] transition ease-in-out hover:scale-[1.02]"
+      className="min-w-[850px] max-w-[1030px] hover:cursor-pointer rounded-md border-2 shadow-md border-[#27C0EF] p-4 bg-[#F8F7FF] font-semibold text-[#74787B] transition ease-in-out hover:scale-[1.02]"
     >
       <div className="flex">
-        <div className="flex self-baseline">
+        <div className="flex self-baseline overflow-x-hidden">
           {service.metadata.icon ? (
             <img
-              className="w-24 h-24 rounded-full mr-4 object-cover"
+              className="w-32 h-32 md:w-48 md:max-h-28 md:rounded md:rounded-bl-xl md:rounded-tl-xl rounded-full mr-4 object-contain "
               src={service.metadata.icon}
             />
           ) : (
             <></>
           )}
-          <div>
-            <div className="text-[#034D82] text-lg">
+          <div className="overflow-x-hidden max-h-28">
+            <div className="text-[#034D82] text-lg truncate whitespace-pre-wrap">
               {service.metadata.title}
             </div>
-            <div className="truncate text-slate-900">
+            <div className="truncate text-slate-900 whitespace-pre-wrap">
               {service.metadata.description}
             </div>
           </div>
@@ -106,7 +93,7 @@ export default function ServicesCard({ service }) {
           <img
             className="w-[26px] ml-1"
             src={
-              tokenIcons.find((v) => {
+            TokenIcons.find((v) => {
                 return v.value === service.metadata.token;
               }).path
             }
@@ -118,7 +105,7 @@ export default function ServicesCard({ service }) {
             return (
               <div
                 key={i}
-                className="mx-0.5 px-2 py-1 rounded-xl bg-[#27C0EF] text-white font-light text-xs transition ease-in-out hover:scale-[1.02]"
+                className="mx-0.5 px-2 py-2 rounded-xl bg-[#27C0EF] text-white font-light text-xs transition ease-in-out hover:scale-[1.02]"
               >
                 {v}
               </div>
