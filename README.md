@@ -2,6 +2,9 @@ BlockJobs
 =========
 BlockJobs es un proyecto del programa DIR de NEAR hispano, con la finalidad de crear un marketplace de servicios profesionales.
 
+Pagina web
+=========
+http://testnet.blockjobs.site/
 
 Prerequisitos
 =============
