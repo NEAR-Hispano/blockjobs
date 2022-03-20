@@ -3,7 +3,6 @@ import {
   fireStore,
   auth,
   singInFirebaseAnonymously,
-  firebaseApp,
 } from "../firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { useCollectionData } from "react-firebase-hooks/firestore";
@@ -20,22 +19,24 @@ import {
 } from "firebase/firestore";
 
 export default function Chat({ service }) {
-  const salasRef = doc(
+  let salasRef = doc(
     fireStore,
     "salas",
     `${service.id}&${service.creator_id}&${service.actual_owner}`
   );
-  const messagesRef = collection(
+  let messagesRef = collection(
     fireStore,
     `salas/${service.id}&${service.creator_id}&${service.actual_owner}/messages`
   );
-  const q = query(messagesRef, orderBy("createdAt"), limit(25));
+
+  let messagesQuery = query(messagesRef, orderBy("createdAt"), limit(25));
 
   const [newMessage, setNewMessage] = useState("");
   const [loading, setLoading] = useState(true);
-  const dummy = useRef();
   const [user] = useAuthState(auth);
-  const [messages] = useCollectionData(q, { idField: "id" });
+  const [messages] = useCollectionData(messagesQuery, { idField: "id" });
+  const dummy = useRef();
+  const submitRef = useRef()
 
   useEffect(async () => {
     console.log(service);
@@ -52,14 +53,28 @@ export default function Chat({ service }) {
     setLoading(false);
   }, []);
 
-  // useEffect(() => {
-  //   if (dummy.current) {
-  //     dummy.current.scrollIntoView({ behavior: "smooth", block: "center" });
-  //   }
-  // }, [dummy.current]);
+  useEffect(() => {
+    salasRef = doc(
+      fireStore,
+      "salas",
+      `${service.id}&${service.creator_id}&${service.actual_owner}`
+    );
+    messagesRef = collection(
+      fireStore,
+      `salas/${service.id}&${service.creator_id}&${service.actual_owner}/messages`
+    );
+
+    messagesQuery = query(messagesRef, orderBy("createdAt"), limit(25));
+  }, [service]);
 
   const handleOnChange = (e) => {
     setNewMessage(e.target.value);
+  };
+
+  const handleOnKeyDown = (e) => {
+    if(e.keyCode == 13 && e.shiftKey == false) {
+      handleOnSubmit(e)
+    }
   };
 
   const handleOnSubmit = async (e) => {
@@ -84,7 +99,7 @@ export default function Chat({ service }) {
   };
 
   return (
-    <div className="container mx-auto">
+    <div className="container">
       <div className=" border rounded">
         <div>
           <div className="w-full">
@@ -103,54 +118,61 @@ export default function Chat({ service }) {
               </div>
             ) : (
               <>
-                <div className="relative w-full p-6 overflow-y-auto h-[32rem]">
+                <div className="relative w-full p-6 overflow-y-auto chat-content">
                   <ul className="space-y-2">
-                    {messages ? messages.map((v, i) => {
-                      return (
-                        <li
-                          key={i}
-                          className={
-                            v.uid == user.uid
-                              ? "flex justify-end"
-                              : "flex justify-start"
-                          }
-                        >
-                          <div
-                            className={
-                              v.uid == user.uid
-                                ? "relative max-w-xl px-4 pt-2 text-white bg-[#27C0EF] rounded shadow"
-                                : "relative max-w-xl px-4 pt-2 text-gray-700 rounded shadow"
-                            }
-                          >
-                            <span className="block whitespace-pre-wrap">
-                              {v.msg}
-                            </span>
-                            <span className="block my-2 text-xs">
-                              {dateToString(v.createdAt)}
-                            </span>
-                          </div>
-                          {i + 1 == messages.length ? (
-                            <div id="targetElement" ref={dummy}></div>
-                          ) : (
-                            <></>
-                          )}
-                        </li>
-                      );
-                    }) : {
-                    }}
+                    {messages ? (
+                      <>
+                        {messages.map((v, i) => {
+                          return (
+                            <li
+                              key={i}
+                              className={
+                                v.uid == user.uid
+                                  ? "flex justify-end"
+                                  : "flex justify-start"
+                              }
+                            >
+                              <div
+                                className={
+                                  v.uid == user.uid
+                                    ? "relative max-w-xl px-4 pt-2 text-white bg-[#27C0EF] rounded shadow"
+                                    : "relative max-w-xl px-4 pt-2 text-gray-700 rounded shadow"
+                                }
+                              >
+                                <span className="block whitespace-pre-wrap">
+                                  {v.msg}
+                                </span>
+                                <span className="block my-2 text-xs">
+                                  {dateToString(v.createdAt)}
+                                </span>
+                              </div>
+                              {i + 1 == messages.length ? (
+                                <div id="targetElement" ref={dummy}></div>
+                              ) : (
+                                <></>
+                              )}
+                            </li>
+                          );
+                        })}
+                      </>
+                    ) : (
+                      <></>
+                    )}
                   </ul>
                 </div>
 
                 <form
+                  ref={submitRef}
                   onSubmit={handleOnSubmit}
                   className="flex items-center justify-between w-full p-3 border-t border-gray-300"
                 >
                   <textarea
                     placeholder="Mensaje"
-                    className="block w-full max-h-40 min-h-16 py-2 pl-4 mx-3 bg-gray-100 rounded-md outline-none focus:text-gray-700"
+                    className="block w-full max-h-16 py-2 pl-4 mx-3 bg-gray-100 rounded-md outline-none focus:text-gray-700"
                     name="message"
                     value={newMessage}
                     onChange={handleOnChange}
+                    onKeyDown={handleOnKeyDown}
                     required
                   />
                   <button type="submit" disabled={!newMessage}>

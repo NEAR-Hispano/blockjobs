@@ -109,3 +109,7 @@
 .prose :where(pre):not(:where([class~="not-prose"] *)) {
   background-color: #f5f7ff00 !important
 }
+
+.chat-content {
+  height: calc(100vh - 5.75rem);
+}

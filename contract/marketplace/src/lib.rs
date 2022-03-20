@@ -12,7 +12,7 @@ use std::convert::TryFrom;
 use crate::user::*;
 use crate::internal::*;
 use crate::external::*;
-pub use event::NearEvent;
+pub use event::*;
 mod internal; mod user; mod external; mod event;
 
 near_sdk::setup_alloc!();
@@ -20,9 +20,9 @@ near_sdk::setup_alloc!();
 const NO_DEPOSIT: Balance = 0;
 const BASE_GAS: Gas = 30_000_000_000_000;
 const GAS_FT_TRANSFER: Gas = 14_000_000_000_000;
-const USER_MINT_LIMIT: u16 = 20;
 const ONE_DAY: u64 = 86400000000000;
 const ONE_YOCTO: Balance = 1;
+const DECIMALS: Balance = 1_000_000_000_000_000_000;
 
 #[derive(BorshDeserialize, BorshSerialize, Serialize, Deserialize)]
 #[serde(crate = "near_sdk::serde")]
@@ -166,12 +166,11 @@ impl Marketplace {
 
         let initial_storage_usage = env::storage_usage();
 
-        let user = self.update_user_mints(quantity); // Cantidad de servicios
-
         //Verificar que sea un profesional
-        if !user.roles.get(&UserRoles::Professional).is_some() {
-            env::panic(b"Only professionals can mint a service");
-        }
+        // let user = self.update_user_mints(quantity); // Cantidad de servicios
+        // if !user.roles.get(&UserRoles::Professional).is_some() {
+        //     env::panic(b"Only professionals can mint a service");
+        // }
         // env::log(format!("initial store usage: {}", initial_storage_usage).as_bytes());
 
         let mut service = Service {
@@ -204,15 +203,14 @@ impl Marketplace {
             
             services_set.insert(&self.total_services.clone());
 
-            
             NearEvent::log_service_mint(
-                service.id.clone(),
+                service.id.clone().to_string(),
                 service.actual_owner.clone().to_string(),
                 service.metadata.title.clone(),
                 service.metadata.description.clone(),
                 service.metadata.categories.clone(),
-                service.metadata.price.clone(),
-                service.duration.clone(),
+                service.metadata.price.clone().to_string(),
+                service.duration.clone().to_string(),
             );
         }
 
@@ -304,7 +302,7 @@ impl Marketplace {
         };
 
         NearEvent::log_service_buy(
-            service.id.clone(),
+            service.id.clone().to_string(),
             sender.clone().to_string()
         );
     }
@@ -416,7 +414,7 @@ impl Marketplace {
 
         let _res = ext_mediator::pay_service(
             env::signer_account_id(),
-            service.metadata.price.into(),
+            (service.metadata.price*DECIMALS).into(),
             service.metadata.token.clone(),
             &self.contract_me,
             NO_DEPOSIT,
@@ -429,7 +427,7 @@ impl Marketplace {
         ));
 
         NearEvent::log_service_reclaim(
-            service.id.clone(),
+            service.id.clone().to_string(),
             sender_id.clone().to_string()
         );
     }
@@ -476,7 +474,7 @@ impl Marketplace {
         ));
 
         NearEvent::log_service_return(
-            service.id.clone(),
+            service.id.clone().to_string(),
             service.creator_id.clone().to_string()
         );
     }
@@ -548,12 +546,12 @@ impl Marketplace {
         }
 
         NearEvent::log_service_update_metadata(
-            service.id.clone(),
+            service.id.clone().to_string(),
             service.metadata.title.clone(),
             service.metadata.description.clone(),
             service.metadata.categories.clone(),
-            service.metadata.price.clone(),
-            service.duration.clone(),
+            service.metadata.price.clone().to_string(),
+            service.duration.clone().to_string(),
         );  
         service
     }
@@ -586,8 +584,8 @@ impl Marketplace {
         self.service_by_id.insert(&service_id, &service);
 
         NearEvent::log_service_update_on_sale(
-            service_id.clone(),
-            on_sale.clone()
+            service_id.clone().to_string(),
+            on_sale.clone().to_string()
         );
 
         service
@@ -672,8 +670,8 @@ impl Marketplace {
             new_user.account_id.clone().to_string(),
             rol,
             new_user.personal_data.clone(),
-            new_user.reputation.clone(),
-            new_user.banned.clone()
+            new_user.reputation.clone().to_string(),
+            new_user.banned.clone().to_string()
         );
         new_user
     }
@@ -947,4 +945,3 @@ impl Marketplace {
     }
 
 }
-

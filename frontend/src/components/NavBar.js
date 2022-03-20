@@ -3,7 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 
 import { Menu, Transition } from "@headlessui/react";
 
-import { BsPersonFill } from "react-icons/bs";
+import { BsPersonFill, BsFillChatDotsFill } from "react-icons/bs";
 import { ImProfile } from "react-icons/im";
 import { RiSuitcaseFill } from "react-icons/ri";
 import { MdHowToVote, MdLogout } from "react-icons/md";
@@ -82,6 +82,13 @@ function NavBarContent() {
       icon: <BiCoinStack />,
       action: () => {
         navegation("/dashboard/tokens");
+      },
+    },
+    {
+      title: "Chats",
+      icon: <BsFillChatDotsFill />,
+      action: () => {
+        navegation("/dashboard/chats");
       },
     },
     {

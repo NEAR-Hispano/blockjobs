@@ -1,16 +1,17 @@
 import React, { useEffect, useState } from "react";
 import { Routes, Route, useLocation, useNavigate } from "react-router-dom";
 
-import Profile from "./Profile";
-import MyServices from "../views/MyServices";
-import Disputes from "../views/Disputes";
-
 import { ImProfile } from "react-icons/im";
 import { RiSuitcaseFill } from "react-icons/ri";
 import { MdHowToVote } from "react-icons/md";
-import MyTokens from "./Mytokens";
 import { BiCoinStack } from "react-icons/bi";
+import { BsFillChatDotsFill } from "react-icons/bs";
+
+import MyTokens from "./Mytokens";
 import MyDisputes from "./MyDisputes";
+import MyChats from "./MyChats";
+import Profile from "./Profile";
+import MyServices from "../views/MyServices";
 
 export default function DashBoard() {
   const navigate = useNavigate();
@@ -18,12 +19,13 @@ export default function DashBoard() {
 
   let [selectedLeftSize, setSelectedLeftSize] = useState(0);
 
-  const leftSize = ["profile", "services", "disputes", "tokens"];
+  const leftSize = ["profile", "services", "disputes", "tokens", "chats"];
   const leftSizeIcons = [
     <ImProfile />,
     <RiSuitcaseFill />,
     <MdHowToVote />,
     <BiCoinStack />,
+    <BsFillChatDotsFill />,
   ];
 
   useEffect(() => {
@@ -40,7 +42,7 @@ export default function DashBoard() {
     <div className="flex min-h-screen">
       <div className="relative bg-[#F8F7FF]">
         <div className="max-w-[150px] h-auto sticky top-4 ">
-          {["Profile", "Services", "Disputes", "Tokens"].map((v, i) => {
+          {["Profile", "Services", "Disputes", "Tokens", "Chats"].map((v, i) => {
             return (
               <div className="flex justify-between" key={i}>
                 <button
@@ -69,6 +71,7 @@ export default function DashBoard() {
         <Route path="/services" element={<MyServices />} />
         <Route path="/disputes" element={<MyDisputes />} />
         <Route path="/tokens" element={<MyTokens />} />
+        <Route path="/chats" element={<MyChats />} />
       </Routes>
     </div>
   );
