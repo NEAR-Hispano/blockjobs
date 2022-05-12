@@ -30,7 +30,7 @@ export default function DisputeCard({ dispute, maxJurors }) {
       >
         <div className="">
           <div className="flex items-center whitespace-pre-wrap mb-2">
-            <div className="mr-6">Disputa № {dispute.id}</div>
+            <div className="mr-6">Dispute № {dispute.id}</div>
           </div>
           <div className="flex items-center whitespace-pre-wrap font-normal">
             <div className="mr-4">
@@ -42,7 +42,7 @@ export default function DisputeCard({ dispute, maxJurors }) {
               <span className="text-green-700">{dispute.dispute_status}</span>
             </div>
             <div className="">
-              Servicio ID: <span className="">{dispute.service_id}</span>
+              Service ID: <span className="">{dispute.service_id}</span>
             </div>
           </div>
         </div>
@@ -58,7 +58,7 @@ export default function DisputeCard({ dispute, maxJurors }) {
           </div>
           <div className="font-normal">
             <div className="mr-4">
-              Jueces: [{dispute.jury_members.toString()}]
+              Judges: [{dispute.jury_members.toString()}]
             </div>
           </div>
         </div>

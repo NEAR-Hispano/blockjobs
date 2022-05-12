@@ -33,7 +33,9 @@ export default function Home() {
                   <>
                     <div
                       onClick={() => {
-                        window.open("https://dariofs153.gitbook.io/blockjobs-eng/");
+                        window.open(
+                          "https://dariofs153.gitbook.io/blockjobs-eng/"
+                        );
                       }}
                       className="uppercase py-2 px-4 rounded-lg bg-white border-transparent text-cyan-500 text-md mr-4 transition ease-in-out hover:scale-105 hover:-translate-y-0.5 duration-300 shadow-lg shadow-sky-500"
                     >
@@ -42,12 +44,16 @@ export default function Home() {
                   </>
                 ) : (
                   <>
-                    <Link
-                      to="/help"
+                    <div
+                      onClick={() => {
+                        window.open(
+                          "https://dariofs153.gitbook.io/blockjobs-eng/"
+                        );
+                      }}
                       className="uppercase py-2 px-4 rounded-lg bg-white border-transparent text-cyan-500 text-md mr-4 transition ease-in-out hover:scale-105 hover:-translate-y-0.5 duration-300 shadow-lg shadow-sky-500"
                     >
                       See how it works
-                    </Link>
+                    </div>
                     <button
                       className="uppercase py-2 px-4 rounded-lg bg-transparent border-2 text-white text-md transition ease-in-out hover:scale-105 hover:-translate-y-0.5 duration-300 shadow-lg shadow-sky-500"
                       onClick={login}
@@ -62,10 +68,7 @@ export default function Home() {
           <Fade right className="lg:hidden">
             <div className="flex lg:h-auto lg:w-1/2">
               <div className="object-cover w-full max-w-full rounded-md lg:h-full">
-                <img
-                  src={freelanceWoman}
-                  className=""
-                />
+                <img src={freelanceWoman} className="" />
               </div>
             </div>
           </Fade>
@@ -77,10 +80,7 @@ export default function Home() {
         <div className="font-bebas-neue grid grid-cols-2 gap-4">
           <Fade left>
             <div className="flex justify-center">
-              <img
-                className="-skew-y-3"
-                src={iphoneLogo}
-              ></img>
+              <img className="-skew-y-3" src={iphoneLogo}></img>
             </div>
           </Fade>
           <Fade right cascade>
@@ -122,10 +122,7 @@ export default function Home() {
           </Fade>
           <Fade right>
             <div className="flex justify-center">
-              <img
-                className="skew-y-6"
-                src={nearBlackLogo}
-              ></img>
+              <img className="skew-y-6" src={nearBlackLogo}></img>
             </div>
           </Fade>
         </div>
@@ -144,21 +141,15 @@ export default function Home() {
                 src={createAService}
               ></img>
               <div className="text-center text-[#034D82] text-2xl font-bold ">
-                Create a Serivce
+                Create a Service
               </div>
               <VscArrowDown size={40} color="#034D82" className="w-full my-4" />
-              <img
-                className="max-w-[150px] mb-1"
-                src={getHired}
-              ></img>
+              <img className="max-w-[150px] mb-1" src={getHired}></img>
               <div className="text-center text-[#034D82] text-2xl font-bold ">
                 Get Hired
               </div>
               <VscArrowDown size={40} color="#034D82" className="w-full my-4" />
-              <img
-                className="max-w-[150px] mb-1"
-                src={nearBlackLogo}
-              ></img>
+              <img className="max-w-[150px] mb-1" src={nearBlackLogo}></img>
               <div className="text-center text-[#034D82] text-2xl font-bold ">
                 Receive Tokens
               </div>

@@ -59,7 +59,7 @@ export default function MyChats() {
                         : "text-[#A5A2B8] text-left py-4 pl-6 w-full pr-8 border-b-2 transition ease-in-out hover:text-[#352E5B] duration-300"
                     }
                   >
-                    <div className="">{`Servicio ID ${v.id}`}</div>
+                    <div className="">{`Service ID ${v.id}`}</div>
                   </button>
                 </div>
               );

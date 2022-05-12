@@ -58,7 +58,7 @@ export default function BuyJobsCoinDialog({ isOpen, closeModal, openModal }) {
                 as="h3"
                 className="text-lg font-semibold leading-6 text-gray-900 text-center"
               >
-                Comprar JOBS
+                Buy JOBS
               </Dialog.Title>
               <div className="mt-2">
                 <div className="h-auto w-32 mr-4">
@@ -93,7 +93,7 @@ export default function BuyJobsCoinDialog({ isOpen, closeModal, openModal }) {
                     await buyFT(parseFloat(amountOfNears));
                   }}
                 >
-                  Comprar!
+                  Buy!
                 </button>
               </div>
             </div>

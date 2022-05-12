@@ -70,7 +70,7 @@ export default function Disputes() {
               ) : (
                 <>
                   <div className="text-xl font-bold text-gray-800">
-                    Parece ser que nadie ha creado una disputa...
+                  It seems that no one has created a dispute...
                   </div>
                 </>
               )}

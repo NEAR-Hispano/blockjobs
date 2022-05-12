@@ -176,7 +176,7 @@ export default function Service() {
           <div className="">
             <div className="border-2 rounded-lg px-6 py-4 mt-4 shadow-md">
               <div className="text-2xl font-bold text-gray-800 mb-4">
-                Servicio
+                Service
               </div>
               <SkeletonLoaderService />
             </div>
@@ -205,7 +205,7 @@ export default function Service() {
                 className="uppercase py-2 px-4 rounded-lg flex items-center bg-green-500 border-transparent text-white text-lg mr-4 transition ease-in-out hover:scale-105 hover:-translate-y-0.5 duration-300 shadow-lg"
                 disabled={loadingBuyService}
               >
-                Comprar servicio{" "}
+                Buy servicio{" "}
                 {loadingBuyService ? (
                   <div className="ml-2">
                     <svg className="spinner-normal" viewBox="0 0 50 50">
@@ -250,7 +250,7 @@ export default function Service() {
                   onClick={openModal}
                   className="uppercase py-2 px-4 rounded-lg bg-red-400 border-transparent text-white text-md mr-4 transition ease-in-out hover:scale-105 hover:-translate-y-0.5 duration-300 shadow-lg"
                 >
-                  Crear disputa!
+                  Create dispute!
                 </button>
               </div>
             ) : service.actual_owner != window.accountId &&
@@ -264,7 +264,7 @@ export default function Service() {
                   disabled={loadingReclaimService}
                   className="uppercase py-2 px-4 rounded-lg bg-green-600 border-transparent text-white text-md mr-4 transition ease-in-out hover:scale-105 hover:-translate-y-0.5 duration-300 shadow-lg"
                 >
-                  Reclamar Pago!
+                  Claim payment!
                 </button>
               </div>
             ) : (
@@ -272,7 +272,7 @@ export default function Service() {
             )}
             <div className="border-2 rounded-lg px-6 py-4 shadow-md mt-4">
               <div className="text-2xl text-center font-bold text-gray-800 mb-4">
-                Servicio
+                Service
               </div>
               <div className="">
                 <div className="flex self-baseline">

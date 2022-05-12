@@ -22,7 +22,7 @@ export default function DialogUserCreator({ isOpen, closeModal, user }) {
   const [countryInput, setCountryInput] = useState(
     user ? user.personal_data.country : ""
   );
-  const [educacionInput, setEducacionInput] = useState(
+  const [educacionInput, setEducationInput] = useState(
     user ? user.personal_data.education : ""
   );
   const [emailInput, setEmailInput] = useState(
@@ -94,7 +94,7 @@ export default function DialogUserCreator({ isOpen, closeModal, user }) {
                 as="h3"
                 className="text-lg font-medium leading-6 text-gray-900"
               >
-                Crear un usuario nuevo
+                Create a new user
               </Dialog.Title>
               <div className="mt-2">
                 {user ? (
@@ -109,19 +109,19 @@ export default function DialogUserCreator({ isOpen, closeModal, user }) {
                   </p>
                 ) : (
                   <p className="text-sm text-gray-500 border-b-2 pb-2">
-                    Por favor, rellene este formulario para poder crear tu
-                    usuario. Al finalizar se va a cobrar un peaje de 0.1 NEARS
-                    para cubrir el storage, el sobrante se rotornara. <br />
+                    Please, fill in this form to be able to create your user. At
+                    the end, a toll of 0.1 NEARS will be charged to cover the
+                    storage the remainder will be returned. <br />
                     <span className="font-bold">
-                      Recuerde, estos datos son opcionales!!! Y todo es publico
-                      en la blockchain!!!
+                      Remember, this data is optional and everything is public
+                      on blockchain!
                     </span>
                   </p>
                 )}
               </div>
               <div className="mt-2">
                 <label className="text-gray-700 text-sm font-semibold">
-                  Nombre legal
+                  Legal name
                 </label>
                 <input
                   value={legalNameInput}
@@ -132,12 +132,12 @@ export default function DialogUserCreator({ isOpen, closeModal, user }) {
                 ></input>
 
                 <label className="text-gray-700 text-sm font-semibold">
-                  Educacion
+                  Education
                 </label>
                 <input
                   value={educacionInput}
                   onChange={(e) => {
-                    setEducacionInput(e.target.value);
+                    setEducationInput(e.target.value);
                   }}
                   className="mb-2 bg-gray-200 appearance-none border-2 border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-[#27C0EF]"
                 ></input>
@@ -159,7 +159,7 @@ export default function DialogUserCreator({ isOpen, closeModal, user }) {
                 </div>
 
                 <label className="text-gray-700 text-sm font-semibold">
-                  Correo Electronico
+                  Email
                 </label>
                 <input
                   value={emailInput}
@@ -171,12 +171,12 @@ export default function DialogUserCreator({ isOpen, closeModal, user }) {
 
                 <div className="mb-2">
                   <label className="text-gray-700 text-sm font-semibold">
-                    Pais
+                    Country
                   </label>
                   <Select
                     className="bg-gray-200"
                     options={countriesList}
-                    placeholder="Pais"
+                    placeholder="Country"
                     defaultInputValue={countryInput}
                     defaultValue={countryInput}
                     value={{ value: countryInput, label: countryInput }}
@@ -243,7 +243,7 @@ export default function DialogUserCreator({ isOpen, closeModal, user }) {
               </div>
 
               <label className="text-gray-700 text-sm font-semibold">
-                Idiomas
+                Languages
               </label>
               {idiomInput.map((v, index) => {
                 return (
@@ -332,8 +332,6 @@ export default function DialogUserCreator({ isOpen, closeModal, user }) {
                     };
                     console.log(personalData);
                     try {
-                      let roles = ["Professional", "Employeer"];
-
                       if (selectFile) {
                         if (selectFile.size < 1024 ** 1024 * 5) {
                           setLoadingPicture(true);
@@ -356,16 +354,13 @@ export default function DialogUserCreator({ isOpen, closeModal, user }) {
 
                       console.log(personalData);
                       if (user) {
-                        await updateUserData(
-                          roles,
-                          JSON.stringify(personalData)
-                        );
+                        await updateUserData(JSON.stringify(personalData));
                       } else {
-                        await addUser(roles, JSON.stringify(personalData));
+                        await addUser(JSON.stringify(personalData));
                       }
 
                       // setLegalNameInput("")
-                      // setEducacionInput("")
+                      // setEducationInput("")
                       // setPictureInput("")
                       // setBioInput("")
                       // setLinksInputs(linksInputs.map((v) => { return "" }))
@@ -374,7 +369,7 @@ export default function DialogUserCreator({ isOpen, closeModal, user }) {
                     }
                   }}
                 >
-                  Crear!
+                  Create!
                   {loadingPicture ? (
                     <div className="ml-2">
                       <svg className="spinner-normal" viewBox="0 0 50 50">
@@ -397,7 +392,7 @@ export default function DialogUserCreator({ isOpen, closeModal, user }) {
                   className="inline-flex justify-center px-4 py-2 text-white bg-[#FF0000] border border-transparent rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 font-bold"
                   onClick={closeModal}
                 >
-                  Ahora no!
+                  Not now!
                 </button>
               </div>
             </div>

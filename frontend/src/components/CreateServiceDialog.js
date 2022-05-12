@@ -146,26 +146,26 @@ export default function CreateServiceDialog({
                 as="h3"
                 className="text-lg font-semibold leading-6 text-gray-900"
               >
-                Crear un nuevo servicio
+                Create a new service
               </Dialog.Title>
               <div className="mt-2">
                 {service ? (
                   <p className="text-sm text-gray-500 border-b-2 pb-2">
-                    Por favor, rellene este formulario para modificar el
-                    servicio. Al finalizar se va a cobrar un peaje de 0.1 NEARS
-                    para cubrir el storage, el sobrante se rotornara.
+                    Please fill out this form to modify the service. 
+                    At the end, a toll of 0.1 NEARS will be charged
+                    to cover the storage, the surplus will be rotated.
                   </p>
                 ) : (
                   <p className="text-sm text-gray-500 border-b-2 pb-2">
-                    Por favor, rellene este formulario para poder crear un nuevo
-                    servicio. Al finalizar se va a cobrar un peaje de 0.1 NEARS
-                    para cubrir el storage, el sobrante se rotornara.
+                    Please fill out this form to create a new service. 
+                    At the end, a toll of 0.1 NEARS will be charged
+                    to cover the storage, the surplus will be rotated.
                   </p>
                 )}
               </div>
               <div className="mt-2">
                 <label className="text-gray-700 text-sm font-semibold">
-                  Titulo
+                  Title
                 </label>
                 <input
                   value={titleService}
@@ -178,7 +178,7 @@ export default function CreateServiceDialog({
                 ></input>
 
                 <label className="text-gray-700 text-sm font-semibold">
-                  Descripcion
+                  Description
                 </label>
                 <textarea
                   value={descriptionService}
@@ -189,7 +189,7 @@ export default function CreateServiceDialog({
                 ></textarea>
 
                 <label className="text-gray-700 text-sm font-semibold">
-                  Categorias
+                  Categories
                 </label>
                 <AsyncSelect
                   className=""
@@ -205,7 +205,7 @@ export default function CreateServiceDialog({
 
                 <div className="mt-2">
                   <label className="text-gray-700 text-sm font-semibold mt-2">
-                    Metodo de pago
+                    Payment's method
                   </label>
                   <Select
                     className="w-auto"
@@ -219,7 +219,7 @@ export default function CreateServiceDialog({
 
                 <div className="mt-2">
                   <label className="text-gray-700 text-sm font-semibold mt-2">
-                    Imagen
+                    Image
                   </label>
                 </div>
                 <div>
@@ -387,73 +387,73 @@ export default function CreateServiceDialog({
                         ? [
                             {
                               ok: titleService.length > 10,
-                              msg: "Titulo minimo 10 caracteres",
+                              msg: "Title minimum 10 characters",
                             },
                             {
                               ok: titleService.length < 58,
-                              msg: "Titulo maximo de 58 caracteres",
+                              msg: "Title maximum de 58 characters",
                             },
                             {
                               ok: descriptionService.length > 10,
-                              msg: "Descripcion minimo 10 caracteres",
+                              msg: "Description minimum 10 characters",
                             },
                             {
                               ok: descriptionService.length < 180,
-                              msg: "Descripcion maximo de 180",
+                              msg: "Description maximum de 180",
                             },
                             {
                               ok: categoriesService.length > 0,
-                              msg: "Categorias minimo 1",
+                              msg: "Categories minimum 1",
                             },
                             {
                               ok: categoriesService.length < 15,
-                              msg: "Categorias maximo 10",
+                              msg: "Categories maximum 10",
                             },
                             {
                               ok: iconServiceFile != null,
-                              msg: "Falta el icono",
+                              msg: "Icon is missing",
                             },
                             {
                               ok: priceService > 0,
-                              msg: "Falta el precio",
+                              msg: "Price is missing",
                             },
                             {
                               ok: durationService > 0,
-                              msg: "Falta la duracion",
+                              msg: "Durution is missing",
                             },
                             {
                               ok: amountOfServices > 0,
-                              msg: "Falta la cantidad",
+                              msg: "Amount is missing",
                             },
                           ]
                         : [
                             {
                               ok: titleService.length > 10,
-                              msg: "El titulo minimo 10 caracteres",
+                              msg: "Title minimum 10 characters",
                             },
                             {
                               ok: titleService.length < 58,
-                              msg: "El titulo maximo de 58 caracteres",
+                              msg: "Title maximum de 58 characters",
                             },
                             {
                               ok: descriptionService.length > 10,
-                              msg: "Descripcion minimo 10 caracteres",
+                              msg: "Description minimum 10 characters",
                             },
                             {
                               ok: descriptionService.length < 180,
-                              msg: "Descripcion maximo de 180",
+                              msg: "Description maximum de 180",
                             },
                             {
                               ok: paidmentMethod.value.length > 0,
-                              msg: "Falta el metodo de pago",
+                              msg: "Payment's method is missing",
                             },
                             {
                               ok: priceService > 0,
-                              msg: "Falta el precio",
+                              msg: "Missing price",
                             },
                             {
                               ok: durationService > 0,
-                              msg: "Falta la duracion",
+                              msg: "Missing duration",
                             },
                           ];
 
@@ -495,7 +495,7 @@ export default function CreateServiceDialog({
                               setLoadingPicture(false);
                             } else {
                               toast.error(
-                                "No se puede subir archivos mayores de 5MB"
+                                "Files larger than 5MB cannot be uploaded"
                               );
                             }
                           }
@@ -526,7 +526,7 @@ export default function CreateServiceDialog({
                       }
                     }}
                   >
-                    Crear!
+                    Create!
                     {loadingPicture ? (
                       <div className="ml-2">
                         <svg className="spinner-normal" viewBox="0 0 50 50">
@@ -549,7 +549,7 @@ export default function CreateServiceDialog({
                     className="inline-flex justify-center px-4 py-2 text-white bg-[#FF0000] border border-transparent rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 font-bold"
                     onClick={closeModal}
                   >
-                    Ahora no!
+                    Not now!
                   </button>
                 </div>
               </div>

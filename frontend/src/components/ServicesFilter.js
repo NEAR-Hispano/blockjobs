@@ -84,7 +84,7 @@ export default function ServicesFilter({ mains, setServices }) {
       <div className="border rounded-lg my-4 border-[#27C0EF] w-full"></div>
 
       <div className="flex justify-between mx-1">
-        <div className="mr-2">En Disputa</div>
+        <div className="mr-2">En Dispute</div>
         <input
           checked={true}
           onChange={() => {}}
@@ -115,7 +115,7 @@ export default function ServicesFilter({ mains, setServices }) {
 
       <div className="flex justify-center w-full">
         <button className="uppercase py-2 px-4 mt-2 rounded-lg border-transparent text-white text-md mr-4 bg-[#27C0EF] shadow-md transition ease-in-out hover:scale-105 hover:-translate-y-0.5 duration-300 shadow-[#27C0EF]/80">
-          Aplicar
+          Apply
         </button>
       </div>
     </div>

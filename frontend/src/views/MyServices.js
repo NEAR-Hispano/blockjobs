@@ -65,7 +65,7 @@ export default function MyServices() {
           </div>
           <div className="shadow-md border-2 rounded-lg px-6 py-4 w-full mt-4">
             <div className="text-xl font-bold text-gray-800">
-              Servicios adquiridos
+              Services adquiridos
             </div>
             {[0, 1].map((v, i) => {
               return (
@@ -77,7 +77,7 @@ export default function MyServices() {
           </div>
           <div className="shadow-md border-2 rounded-lg px-6 py-4 w-full mt-4">
             <div className="text-xl font-bold text-gray-800">
-              Servicios vendidos
+              Services vendidos
             </div>
             {[0, 1].map((v, i) => {
               return (
@@ -102,7 +102,7 @@ export default function MyServices() {
                 className="uppercase shadow-md transition ease-in-out hover:scale-105 hover:-translate-y-0.5 duration-300 shadow-[#27C0EF]/80 py-2 px-4 rounded-lg border-transparent font-semibold text-white text-md mr-4 bg-[#27C0EF]"
                 onClick={openModal}
               >
-                Crear Servicio
+                Create Service
               </button>
             </div>
             <ServicesFilter mains={true} />
@@ -111,7 +111,7 @@ export default function MyServices() {
             <div>
               <div className="shadow-md border-2 rounded-lg px-6 py-4 w-full mt-4">
                 <div className="text-xl text-center font-bold text-gray-800">
-                  Mis servicios
+                  My services
                 </div>
                 {services.length ? (
                   <>
@@ -128,14 +128,14 @@ export default function MyServices() {
                 ) : (
                   <>
                     <div className="text-xl mt-4 font-bold text-gray-600">
-                      Parece ser que no has creado servicios aun...
+                    Looks like you haven't created services yet...
                     </div>
                   </>
                 )}
               </div>
               <div className="shadow-md border-2 rounded-lg px-6 py-4 w-full mt-4">
                 <div className="text-xl text-center font-bold text-gray-800">
-                  Servicios adquiridos
+                Acquired services
                 </div>
                 {services.length ? (
                   <>
@@ -154,14 +154,14 @@ export default function MyServices() {
                 ) : (
                   <>
                     <div className="text-xl mt-4 font-bold text-gray-600">
-                      Parece ser que no has adquirido servicios aun...
+                    Looks like you haven't purchased services yet...
                     </div>
                   </>
                 )}
               </div>
               <div className="shadow-md border-2 rounded-lg px-6 py-4 w-full mt-4">
                 <div className="text-xl font-bold text-center text-gray-800">
-                  Servicios vendidos
+                  Services sold
                 </div>
                 {services.length ? (
                   <>
@@ -180,7 +180,7 @@ export default function MyServices() {
                 ) : (
                   <>
                     <div className="text-xl mt-4 font-bold text-gray-600">
-                      Parece ser que no has adquirido servicios aun...
+                    Looks like you haven't purchased services yet...
                     </div>
                   </>
                 )}

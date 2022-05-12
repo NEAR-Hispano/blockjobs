@@ -33,13 +33,13 @@ export default function NavBar() {
             to="/services"
             className="uppercase py-2 px-4 rounded-lg bg-transparent border-2 text-white text-md mr-4 transition ease-in-out hover:scale-105 duration-300 shadow-lg shadow-sky-500"
           >
-            Buscar Servicios
+            Buscar Services
           </Link>
           <Link
             to="/disputes"
             className="uppercase py-2 px-4 rounded-lg bg-transparent border-2 text-white text-md mr-4 transition ease-in-out hover:scale-105 duration-300 shadow-lg shadow-sky-500"
           >
-            Ver Disputas
+            Ver Disputes
           </Link>
           <NavBarContent />
         </div>
@@ -129,7 +129,7 @@ function NavBarContent() {
             className="rounded-lg bg-transparent border-2 py-2 px-2 font-sen text-white uppercase text-base transition ease-in-out hover:scale-105 duration-300 shadow-lg shadow-sky-500"
             onClick={openModal}
           >
-            Crear usuario
+            Create usuario
           </button>
         </div>
       ) : (

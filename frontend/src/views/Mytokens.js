@@ -47,7 +47,7 @@ export default function MyTokens() {
       },
     },
     {
-      title: "Comprar",
+      title: "Buy",
       icon: <BiCoinStack />,
       action: () => {
         openBuyJOBSModal();
@@ -68,7 +68,7 @@ export default function MyTokens() {
       },
     },
     {
-      title: "Bloquear",
+      title: "Lock",
       icon: <BiBlock />,
       action: () => {
         openBlockTokeModal(false);
@@ -118,7 +118,7 @@ export default function MyTokens() {
 
       let balanceOfUSDC = await getFTBalanceOf(window.accountId, "usdc");
       if (balanceOfUSDC) {
-        balanceOfUSDC = balanceOfUSDC / 10 ** 18;
+        balanceOfUSDC = balanceOfUSDC / 10 ** 6;
       }
 
       let lockedTokensOf = await getLockedTokensOf(window.accountId);
@@ -130,7 +130,7 @@ export default function MyTokens() {
       let JOBSBalanceFromWallet =
         (await getJOBSBalanceFromNearWallet(window.accountId)) / 10 ** 18;
       let USDCBalanceFromWallet =
-        (await getUSDCBalanceFromNearWallet(window.accountId)) / 10 ** 18;
+        (await getUSDCBalanceFromNearWallet(window.accountId)) / 10 ** 6;
       setJOBSWalletCBalance(JOBSBalanceFromWallet);
       setUSDWalletCBalance(USDCBalanceFromWallet);
       setUSDCBalance(balanceOfUSDC);

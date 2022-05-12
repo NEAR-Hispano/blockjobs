@@ -27,7 +27,7 @@ export default function MyDisputes() {
         <div className="">
           <div className="shadow-md border-2 rounded-lg px-6 py-4 w-full mt-4">
             <div className="text-xl font-bold text-gray-800 mb-2">
-              Mis disputas
+              My disputes
             </div>
             {[0, 1].map((v, i) => {
               return (
@@ -39,7 +39,7 @@ export default function MyDisputes() {
           </div>
           <div className="shadow-md border-2 rounded-lg px-6 py-4 w-full mt-4">
             <div className="text-xl font-bold text-gray-800 mb-2">
-              Mis disputas
+              My disputes
             </div>
             {[0, 1].map((v, i) => {
               return (
@@ -51,7 +51,7 @@ export default function MyDisputes() {
           </div>
           <div className="shadow-md border-2 rounded-lg px-6 py-4 w-full mt-4">
             <div className="text-xl font-bold text-gray-800 mb-2">
-              Mis disputas
+              My disputes
             </div>
             {[0, 1].map((v, i) => {
               return (
@@ -70,7 +70,7 @@ export default function MyDisputes() {
           <div className="mx-auto">
             <div className="shadow-md border-2 rounded-lg px-6 py-4 w-full mt-4">
               <div className="text-xl text-center font-bold text-gray-800 mb-2">
-                Mis disputas
+                My disputes
               </div>
               {/*.filter((v) => window.accountId === v.applicant)*/}
               {disputes.length ? (
@@ -88,7 +88,7 @@ export default function MyDisputes() {
               ) : (
                 <>
                   <div className="text-xl mt-4 font-bold text-gray-600">
-                    Parece ser que no has creado disputas...
+                  It seems that you have not created disputes...
                   </div>
                 </>
               )}
@@ -96,7 +96,7 @@ export default function MyDisputes() {
 
             <div className="shadow-md border-2 rounded-lg px-6 py-4 w-full mt-4">
               <div className="text-xl text-center font-bold text-gray-800 mb-2">
-                Disputas en contra
+                Disputes against you
               </div>
               {/* {disputes
                 .filter((v) => window.accountId === v.accused)
@@ -122,7 +122,7 @@ export default function MyDisputes() {
               ) : (
                 <>
                   <div className="text-xl mt-4 font-bold text-gray-600">
-                    Parece ser que no hay disputas en tu contra...
+                  It seems that there are no disputes against you...
                   </div>
                 </>
               )}
@@ -130,7 +130,7 @@ export default function MyDisputes() {
 
             <div className="shadow-md border-2 rounded-lg px-6 py-4 w-full mt-4">
               <div className="text-xl font-bold text-center text-gray-800 mb-2">
-                Juez
+                Judge
               </div>
               {/* {disputes
                 .filter((v) =>
@@ -161,7 +161,7 @@ export default function MyDisputes() {
               ) : (
                 <>
                   <div className="text-xl mt-4 font-bold text-gray-600">
-                    Parece ser que no eres juez de alguna disputa...
+                  It seems that you are not a judge of some dispute...
                   </div>
                 </>
               )}

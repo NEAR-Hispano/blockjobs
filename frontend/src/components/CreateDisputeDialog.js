@@ -60,17 +60,16 @@ export default function CreateDisputeDialog({
                 className="text-lg font-semibold leading-6 text-gray-900"
               >
                 {disputeId == null
-                  ? `Crear una nueva disputa`
+                  ? `Create una nueva disputa`
                   : `Agrege pruebas a su favor`}
               </Dialog.Title>
               <div className="mt-2">
                 {
                   <p className="text-sm text-gray-500 border-b-2 pb-2 whitespace-pre-line">
-                    Por favor, rellene este formulario para agregar pruebas a su
-                    favor.
+                    Please fill out this form to add evidence in your favor.
                     <span className="font-semibold text-gray-700">
                       {" "}
-                      El formato de las pruebas es{" "}
+                      The proofs format is{" "}
                       <span className="font-extrabold text-gray-900">
                         Markdown.
                       </span>
@@ -80,7 +79,7 @@ export default function CreateDisputeDialog({
               </div>
               <div className="mt-2">
                 <label className="text-gray-700 text-sm font-semibold">
-                  Pruebas
+                  Proofs
                 </label>
                 {/* proveInput, setProveInput */}
                 <textarea
@@ -93,7 +92,7 @@ export default function CreateDisputeDialog({
               </div>
               <div className="mt-2 max-h-[500px]">
                 <div className="text-gray-700 text-sm font-semibold">
-                  Pre visualizacion
+                  Preview
                 </div>
                 <div className="border-[#27C0EF] border-2 w-full min-h-[100px] rounded py-2 px-4 max-h-[400px] overflow-y-scroll overflow-x-scroll">
                   <MarkdownViewer text={proveInput} />
@@ -122,7 +121,7 @@ export default function CreateDisputeDialog({
                     }
                   }}
                 >
-                  Enviar!
+                  Send!
                   {sendinigProves ? (
                     <div className="ml-2">
                       <svg className="spinner-normal" viewBox="0 0 50 50">

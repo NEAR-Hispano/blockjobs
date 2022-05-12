@@ -30,24 +30,6 @@ export default function UserProfile({ user }) {
                 </span>
               </div>
               <div className="flex flex-row whitespace-pre-wrap font-semibold">
-                <div>Roles:</div>
-                {user.roles.map((v, i) => {
-                  return (
-                    <div
-                      key={v}
-                      className={
-                        v === "Judge"
-                          ? "text-green-400"
-                          : v === "Admin"
-                          ? "text-[#04AADD]"
-                          : ""
-                      }
-                    >
-                      {" "}
-                      {(i + 1) != user.roles.length ? `${v},` : v}
-                    </div>
-                  );
-                })}
               </div>
             </div>
           </div>
@@ -61,8 +43,8 @@ export default function UserProfile({ user }) {
           <div className="flex flex-row">
             <div className="mr-8 font-semibold text-lg">
               <div>Nombre legal</div>
-              <div>Educacion</div>
-              <div>Pais</div>
+              <div>Education</div>
+              <div>Country</div>
               <div>Correo</div>
             </div>
             <div className="text-[#047fdd] font-semibold text-lg">
@@ -107,7 +89,7 @@ export default function UserProfile({ user }) {
         </div>
         <div className="mt-8 mx-4 shadow-lg border-2 border-[#27C0EF] p-3 rounded-lg">
           <div className="text-[#04AADD] text-2xl font-semibold mb-2">
-            Idiomas
+            Languages
           </div>
           <div className="font-semibold text-lg whitespace-pre-wrap">
             <div className="flex flex-row">

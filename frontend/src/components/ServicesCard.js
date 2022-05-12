@@ -39,11 +39,11 @@ export default function ServicesCard({ service }) {
       <div className="font-light text-sm mt-1 whitespace-pre-wrap">
         <div>
           <div className="mr-2">
-            <span className="font-semibold">Creador: </span>
+            <span className="font-semibold">Creator: </span>
             {service.creator_id}
           </div>
           <div className="mr-2">
-            <span className="font-semibold">Dueño: </span>
+            <span className="font-semibold">Owner: </span>
             {service.actual_owner}
           </div>
         </div>

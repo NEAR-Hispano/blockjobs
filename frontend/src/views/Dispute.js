@@ -276,7 +276,7 @@ export default function Dispute() {
                               className="inline-flex justify-center px-4 py-2 text-white bg-[#FF0000] border border-transparent rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 font-bold"
                               onClick={closeModalOpenVoting}
                             >
-                              Ahora no!
+                              Not now!
                             </button>
                           </div>
                         </div>
@@ -289,13 +289,13 @@ export default function Dispute() {
 
           <div className="shadow-lg border-2 rounded-lg px-6 py-4 ">
             <div className="text-2xl flex justify-center font-bold text-gray-800 mb-2">
-              Disputa
+              Dispute
             </div>
             <DisputeCard dispute={dispute} maxJurors={maxJurors} />
           </div>
           <div className="shadow-lg border-2 rounded-lg px-6 py-4 mt-8">
             <div className="text-2xl  flex justify-center font-bold text-gray-800 mb-1">
-              Pruebas
+              Proofs
             </div>
             <div className="flex flex-row">
               <div className="w-[50%]">

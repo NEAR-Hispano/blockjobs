@@ -88,10 +88,10 @@ export default function DepositTokenDialog({ isOpen, closeModal, openModal, toke
                       }
                     } else {
                       if (!withdraw) {
-                        await ftTransferCallUSDC( String(amount * (10**18)) )
+                        await ftTransferCallUSDC( String(amount * (10**6)) )
                       }
                       else {
-                        await withdrawFT(amount * (10**18), window.USDCConstract.contractId)
+                        await withdrawFT(amount * (10**6), window.USDCConstract.contractId)
                       }
                     }
                   }}

@@ -54,7 +54,7 @@ export default function BlockTokenDialog({ isOpen, closeModal, openModal, withdr
                 as="h3"
                 className="text-lg font-semibold leading-6 text-gray-900 text-center"
               >
-                {withdraw ? "Retirar JOBS bloqueados" : "Bloquear JOBS"}
+                {withdraw ? "Retirar JOBS bloqueados" : "Lock JOBS"}
               </Dialog.Title>
               <div className="mt-2">
                 <div className="h-auto w-32 mr-4">
@@ -83,7 +83,7 @@ export default function BlockTokenDialog({ isOpen, closeModal, openModal, withdr
                     }
                   }}
                 >
-                  Bloquear!
+                  Lock!
                 </button>
               </div>
             </div>

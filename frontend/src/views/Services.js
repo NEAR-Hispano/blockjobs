@@ -115,7 +115,7 @@ export default function Services() {
                     className="uppercase shadow-md transition ease-in-out hover:scale-105 hover:-translate-y-0.5 duration-300 shadow-[#27C0EF]/80 py-2 px-4 rounded-lg border-transparent font-semibold text-white text-md mr-4 bg-[#27C0EF]"
                     onClick={openModal}
                   >
-                    Crear Servicio
+                    Create Service
                   </button>
                 </div>
               ) : (

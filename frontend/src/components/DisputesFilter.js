@@ -52,7 +52,7 @@ export default function DisputesFilter(setDisputes) {
 
       <div className="flex justify-center w-full">
         <button className="uppercase py-2 px-4 mt-2 rounded-lg border-transparent text-white text-md mr-4 bg-[#27C0EF] shadow-md transition ease-in-out hover:scale-105 hover:-translate-y-0.5 duration-300 shadow-[#27C0EF]/80">
-          Aplicar
+          Apply
         </button>
       </div>
     </div>
