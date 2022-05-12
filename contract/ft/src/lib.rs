@@ -158,6 +158,7 @@ impl Token {
 
     /// Redimir tokens segun la cantidad bloqueada actual.
     /// Solo ejecutable por quien los bloqueo inicialmente.
+    /// 
     #[payable]
     pub fn withdraw_tokens(&mut self, amount: Balance) -> Balance {
         let sender = env::signer_account_id();

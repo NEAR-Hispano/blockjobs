@@ -16,8 +16,8 @@ use near_sdk::serde::{Deserialize, Serialize};
 // }
 
 #[derive(Serialize, Deserialize, Debug)]
-#[serde(rename_all = "snake_case")]
 // #[serde(tag = "event", content = "data")]
+// #[serde(rename_all = "snake_case")]
 // #[allow(clippy::enum_variant_names)]
 pub enum NearEvent {
     ServiceMint(ServiceMintData),

@@ -101,6 +101,9 @@ impl Marketplace {
         let sender = env::predecessor_account_id();
         let mut user = expect_value_found(self.users.get(&sender), "Before mint a service, create an user".as_bytes());
         
+        // if user.mints + quantity > USER_MINT_LIMIT {
+        //     env::panic(format!("Exceeded user mint limit {}", USER_MINT_LIMIT).as_bytes());
+        // }
         user.mints += quantity;
 
         self.users.insert(&sender, &user);
